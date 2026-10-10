@@ -48,6 +48,22 @@ def parse_history(text):
     return board_from_san_list(text)
 
 
+def board_from_saved_history(start_fen, history_text):
+    """Replay stored SAN history from a known starting FEN."""
+    board = chess.Board(start_fen or chess.STARTING_FEN)
+    text = (history_text or '').strip()
+    if not text:
+        return board
+    tokens = text.replace('\n', ' ').split()
+    for token in tokens:
+        if token.endswith('.'):
+            continue
+        if token in ('*', '1-0', '0-1', '1/2-1/2'):
+            break
+        board.push_san(token)
+    return board
+
+
 def format_score(score):
     if score.is_mate():
         mate = score.mate()

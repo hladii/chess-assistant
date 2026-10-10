@@ -1,4 +1,6 @@
 (function () {
+  const gameEl = document.getElementById('game');
+  const gameId = gameEl ? Number(gameEl.dataset.gameId) : null;
   const boardEl = document.getElementById('board');
   const userSideEl = document.getElementById('user-side');
   const sideToMoveEl = document.getElementById('side-to-move');
@@ -100,13 +102,14 @@
     busy = true;
     setLoader(true, loaderMessage || 'Working…');
     try {
+      const payload = Object.assign({ game_id: gameId }, body || {});
       const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: body ? JSON.stringify(body) : '{}',
+        body: JSON.stringify(payload),
       });
       const data = await response.json();
       applyState(data);

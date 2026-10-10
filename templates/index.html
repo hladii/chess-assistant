@@ -10,12 +10,44 @@
   <main class="page">
     <header class="header">
       <h1>Chess Move Advisor</h1>
-      <p class="tagline">Pick a side, enter opponent moves, confirm yours.</p>
+      <p class="tagline">Save games, continue later, get Stockfish suggestions.</p>
     </header>
 
-    {% if not started %}
+    {% if error %}
+    <p class="error banner-error">{{ error }}</p>
+    {% endif %}
+
+    <section class="games-section">
+      <h2>Your games</h2>
+      {% if games %}
+      <ul class="games-list">
+        {% for game in games %}
+        <li class="game-card">
+          <div class="game-meta">
+            <h3>{{ game.name }}</h3>
+            <p class="muted">{{ game.side_label }} · updated {{ game.updated_at }}</p>
+            <p class="history-preview">{{ game.history_preview }}</p>
+          </div>
+          <div class="game-actions">
+            <a class="button primary" href="{{ url_for('play_game', game_id=game.id) }}">Continue</a>
+            <form method="post" action="{{ url_for('remove_game', game_id=game.id) }}" onsubmit="return confirm('Delete this game?');">
+              <button type="submit" class="danger">Delete</button>
+            </form>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="muted">No saved games yet. Create one below.</p>
+      {% endif %}
+    </section>
+
     <section class="setup">
-      <form method="post" action="{{ url_for('start') }}" class="setup-form">
+      <h2>New game</h2>
+      <form method="post" action="{{ url_for('create') }}" class="setup-form">
+        <label class="history-label" for="name">Game name</label>
+        <input id="name" name="name" type="text" required maxlength="80" placeholder="e.g. Blitz vs friend">
+
         <fieldset>
           <legend>Your side</legend>
           <label class="choice">
@@ -31,84 +63,9 @@
         <label class="history-label" for="history">Game history (optional PGN / SAN)</label>
         <textarea id="history" name="history" rows="6" placeholder="1. e4 e5 2. Nf3 ..."></textarea>
 
-        {% if error %}
-        <p class="error">{{ error }}</p>
-        {% endif %}
-
-        <button type="submit" class="primary">Start</button>
+        <button type="submit" class="primary">Create &amp; start</button>
       </form>
     </section>
-    {% else %}
-    <section class="game" id="game" data-started="1">
-      <div class="board-wrap" id="board">
-        {{ board_svg|safe }}
-      </div>
-
-      <div class="panel">
-        <div class="status">
-          <p><strong>You:</strong> <span id="user-side">{{ user_side }}</span></p>
-          <p><strong>To move:</strong> <span id="side-to-move">{{ side_to_move }}</span></p>
-          <p><strong>Moves played:</strong> <span id="move-count">{{ move_count }}</span></p>
-          <p class="message" id="message" {% if not message %}hidden{% endif %}>{{ message }}</p>
-          <p class="error" id="error" {% if not error %}hidden{% endif %}>{{ error }}</p>
-        </div>
-
-        <div class="history-box">
-          <h2>Move history</h2>
-          <p class="history-text" id="move-history">{% if history %}{{ history }}{% else %}<span class="muted">No moves yet.</span>{% endif %}</p>
-        </div>
-
-        <form id="move-form" class="move-form" {% if game_over %}hidden{% endif %}>
-          <label for="san" id="move-prompt-label">{{ move_prompt }} (SAN)</label>
-          <div class="row">
-            <input id="san" name="san" type="text" autocomplete="off" autofocus placeholder="e4, Nf6, O-O">
-            <button type="submit" class="primary" id="play-btn">Play</button>
-          </div>
-        </form>
-
-        <div class="actions">
-          <button type="button" id="hint-btn">Hint</button>
-          <button type="button" id="undo-btn">Undo</button>
-          <form method="post" action="{{ url_for('new_game') }}">
-            <button type="submit">New game</button>
-          </form>
-        </div>
-
-        <div class="suggestions">
-          <h2>Best moves</h2>
-          <div id="suggestions">
-            {% if suggestions %}
-            <ol class="suggestion-list">
-              {% for option in suggestions %}
-              <li>
-                <button type="button" class="suggestion" data-san="{{ option.first_move }}" {% if not your_turn or game_over %}disabled{% endif %}>
-                  <span class="line">{{ option.line }}</span>
-                  <span class="eval">{{ option.evaluation }}</span>
-                </button>
-              </li>
-              {% endfor %}
-            </ol>
-            {% elif your_turn %}
-            <p class="muted">No lines yet — press Hint.</p>
-            {% else %}
-            <p class="muted">Waiting for opponent move.</p>
-            {% endif %}
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <div class="loader" id="loader" hidden>
-      <div class="loader-card">
-        <div class="spinner" aria-hidden="true"></div>
-        <p id="loader-text">Working…</p>
-      </div>
-    </div>
-    {% endif %}
   </main>
-
-  {% if started %}
-  <script src="{{ url_for('static', filename='app.js') }}"></script>
-  {% endif %}
 </body>
 </html>

@@ -46,11 +46,119 @@ body {
 }
 
 .setup-form,
-.panel {
+.panel,
+.games-section {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 1.25rem;
+}
+
+.games-section {
+  margin-bottom: 1.25rem;
+}
+
+.games-section h2,
+.setup h2 {
+  margin: 0 0 1rem;
+  font-size: 1.15rem;
+}
+
+.games-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.game-card {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 0.9rem 1rem;
+  background: var(--input);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.game-meta h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1.05rem;
+}
+
+.game-meta p {
+  margin: 0.15rem 0;
+}
+
+.history-preview {
+  color: var(--text);
+  font-size: 0.92rem;
+  word-break: break-word;
+}
+
+.game-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  flex-shrink: 0;
+}
+
+a.button,
+.button {
+  display: inline-block;
+  text-decoration: none;
+  text-align: center;
+  font: inherit;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: #323843;
+  color: var(--text);
+  border-radius: 8px;
+  padding: 0.55rem 0.9rem;
+}
+
+a.button.primary,
+.button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+button.danger {
+  background: #4a2428;
+  border-color: #7a3a42;
+  color: #ffd5d8;
+}
+
+button.danger:hover {
+  border-color: #b04b56;
+}
+
+.banner-error {
+  margin: 0 0 1rem;
+}
+
+.back-link {
+  margin: 0 0 0.35rem;
+}
+
+.back-link a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.back-link a:hover {
+  color: var(--text);
+}
+
+.setup {
+  margin-top: 0;
+}
+
+.setup-form input[type="text"] {
+  margin-bottom: 1rem;
 }
 
 fieldset {

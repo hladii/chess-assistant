@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chess Move Advisor</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="page">
+    <header class="header">
+      <h1>Chess Move Advisor</h1>
+      <p class="tagline">Pick a side, enter opponent moves, confirm yours.</p>
+    </header>
+
+    {% if not started %}
+    <section class="setup">
+      <form method="post" action="{{ url_for('start') }}" class="setup-form">
+        <fieldset>
+          <legend>Your side</legend>
+          <label class="choice">
+            <input type="radio" name="side" value="w" checked>
+            White
+          </label>
+          <label class="choice">
+            <input type="radio" name="side" value="b">
+            Black
+          </label>
+        </fieldset>
+
+        <label class="history-label" for="history">Game history (optional PGN / SAN)</label>
+        <textarea id="history" name="history" rows="6" placeholder="1. e4 e5 2. Nf3 ..."></textarea>
+
+        {% if error %}
+        <p class="error">{{ error }}</p>
+        {% endif %}
+
+        <button type="submit" class="primary">Start</button>
+      </form>
+    </section>
+    {% else %}
+    <section class="game" id="game" data-started="1">
+      <div class="board-wrap" id="board">
+        {{ board_svg|safe }}
+      </div>
+
+      <div class="panel">
+        <div class="status">
+          <p><strong>You:</strong> <span id="user-side">{{ user_side }}</span></p>
+          <p><strong>To move:</strong> <span id="side-to-move">{{ side_to_move }}</span></p>
+          <p><strong>Moves played:</strong> <span id="move-count">{{ move_count }}</span></p>
+          <p class="message" id="message" {% if not message %}hidden{% endif %}>{{ message }}</p>
+          <p class="error" id="error" {% if not error %}hidden{% endif %}>{{ error }}</p>
+        </div>
+
+        <div class="history-box">
+          <h2>Move history</h2>
+          <p class="history-text" id="move-history">{% if history %}{{ history }}{% else %}<span class="muted">No moves yet.</span>{% endif %}</p>
+        </div>
+
+        <form id="move-form" class="move-form" {% if game_over %}hidden{% endif %}>
+          <label for="san" id="move-prompt-label">{{ move_prompt }} (SAN)</label>
+          <div class="row">
+            <input id="san" name="san" type="text" autocomplete="off" autofocus placeholder="e4, Nf6, O-O">
+            <button type="submit" class="primary" id="play-btn">Play</button>
+          </div>
+        </form>
+
+        <div class="actions">
+          <button type="button" id="hint-btn">Hint</button>
+          <button type="button" id="undo-btn">Undo</button>
+          <form method="post" action="{{ url_for('new_game') }}">
+            <button type="submit">New game</button>
+          </form>
+        </div>
+
+        <div class="suggestions">
+          <h2>Best moves</h2>
+          <div id="suggestions">
+            {% if suggestions %}
+            <ol class="suggestion-list">
+              {% for option in suggestions %}
+              <li>
+                <button type="button" class="suggestion" data-san="{{ option.first_move }}" {% if not your_turn or game_over %}disabled{% endif %}>
+                  <span class="line">{{ option.line }}</span>
+                  <span class="eval">{{ option.evaluation }}</span>
+                </button>
+              </li>
+              {% endfor %}
+            </ol>
+            {% elif your_turn %}
+            <p class="muted">No lines yet — press Hint.</p>
+            {% else %}
+            <p class="muted">Waiting for opponent move.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="loader" id="loader" hidden>
+      <div class="loader-card">
+        <div class="spinner" aria-hidden="true"></div>
+        <p id="loader-text">Working…</p>
+      </div>
+    </div>
+    {% endif %}
+  </main>
+
+  {% if started %}
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+  {% endif %}
+</body>
+</html>

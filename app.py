@@ -365,14 +365,12 @@ def hint():
 
 
 def main():
-    # macOS AirPlay Receiver often binds :5000 and returns HTTP 403.
     port = 5050
     url = f'http://127.0.0.1:{port}'
     print(f'Chess move advisor UI: {url}')
     get_engine()
     threading.Timer(0.8, lambda: webbrowser.open(url)).start()
-    app.run(host='127.0.0.1', port=port, debug=False, use_reloader=False)
-
+    app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
 
 if __name__ == '__main__':
     main()

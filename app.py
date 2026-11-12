@@ -1,12 +1,21 @@
 import atexit
 import os
+import secrets
 import threading
 import webbrowser
-from dataclasses import dataclass, field
+from datetime import timedelta
 
 import chess
 import chess.svg
-from flask import Flask, jsonify, redirect, render_template, request, url_for
+from flask import (
+    Flask,
+    flash,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
 
 from assistant import (
     analyze_position,
@@ -15,16 +24,40 @@ from assistant import (
     game_over_message,
     parse_history,
 )
+from auth import (
+    current_user_email,
+    current_user_id,
+    get_csrf_token,
+    is_authenticated,
+    login_required,
+    login_user,
+    logout_user,
+    validate_csrf,
+    validate_email,
+    validate_new_password,
+    verify_password,
+)
 from db import (
     create_game,
     delete_game,
-    get_game,
+    get_game_for_user,
+    get_user_by_email,
+    get_user_by_id,
     init_db,
     list_games,
     update_game_history,
+    update_user_password,
 )
 
 app = Flask(__name__)
+app.secret_key = os.environ.get('SECRET_KEY') or secrets.token_hex(32)
+app.config.update(
+    PERMANENT_SESSION_LIFETIME=timedelta(days=14),
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE='Lax',
+    SESSION_COOKIE_SECURE=os.environ.get('SESSION_COOKIE_SECURE', '0') in ('1', 'true', 'True'),
+)
+
 init_db()
 
 _engine = None
@@ -52,20 +85,13 @@ def get_engine():
     return _engine
 
 
-@dataclass
-class GameState:
-    game_id: int = None
-    name: str = ''
-    board: chess.Board = field(default_factory=chess.Board)
-    start_fen: str = chess.STARTING_FEN
-    user_color: chess.Color = chess.WHITE
-    started: bool = False
-    suggestions: list = field(default_factory=list)
-    message: str = ''
-    error: str = ''
-
-
-state = GameState()
+@app.context_processor
+def inject_auth():
+    return {
+        'csrf_token': get_csrf_token(),
+        'current_user_email': current_user_email(),
+        'is_authenticated': is_authenticated(),
+    }
 
 
 def side_label(color):
@@ -98,94 +124,6 @@ def starting_fen_from_board(board):
     return replay.fen()
 
 
-def persist_history():
-    if not state.started or state.game_id is None:
-        return
-    history = format_move_history(state.board, state.start_fen)
-    update_game_history(state.game_id, history)
-
-
-def refresh_suggestions():
-    state.suggestions = []
-    if not state.started or state.board.is_game_over():
-        return
-    if state.board.turn != state.user_color:
-        return
-    engine = get_engine()
-    with _engine_lock:
-        raw = analyze_position(engine, state.board, state.user_color)
-    state.suggestions = [
-        {
-            **option,
-            'first_move': option['moves'][0] if option['moves'] else '',
-        }
-        for option in raw
-    ]
-
-
-def board_svg():
-    lastmove = state.board.peek() if state.board.move_stack else None
-    check = state.board.king(state.board.turn) if state.board.is_check() else None
-    return chess.svg.board(
-        board=state.board,
-        orientation=state.user_color,
-        lastmove=lastmove,
-        check=check,
-        size=420,
-    )
-
-
-def load_game_into_state(game_row, analyze=True):
-    start_fen = game_row.get('start_fen') or chess.STARTING_FEN
-    board = board_from_saved_history(start_fen, game_row.get('history') or '')
-    state.game_id = game_row['id']
-    state.name = game_row['name']
-    state.user_color = parse_color(game_row['user_color'])
-    state.start_fen = start_fen
-    state.board = board
-    state.started = True
-    state.suggestions = []
-    state.error = ''
-    state.message = f'Playing "{state.name}" as {side_label(state.user_color)}.'
-    if analyze:
-        refresh_suggestions()
-
-
-def clear_state():
-    state.game_id = None
-    state.name = ''
-    state.board = chess.Board()
-    state.start_fen = chess.STARTING_FEN
-    state.user_color = chess.WHITE
-    state.started = False
-    state.suggestions = []
-    state.message = ''
-    state.error = ''
-
-
-def game_payload():
-    ended = game_over_message(state.board) if state.started else None
-    if ended:
-        state.message = ended
-    your_turn = state.started and state.board.turn == state.user_color and not ended
-    return {
-        'started': state.started,
-        'game_id': state.game_id,
-        'name': state.name,
-        'user_side': side_label(state.user_color) if state.started else '',
-        'side_to_move': side_label(state.board.turn),
-        'your_turn': your_turn,
-        'move_prompt': 'Your move' if your_turn else 'Opponent move',
-        'suggestions': state.suggestions,
-        'message': state.message,
-        'error': state.error,
-        'board_svg': board_svg() if state.started else '',
-        'game_over': bool(ended),
-        'move_count': len(state.board.move_stack),
-        'history': format_move_history(state.board, state.start_fen) if state.started else '',
-    }
-
-
 def history_preview(history, limit=72):
     text = (history or '').strip()
     if not text:
@@ -195,10 +133,152 @@ def history_preview(history, limit=72):
     return text[: limit - 1] + '…'
 
 
+def board_from_game(game):
+    start_fen = game.get('start_fen') or chess.STARTING_FEN
+    return board_from_saved_history(start_fen, game.get('history') or ''), start_fen
+
+
+def build_suggestions(board, user_color):
+    if board.is_game_over() or board.turn != user_color:
+        return []
+    engine = get_engine()
+    with _engine_lock:
+        raw = analyze_position(engine, board, user_color)
+    return [
+        {
+            **option,
+            'first_move': option['moves'][0] if option['moves'] else '',
+        }
+        for option in raw
+    ]
+
+
+def board_svg(board, user_color):
+    lastmove = board.peek() if board.move_stack else None
+    check = board.king(board.turn) if board.is_check() else None
+    return chess.svg.board(
+        board=board,
+        orientation=user_color,
+        lastmove=lastmove,
+        check=check,
+        size=420,
+    )
+
+
+def game_payload(game, board, start_fen, suggestions=None, message='', error='', analyze=False):
+    user_color = parse_color(game['user_color'])
+    ended = game_over_message(board)
+    if ended:
+        message = ended
+    your_turn = board.turn == user_color and not ended
+    if suggestions is None:
+        suggestions = build_suggestions(board, user_color) if analyze and your_turn else []
+    return {
+        'started': True,
+        'game_id': game['id'],
+        'name': game['name'],
+        'user_side': side_label(user_color),
+        'side_to_move': side_label(board.turn),
+        'your_turn': your_turn,
+        'move_prompt': 'Your move' if your_turn else 'Opponent move',
+        'suggestions': suggestions,
+        'message': message,
+        'error': error,
+        'board_svg': board_svg(board, user_color),
+        'game_over': bool(ended),
+        'move_count': len(board.move_stack),
+        'history': format_move_history(board, start_fen),
+        'csrf_token': get_csrf_token(),
+    }
+
+
+def require_owned_game(game_id):
+    user_id = current_user_id()
+    game = get_game_for_user(game_id, user_id)
+    if not game:
+        return None, None, None
+    board, start_fen = board_from_game(game)
+    return game, board, start_fen
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if is_authenticated():
+        return redirect(url_for('index'))
+
+    error = ''
+    if request.method == 'POST':
+        if not validate_csrf():
+            error = 'Invalid session token. Refresh and try again.'
+        else:
+            email, email_error = validate_email(request.form.get('email', ''))
+            password = request.form.get('password') or ''
+            if email_error:
+                error = email_error
+            else:
+                user = get_user_by_email(email)
+                if not user or not verify_password(user['password_hash'], password):
+                    error = 'Invalid email or password.'
+                else:
+                    login_user(user)
+                    next_url = request.args.get('next') or url_for('index')
+                    if not next_url.startswith('/'):
+                        next_url = url_for('index')
+                    return redirect(next_url)
+
+    return render_template('login.html', error=error, csrf_token=get_csrf_token())
+
+
+@app.route('/logout', methods=['POST'])
+@login_required
+def logout():
+    if not validate_csrf():
+        flash('Invalid session token.', 'error')
+        return redirect(url_for('index'))
+    logout_user()
+    return redirect(url_for('login'))
+
+
+@app.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+    user = get_user_by_id(current_user_id())
+    message = ''
+    error = ''
+
+    if request.method == 'POST':
+        if not validate_csrf():
+            error = 'Invalid session token. Refresh and try again.'
+        else:
+            current_password = request.form.get('current_password') or ''
+            new_password = request.form.get('new_password') or ''
+            confirm_password = request.form.get('confirm_password') or ''
+            if not verify_password(user['password_hash'], current_password):
+                error = 'Current password is incorrect.'
+            else:
+                pwd_error = validate_new_password(new_password, confirm_password)
+                if pwd_error:
+                    error = pwd_error
+                elif verify_password(user['password_hash'], new_password):
+                    error = 'New password must be different from the current one.'
+                else:
+                    update_user_password(user['id'], new_password)
+                    message = 'Password updated.'
+                    user = get_user_by_id(user['id'])
+
+    return render_template(
+        'profile.html',
+        user=user,
+        message=message,
+        error=error,
+        csrf_token=get_csrf_token(),
+    )
+
+
 @app.route('/')
+@login_required
 def index():
-    clear_state()
-    games = list_games()
+    games = list_games(current_user_id())
     for game in games:
         game['side_label'] = side_label(parse_color(game['user_color']))
         game['history_preview'] = history_preview(game['history'])
@@ -206,11 +286,16 @@ def index():
         'index.html',
         games=games,
         error=request.args.get('error', ''),
+        csrf_token=get_csrf_token(),
     )
 
 
 @app.route('/games', methods=['POST'])
+@login_required
 def create():
+    if not validate_csrf():
+        return redirect(url_for('index', error='Invalid session token.'))
+
     name = (request.form.get('name') or '').strip()
     side = request.form.get('side', 'w').lower()
     history = request.form.get('history', '')
@@ -226,6 +311,7 @@ def create():
     start_fen = starting_fen_from_board(board)
     history_text = format_move_history(board, start_fen)
     game_id = create_game(
+        user_id=current_user_id(),
         name=name,
         history=history_text,
         user_color=color_code(user_color),
@@ -235,132 +321,154 @@ def create():
 
 
 @app.route('/game/<int:game_id>')
+@login_required
 def play_game(game_id):
-    game = get_game(game_id)
+    game, board, start_fen = require_owned_game(game_id)
     if not game:
         return redirect(url_for('index', error='Game not found.'))
-    load_game_into_state(game, analyze=True)
-    return render_template('game.html', **game_payload())
+    payload = game_payload(
+        game,
+        board,
+        start_fen,
+        message=f'Playing "{game["name"]}" as {side_label(parse_color(game["user_color"]))}.',
+        analyze=True,
+    )
+    return render_template('game.html', **payload)
 
 
 @app.route('/games/<int:game_id>/delete', methods=['POST'])
+@login_required
 def remove_game(game_id):
-    delete_game(game_id)
-    if state.game_id == game_id:
-        clear_state()
+    if not validate_csrf():
+        return redirect(url_for('index', error='Invalid session token.'))
+    delete_game(game_id, current_user_id())
     return redirect(url_for('index'))
 
 
 @app.route('/api/state', methods=['GET'])
+@login_required
 def api_state():
-    return jsonify(game_payload())
+    game_id = request.args.get('game_id', type=int)
+    if not game_id:
+        return jsonify({'ok': False, 'error': 'game_id required.'}), 400
+    game, board, start_fen = require_owned_game(game_id)
+    if not game:
+        return jsonify({'ok': False, 'error': 'Game not found.'}), 404
+    payload = game_payload(game, board, start_fen, analyze=False)
+    payload['ok'] = True
+    return jsonify(payload)
 
 
-def ensure_active_game(game_id=None):
-    if game_id is not None and state.game_id != game_id:
-        game = get_game(game_id)
-        if not game:
-            return False
-        load_game_into_state(game, analyze=False)
-    return state.started and state.game_id is not None
-
-
-def apply_san_move(san):
-    if not state.started:
-        return False, 'Game not started.'
+def apply_san_move(game, board, start_fen, san):
     san = (san or '').strip()
     if not san:
-        return False, 'Enter a move in SAN, e.g. e4 or Nf6.'
+        return False, 'Enter a move in SAN, e.g. e4 or Nf6.', board
     try:
-        parsed = state.board.parse_san(san)
+        parsed = board.parse_san(san)
     except ValueError:
-        return False, f'Invalid move: {san}'
+        return False, f'Invalid move: {san}', board
 
-    played = state.board.san(parsed)
-    state.board.push(parsed)
-    state.error = ''
-    state.message = f'Played {played}.'
-    persist_history()
-    ended = game_over_message(state.board)
-    if ended:
-        state.message = ended
-        state.suggestions = []
-    else:
-        refresh_suggestions()
-    return True, None
+    played = board.san(parsed)
+    board.push(parsed)
+    history = format_move_history(board, start_fen)
+    update_game_history(game['id'], current_user_id(), history)
+    return True, f'Played {played}.', board
 
 
 @app.route('/api/move', methods=['POST'])
+@login_required
 def play_move():
-    payload = request.get_json(silent=True) or {}
-    game_id = payload.get('game_id') or request.args.get('game_id', type=int)
-    if game_id is not None:
-        game_id = int(game_id)
-    if not ensure_active_game(game_id):
-        return jsonify({'ok': False, 'error': 'Game not started.'}), 400
+    if not validate_csrf():
+        return jsonify({'ok': False, 'error': 'Invalid CSRF token.'}), 403
 
-    ok, err = apply_san_move(payload.get('san', ''))
+    payload = request.get_json(silent=True) or {}
+    game_id = payload.get('game_id')
+    if game_id is None:
+        return jsonify({'ok': False, 'error': 'game_id required.'}), 400
+
+    game, board, start_fen = require_owned_game(int(game_id))
+    if not game:
+        return jsonify({'ok': False, 'error': 'Game not found.'}), 404
+
+    ok, message, board = apply_san_move(game, board, start_fen, payload.get('san', ''))
     if not ok:
-        state.error = err
-        body = game_payload()
+        body = game_payload(game, board, start_fen, message='', error=message, analyze=False)
         body['ok'] = False
         return jsonify(body), 400
-    body = game_payload()
+
+    body = game_payload(game, board, start_fen, message=message, analyze=True)
     body['ok'] = True
     return jsonify(body)
 
 
 @app.route('/api/undo', methods=['POST'])
+@login_required
 def undo():
-    payload = request.get_json(silent=True) or {}
-    game_id = payload.get('game_id') or request.args.get('game_id', type=int)
-    if game_id is not None:
-        game_id = int(game_id)
-    if not ensure_active_game(game_id):
-        return jsonify({'ok': False, 'error': 'Game not started.'}), 400
+    if not validate_csrf():
+        return jsonify({'ok': False, 'error': 'Invalid CSRF token.'}), 403
 
-    state.error = ''
-    if not state.board.move_stack:
-        state.error = 'No moves to undo.'
-        body = game_payload()
+    payload = request.get_json(silent=True) or {}
+    game_id = payload.get('game_id')
+    if game_id is None:
+        return jsonify({'ok': False, 'error': 'game_id required.'}), 400
+
+    game, board, start_fen = require_owned_game(int(game_id))
+    if not game:
+        return jsonify({'ok': False, 'error': 'Game not found.'}), 404
+
+    if not board.move_stack:
+        body = game_payload(game, board, start_fen, error='No moves to undo.', analyze=False)
         body['ok'] = False
         return jsonify(body), 400
 
-    state.board.pop()
-    state.message = 'Undid last move.'
-    persist_history()
-    refresh_suggestions()
-    body = game_payload()
+    board.pop()
+    history = format_move_history(board, start_fen)
+    update_game_history(game['id'], current_user_id(), history)
+    body = game_payload(game, board, start_fen, message='Undid last move.', analyze=True)
     body['ok'] = True
     return jsonify(body)
 
 
 @app.route('/api/hint', methods=['POST'])
+@login_required
 def hint():
-    payload = request.get_json(silent=True) or {}
-    game_id = payload.get('game_id') or request.args.get('game_id', type=int)
-    if game_id is not None:
-        game_id = int(game_id)
-    if not ensure_active_game(game_id):
-        return jsonify({'ok': False, 'error': 'Game not started.'}), 400
+    if not validate_csrf():
+        return jsonify({'ok': False, 'error': 'Invalid CSRF token.'}), 403
 
-    state.error = ''
-    if state.board.is_game_over():
-        state.message = game_over_message(state.board)
+    payload = request.get_json(silent=True) or {}
+    game_id = payload.get('game_id')
+    if game_id is None:
+        return jsonify({'ok': False, 'error': 'game_id required.'}), 400
+
+    game, board, start_fen = require_owned_game(int(game_id))
+    if not game:
+        return jsonify({'ok': False, 'error': 'Game not found.'}), 404
+
+    user_color = parse_color(game['user_color'])
+    if board.is_game_over():
+        suggestions = []
+        message = game_over_message(board)
     else:
         engine = get_engine()
         with _engine_lock:
-            raw = analyze_position(engine, state.board, state.user_color)
-        state.suggestions = [
+            raw = analyze_position(engine, board, user_color)
+        suggestions = [
             {
                 **option,
                 'first_move': option['moves'][0] if option['moves'] else '',
             }
             for option in raw
         ]
-        state.message = 'Suggestions updated.' if state.suggestions else 'No suggestions for this position.'
+        message = 'Suggestions updated.' if suggestions else 'No suggestions for this position.'
 
-    body = game_payload()
+    body = game_payload(
+        game,
+        board,
+        start_fen,
+        suggestions=suggestions,
+        message=message,
+        analyze=False,
+    )
     body['ok'] = True
     return jsonify(body)
 

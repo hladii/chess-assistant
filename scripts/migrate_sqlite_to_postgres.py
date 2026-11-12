@@ -15,7 +15,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from db import init_db, upsert_game  # noqa: E402
+from db import init_db, seed_default_user, upsert_game  # noqa: E402
 
 
 def read_sqlite_games(sqlite_path):
@@ -51,6 +51,8 @@ def main():
     print(f'Read {len(games)} game(s) from {sqlite_path}')
 
     init_db()
+    user_id = seed_default_user()
+    print(f'Using seed user_id={user_id}')
     for game in games:
         upsert_game(
             game_id=game['id'],
@@ -60,8 +62,9 @@ def main():
             start_fen=game['start_fen'],
             created_at=game['created_at'],
             updated_at=game['updated_at'],
+            user_id=user_id,
         )
-        print(f"  upserted id={game['id']} name={game['name']!r}")
+        print(f"  upserted id={game['id']} name={game['name']!r} user_id={user_id}")
 
     print('Done.')
 

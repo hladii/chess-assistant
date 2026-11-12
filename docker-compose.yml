@@ -25,6 +25,10 @@ services:
       HOST: 0.0.0.0
       PORT: 5050
       OPEN_BROWSER: "0"
+      SECRET_KEY: ${SECRET_KEY:-dev-change-me-in-production}
+      SEED_USER_EMAIL: ${SEED_USER_EMAIL:-hladii.b.v@gmail.com}
+      SEED_USER_PASSWORD: ${SEED_USER_PASSWORD:-chess123}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-0}
     depends_on:
       db:
         condition: service_healthy

@@ -16,7 +16,7 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY assistant.py app.py db.py ./
+COPY assistant.py app.py auth.py db.py ./
 COPY templates ./templates
 COPY static ./static
 COPY scripts ./scripts

@@ -20,6 +20,11 @@ docker compose up -d --build
 
 UI: [http://127.0.0.1:5050](http://127.0.0.1:5050)
 
+Увійти (seed-користувач за замовчуванням):
+
+- email: `hladii.b.v@gmail.com`
+- пароль: `chess123` (зміни через **Profile**; у проді постав свій `SEED_USER_PASSWORD` / `SECRET_KEY` у `.env`)
+
 ### Міграція з SQLite → PostgreSQL
 
 Якщо є старий файл `chess_assistant.db`:
@@ -101,8 +106,9 @@ docker compose up -d --build
 | Файл | Призначення |
 |------|-------------|
 | `app.py` | Flask веб-UI |
+| `auth.py` | логін, CSRF, хеш паролів (scrypt) |
 | `assistant.py` | CLI + логіка аналізу |
-| `db.py` | PostgreSQL (таблиця `games`) |
+| `db.py` | PostgreSQL (`users`, `games`) |
 | `Dockerfile` / `docker-compose.yml` | контейнери web + Postgres |
 | `scripts/migrate_sqlite_to_postgres.py` | міграція зі старої SQLite |
 | `templates/` / `static/` | HTML / CSS / JS |

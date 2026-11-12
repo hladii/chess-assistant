@@ -1,6 +1,11 @@
 (function () {
   const gameEl = document.getElementById('game');
   const gameId = gameEl ? Number(gameEl.dataset.gameId) : null;
+  const csrfToken = (
+    (gameEl && gameEl.dataset.csrf) ||
+    (document.querySelector('meta[name="csrf-token"]') || {}).content ||
+    ''
+  );
   const boardEl = document.getElementById('board');
   const userSideEl = document.getElementById('user-side');
   const sideToMoveEl = document.getElementById('side-to-move');
@@ -117,9 +122,15 @@
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          'X-CSRF-Token': csrfToken,
         },
         body: JSON.stringify(payload),
+        credentials: 'same-origin',
       });
+      if (response.status === 401) {
+        window.location.href = '/login';
+        return null;
+      }
       const data = await response.json();
       applyState(data);
       if (!response.ok && data.error) {

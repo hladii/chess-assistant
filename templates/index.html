@@ -9,8 +9,19 @@
 <body>
   <main class="page">
     <header class="header">
-      <h1>Chess Move Advisor</h1>
-      <p class="tagline">Save games, continue later, get Stockfish suggestions.</p>
+      <div class="header-row">
+        <div>
+          <h1>Chess Move Advisor</h1>
+          <p class="tagline">Save games, continue later, get Stockfish suggestions.</p>
+        </div>
+        <nav class="user-nav">
+          <a href="{{ url_for('profile') }}">{{ current_user_email }}</a>
+          <form method="post" action="{{ url_for('logout') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button type="submit">Log out</button>
+          </form>
+        </nav>
+      </div>
     </header>
 
     {% if error %}
@@ -31,6 +42,7 @@
           <div class="game-actions">
             <a class="button primary" href="{{ url_for('play_game', game_id=game.id) }}">Continue</a>
             <form method="post" action="{{ url_for('remove_game', game_id=game.id) }}" onsubmit="return confirm('Delete this game?');">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
               <button type="submit" class="danger">Delete</button>
             </form>
           </div>
@@ -45,6 +57,8 @@
     <section class="setup">
       <h2>New game</h2>
       <form method="post" action="{{ url_for('create') }}" class="setup-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
         <label class="history-label" for="name">Game name</label>
         <input id="name" name="name" type="text" required maxlength="80" placeholder="e.g. Blitz vs friend">
 

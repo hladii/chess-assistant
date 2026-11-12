@@ -40,6 +40,34 @@ body {
   letter-spacing: -0.02em;
 }
 
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.user-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+
+.user-nav a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.92rem;
+}
+
+.user-nav a:hover {
+  color: var(--text);
+}
+
+.page.narrow {
+  max-width: 520px;
+}
+
 .tagline {
   margin: 0.4rem 0 1.75rem;
   color: var(--muted);

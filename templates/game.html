@@ -4,17 +4,29 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ name }} · Chess Move Advisor</title>
+  <meta name="csrf-token" content="{{ csrf_token }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <main class="page">
     <header class="header">
-      <p class="back-link"><a href="{{ url_for('index') }}">← All games</a></p>
-      <h1 id="game-name">{{ name }}</h1>
-      <p class="tagline">Enter opponent moves, confirm yours. Progress is saved automatically.</p>
+      <div class="header-row">
+        <div>
+          <p class="back-link"><a href="{{ url_for('index') }}">← All games</a></p>
+          <h1 id="game-name">{{ name }}</h1>
+          <p class="tagline">Enter opponent moves, confirm yours. Progress is saved automatically.</p>
+        </div>
+        <nav class="user-nav">
+          <a href="{{ url_for('profile') }}">{{ current_user_email }}</a>
+          <form method="post" action="{{ url_for('logout') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button type="submit">Log out</button>
+          </form>
+        </nav>
+      </div>
     </header>
 
-    <section class="game" id="game" data-game-id="{{ game_id }}">
+    <section class="game" id="game" data-game-id="{{ game_id }}" data-csrf="{{ csrf_token }}">
       <div class="board-wrap" id="board">
         {{ board_svg|safe }}
       </div>

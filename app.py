@@ -1,4 +1,5 @@
 import atexit
+import os
 import threading
 import webbrowser
 from dataclasses import dataclass, field
@@ -365,12 +366,16 @@ def hint():
 
 
 def main():
-    port = 5050
+    host = os.environ.get('HOST', '0.0.0.0')
+    port = int(os.environ.get('PORT', '5050'))
+    open_browser = os.environ.get('OPEN_BROWSER', '1') not in ('0', 'false', 'False')
     url = f'http://127.0.0.1:{port}'
     print(f'Chess move advisor UI: {url}')
     get_engine()
-    threading.Timer(0.8, lambda: webbrowser.open(url)).start()
-    app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
+    if open_browser:
+        threading.Timer(0.8, lambda: webbrowser.open(url)).start()
+    app.run(host=host, port=port, debug=False, use_reloader=False)
+
 
 if __name__ == '__main__':
     main()

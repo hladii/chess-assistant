@@ -1,5 +1,6 @@
 import io
 import shutil
+from pathlib import Path
 
 import chess
 import chess.engine
@@ -12,7 +13,13 @@ ANALYSIS_MULTIPV = 3
 
 
 def find_engine():
-    engine_path = shutil.which('stockfish')
+    candidates = [
+        shutil.which('stockfish'),
+        '/usr/games/stockfish',  # Debian/Ubuntu package
+        '/usr/local/bin/stockfish',
+        '/opt/homebrew/bin/stockfish',
+    ]
+    engine_path = next((path for path in candidates if path and Path(path).is_file()), None)
     if not engine_path:
         raise RuntimeError('Stockfish not found. Install it with: brew install stockfish')
     return chess.engine.SimpleEngine.popen_uci(engine_path)

@@ -8,4 +8,5 @@ dist/
 build/
 *.db
 *.db-journal
+.env
 

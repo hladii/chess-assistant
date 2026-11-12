@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign in · Chess Move Advisor</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="page narrow">
+    <header class="header">
+      <h1>Chess Move Advisor</h1>
+      <p class="tagline">Sign in to continue your games.</p>
+    </header>
+
+    <section class="setup">
+      <form method="post" action="{{ url_for('login', next=request.args.get('next', '')) }}" class="setup-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+        <label class="history-label" for="email">Email</label>
+        <input id="email" name="email" type="email" required autocomplete="username" autofocus>
+
+        <label class="history-label" for="password">Password</label>
+        <input id="password" name="password" type="password" required autocomplete="current-password">
+
+        {% if error %}
+        <p class="error">{{ error }}</p>
+        {% endif %}
+
+        <button type="submit" class="primary">Sign in</button>
+      </form>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Profile · Chess Move Advisor</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="page narrow">
+    <header class="header">
+      <p class="back-link"><a href="{{ url_for('index') }}">← All games</a></p>
+      <h1>Profile</h1>
+      <p class="tagline">{{ user.email }}</p>
+    </header>
+
+    <section class="setup">
+      <h2>Change password</h2>
+      <form method="post" action="{{ url_for('profile') }}" class="setup-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+        <label class="history-label" for="current_password">Current password</label>
+        <input id="current_password" name="current_password" type="password" required autocomplete="current-password">
+
+        <label class="history-label" for="new_password">New password</label>
+        <input id="new_password" name="new_password" type="password" required minlength="8" autocomplete="new-password">
+
+        <label class="history-label" for="confirm_password">Confirm new password</label>
+        <input id="confirm_password" name="confirm_password" type="password" required minlength="8" autocomplete="new-password">
+
+        {% if message %}<p class="message">{{ message }}</p>{% endif %}
+        {% if error %}<p class="error">{{ error }}</p>{% endif %}
+
+        <p class="muted">Use at least 8 characters.</p>
+        <button type="submit" class="primary">Update password</button>
+      </form>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,40 +1,43 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Profile · Chess Move Advisor</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-  <main class="page narrow">
-    <header class="header">
-      <p class="back-link"><a href="{{ url_for('index') }}">← All games</a></p>
-      <h1>Profile</h1>
-      <p class="tagline">{{ user.email }}</p>
-    </header>
+{% extends "base.html" %}
 
-    <section class="setup">
-      <h2>Change password</h2>
-      <form method="post" action="{{ url_for('profile') }}" class="setup-form">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+{% block title %}Профіль · Chess Move Advisor{% endblock %}
 
-        <label class="history-label" for="current_password">Current password</label>
-        <input id="current_password" name="current_password" type="password" required autocomplete="current-password">
+{% block main_class %}page narrow{% endblock %}
 
-        <label class="history-label" for="new_password">New password</label>
-        <input id="new_password" name="new_password" type="password" required minlength="8" autocomplete="new-password">
+{% block content %}
+<header class="header">
+  <p class="back-link"><a href="{{ url_for('index') }}">← Головна</a></p>
+  <h1>Профіль</h1>
+  <p class="tagline">{{ user.email }}</p>
+</header>
 
-        <label class="history-label" for="confirm_password">Confirm new password</label>
-        <input id="confirm_password" name="confirm_password" type="password" required minlength="8" autocomplete="new-password">
+<section class="card card-section">
+  <header>
+    <h2>Змінити пароль</h2>
+  </header>
+  <form method="post" action="{{ url_for('profile') }}" class="form-stack">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 
-        {% if message %}<p class="message">{{ message }}</p>{% endif %}
-        {% if error %}<p class="error">{{ error }}</p>{% endif %}
+    <div role="group" class="field">
+      <label for="current_password">Поточний пароль</label>
+      <input id="current_password" class="input" name="current_password" type="password" required autocomplete="current-password">
+    </div>
 
-        <p class="muted">Use at least 8 characters.</p>
-        <button type="submit" class="primary">Update password</button>
-      </form>
-    </section>
-  </main>
-</body>
-</html>
+    <div role="group" class="field">
+      <label for="new_password">Новий пароль</label>
+      <input id="new_password" class="input" name="new_password" type="password" required minlength="8" autocomplete="new-password">
+    </div>
+
+    <div role="group" class="field">
+      <label for="confirm_password">Підтвердження</label>
+      <input id="confirm_password" class="input" name="confirm_password" type="password" required minlength="8" autocomplete="new-password">
+    </div>
+
+    {% if message %}<p class="message">{{ message }}</p>{% endif %}
+    {% if error %}<p class="alert" data-variant="destructive" role="alert">{{ error }}</p>{% endif %}
+
+    <p class="muted">Мінімум 8 символів.</p>
+    <button type="submit" class="btn">Оновити пароль</button>
+  </form>
+</section>
+{% endblock %}

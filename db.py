@@ -59,12 +59,14 @@ def init_db():
                 history TEXT NOT NULL DEFAULT '',
                 user_color TEXT NOT NULL DEFAULT 'w',
                 start_fen TEXT NOT NULL,
+                mode TEXT NOT NULL DEFAULT 'assistant',
+                trainer_elo INT,
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL
             )
             '''
         )
-        # Upgrade older schemas that had games without user_id.
+        # Upgrade older schemas.
         conn.execute(
             '''
             DO $$
@@ -74,6 +76,18 @@ def init_db():
                     WHERE table_name = 'games' AND column_name = 'user_id'
                 ) THEN
                     ALTER TABLE games ADD COLUMN user_id BIGINT REFERENCES users(id) ON DELETE CASCADE;
+                END IF;
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_name = 'games' AND column_name = 'mode'
+                ) THEN
+                    ALTER TABLE games ADD COLUMN mode TEXT NOT NULL DEFAULT 'assistant';
+                END IF;
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_name = 'games' AND column_name = 'trainer_elo'
+                ) THEN
+                    ALTER TABLE games ADD COLUMN trainer_elo INT;
                 END IF;
             END $$;
             '''
@@ -165,7 +179,8 @@ def list_games(user_id):
     with get_connection() as conn:
         rows = conn.execute(
             '''
-            SELECT id, user_id, name, history, user_color, start_fen, created_at, updated_at
+            SELECT id, user_id, name, history, user_color, start_fen, mode, trainer_elo,
+                   created_at, updated_at
             FROM games
             WHERE user_id = %s
             ORDER BY updated_at DESC, id DESC
@@ -179,7 +194,8 @@ def get_game_for_user(game_id, user_id):
     with get_connection() as conn:
         row = conn.execute(
             '''
-            SELECT id, user_id, name, history, user_color, start_fen, created_at, updated_at
+            SELECT id, user_id, name, history, user_color, start_fen, mode, trainer_elo,
+                   created_at, updated_at
             FROM games
             WHERE id = %s AND user_id = %s
             ''',
@@ -188,16 +204,32 @@ def get_game_for_user(game_id, user_id):
     return dict(row) if row else None
 
 
-def create_game(user_id, name, history, user_color, start_fen):
+def create_game(user_id, name, history, user_color, start_fen, mode='assistant', trainer_elo=None):
     now = _now()
+    mode = mode if mode in ('assistant', 'trainer') else 'assistant'
+    if mode != 'trainer':
+        trainer_elo = None
     with get_connection() as conn:
         row = conn.execute(
             '''
-            INSERT INTO games (user_id, name, history, user_color, start_fen, created_at, updated_at)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO games (
+                user_id, name, history, user_color, start_fen, mode, trainer_elo,
+                created_at, updated_at
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id
             ''',
-            (user_id, name, history or '', user_color, start_fen, now, now),
+            (
+                user_id,
+                name,
+                history or '',
+                user_color,
+                start_fen,
+                mode,
+                trainer_elo,
+                now,
+                now,
+            ),
         ).fetchone()
     return row['id']
 

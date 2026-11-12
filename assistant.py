@@ -10,6 +10,9 @@ import chess.pgn
 COMMANDS = {'undo', 'board', 'hint', 'resign', 'quit', 'help'}
 ANALYSIS_TIME = 3.0
 ANALYSIS_MULTIPV = 3
+TRAINER_ANALYSIS_TIME = 0.8
+TRAINER_MOVE_TIME = 0.4
+TRAINER_ELO_LEVELS = (800, 1200, 1600)
 
 
 def find_engine():
@@ -83,6 +86,7 @@ def analyze_position(engine, board, user_color, time_limit=ANALYSIS_TIME, multip
     if board.is_game_over():
         return []
 
+    set_engine_unlimited(engine)
     results = engine.analyse(
         board,
         chess.engine.Limit(time=time_limit),
@@ -110,6 +114,122 @@ def analyze_position(engine, board, user_color, time_limit=ANALYSIS_TIME, multip
             'evaluation': format_score(score),
         })
     return options
+
+
+def set_engine_unlimited(engine):
+    try:
+        engine.configure({'UCI_LimitStrength': False})
+    except chess.engine.EngineError:
+        pass
+
+
+def configure_engine_strength(engine, elo):
+    elo = int(elo)
+    if elo not in TRAINER_ELO_LEVELS:
+        elo = 1200
+    try:
+        engine.configure({
+            'UCI_LimitStrength': True,
+            'UCI_Elo': elo,
+        })
+    except chess.engine.EngineError:
+        # Older Stockfish builds may not expose UCI_Elo the same way.
+        try:
+            engine.configure({'Skill Level': max(0, min(20, elo // 150))})
+        except chess.engine.EngineError:
+            pass
+    return elo
+
+
+def score_to_cp(score):
+    """Convert a PovScore/Score to centipawns; mates become large signed values."""
+    if score.is_mate():
+        mate = score.mate()
+        if mate is None:
+            return 0
+        # Prefer faster mates as larger magnitude.
+        return (100000 - abs(mate) * 100) * (1 if mate > 0 else -1)
+    value = score.score()
+    return 0 if value is None else value
+
+
+def classify_cp_loss(loss):
+    if loss is None or loss <= 30:
+        return 'best'
+    if loss <= 100:
+        return 'inaccuracy'
+    if loss <= 300:
+        return 'mistake'
+    return 'blunder'
+
+
+def coach_message(classification, played_san, best_san, cp_before, cp_after, cp_loss):
+    before = f'{cp_before / 100:.2f}'
+    after = f'{cp_after / 100:.2f}'
+    loss = f'{cp_loss / 100:.2f}'
+    if classification == 'best':
+        return f'Good move ({played_san}). Eval {before} → {after}.'
+    if best_san and best_san != played_san:
+        return (
+            f'{classification.title()}: {played_san} (eval {before} → {after}, '
+            f'loss {loss}). Better was {best_san}.'
+        )
+    return f'{classification.title()}: {played_san} (eval {before} → {after}, loss {loss}).'
+
+
+def evaluate_user_move(engine, board_before, move, user_color, time_limit=TRAINER_ANALYSIS_TIME):
+    """Classify a played move vs the engine best move. board_before is prior to move."""
+    set_engine_unlimited(engine)
+    before_info = engine.analyse(board_before, chess.engine.Limit(time=time_limit))
+    before_score = before_info['score'].pov(user_color)
+    best_move = None
+    best_san = ''
+    pv = before_info.get('pv') or []
+    if pv:
+        best_move = pv[0]
+        best_san = board_before.san(best_move)
+
+    played_san = board_before.san(move)
+    board_after = board_before.copy()
+    board_after.push(move)
+
+    after_info = engine.analyse(board_after, chess.engine.Limit(time=time_limit))
+    after_score = after_info['score'].pov(user_color)
+
+    cp_before = score_to_cp(before_score)
+    cp_after = score_to_cp(after_score)
+    cp_loss = max(0, cp_before - cp_after)
+    if best_move is not None and move == best_move:
+        classification = 'best'
+        cp_loss = 0
+    else:
+        classification = classify_cp_loss(cp_loss)
+
+    return {
+        'classification': classification,
+        'played_san': played_san,
+        'best_move_san': best_san,
+        'cp_before': cp_before,
+        'cp_after': cp_after,
+        'cp_loss': cp_loss,
+        'eval_before': format_score(before_score),
+        'eval_after': format_score(after_score),
+        'message': coach_message(
+            classification, played_san, best_san, cp_before, cp_after, cp_loss
+        ),
+    }
+
+
+def engine_reply(engine, board, elo, time_limit=TRAINER_MOVE_TIME):
+    """Play one move as the trainer opponent at limited strength. Returns SAN."""
+    if board.is_game_over():
+        return None
+    configure_engine_strength(engine, elo)
+    result = engine.play(board, chess.engine.Limit(time=time_limit))
+    set_engine_unlimited(engine)
+    if not result.move:
+        return None
+    return board.san(result.move)
 
 
 def game_over_message(board):

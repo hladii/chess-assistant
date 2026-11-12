@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Головна · Chess Move Advisor{% endblock %}
+
+{% block body_class %}page-home{% endblock %}
+
+{% block content %}
+<section class="home-hero">
+  <p class="home-brand">Chess Move Advisor</p>
+  <h1>Грайте. Аналізуйте. Вчіться.</h1>
+  <p class="home-lead">
+    Зберігайте партії з підказками Stockfish або тренуйтесь проти двигуна з миттєвим фідбеком після кожного ходу.
+  </p>
+
+  <div class="home-cta-grid">
+    <a class="home-cta" href="{{ url_for('games_list') }}">
+      <span class="home-cta-label">Ігри</span>
+      <span class="home-cta-desc">Асистент ходів: записуйте партію, отримуйте найкращі лінії.</span>
+      <span class="home-cta-action">Відкрити →</span>
+    </a>
+    <a class="home-cta" href="{{ url_for('training_list') }}">
+      <span class="home-cta-label">Навчання</span>
+      <span class="home-cta-desc">Тренер Stockfish (~800 / 1200 / 1600 Elo) з оцінкою ваших ходів.</span>
+      <span class="home-cta-action">Тренуватись →</span>
+    </a>
+  </div>
+</section>
+{% endblock %}

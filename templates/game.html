@@ -1,104 +1,130 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{ name }} · Chess Move Advisor</title>
-  <meta name="csrf-token" content="{{ csrf_token }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-  <main class="page">
-    <header class="header">
-      <div class="header-row">
-        <div>
-          <p class="back-link"><a href="{{ url_for('index') }}">← All games</a></p>
-          <h1 id="game-name">{{ name }}</h1>
-          <p class="tagline">Enter opponent moves, confirm yours. Progress is saved automatically.</p>
-        </div>
-        <nav class="user-nav">
-          <a href="{{ url_for('profile') }}">{{ current_user_email }}</a>
-          <form method="post" action="{{ url_for('logout') }}">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-            <button type="submit">Log out</button>
-          </form>
-        </nav>
-      </div>
-    </header>
+{% extends "base.html" %}
 
-    <section class="game" id="game" data-game-id="{{ game_id }}" data-csrf="{{ csrf_token }}">
+{% block title %}{{ name }} · Chess Move Advisor{% endblock %}
+
+{% block body_class %}page-game{% endblock %}
+{% block main_class %}page page-game-main{% endblock %}
+
+{% block head_meta %}
+<meta name="csrf-token" content="{{ csrf_token }}">
+{% endblock %}
+
+{% block content %}
+<div
+  class="game-shell"
+  id="game"
+  data-game-id="{{ game_id }}"
+  data-csrf="{{ csrf_token }}"
+  data-mode="{{ mode or 'assistant' }}"
+>
+  <header class="game-toolbar">
+    <div class="game-toolbar-top">
+      {% if mode == 'trainer' %}
+      <a class="btn" data-variant="ghost" data-size="sm" href="{{ url_for('training_list') }}">← Навчання</a>
+      {% else %}
+      <a class="btn" data-variant="ghost" data-size="sm" href="{{ url_for('games_list') }}">← Ігри</a>
+      {% endif %}
+      <h1 id="game-name" class="game-title">{{ name }}</h1>
+    </div>
+    <div class="meta-chips" aria-label="Game status">
+      <span class="chip"><span class="chip-label">Mode</span> <span id="mode-label">{% if mode == 'trainer' %}Trainer · {{ trainer_elo }}{% else %}Assistant{% endif %}</span></span>
+      <span class="chip"><span class="chip-label">You</span> <span id="user-side">{{ user_side }}</span></span>
+      <span class="chip chip-turn"><span class="chip-label">To move</span> <span id="side-to-move">{{ side_to_move }}</span></span>
+      <span class="chip"><span class="chip-label">Moves</span> <span id="move-count">{{ move_count }}</span></span>
+    </div>
+  </header>
+
+  <section class="game-layout">
+    <aside class="board-column">
       <div class="board-wrap" id="board">
         {{ board_svg|safe }}
       </div>
+    </aside>
 
-      <div class="panel">
-        <div class="status">
-          <p><strong>You:</strong> <span id="user-side">{{ user_side }}</span></p>
-          <p><strong>To move:</strong> <span id="side-to-move">{{ side_to_move }}</span></p>
-          <p><strong>Moves played:</strong> <span id="move-count">{{ move_count }}</span></p>
-          <p class="message" id="message" {% if not message %}hidden{% endif %}>{{ message }}</p>
-          <p class="error" id="error" {% if not error %}hidden{% endif %}>{{ error }}</p>
+    <div class="panel">
+      <form id="move-form" class="move-composer" {% if game_over or (mode == 'trainer' and not your_turn) %}hidden{% endif %}>
+        <label for="san" id="move-prompt-label" class="move-label">{{ move_prompt }} (SAN)</label>
+        <div class="move-row">
+          <input id="san" class="input" name="san" type="text" autocomplete="off" autofocus placeholder="e4, Nf6, O-O" aria-describedby="move-help">
+          <button type="submit" class="btn" id="play-btn" data-size="lg">Play</button>
         </div>
-
-        <div class="history-box">
-          <h2>Move history</h2>
-          <p class="history-text" id="move-history">{% if history %}{{ history }}{% else %}<span class="muted">No moves yet.</span>{% endif %}</p>
+        <p id="move-help" class="move-help muted">Type a move in SAN, or pick a suggestion below.</p>
+        <div class="move-actions">
+          <button type="button" class="btn" data-variant="secondary" data-size="sm" id="hint-btn" {% if mode == 'trainer' %}hidden{% endif %}>Hint</button>
+          <button type="button" class="btn" data-variant="outline" data-size="sm" id="undo-btn">Undo</button>
         </div>
+      </form>
 
-        <form id="move-form" class="move-form" {% if game_over %}hidden{% endif %}>
-          <label for="san" id="move-prompt-label">{{ move_prompt }} (SAN)</label>
-          <div class="row">
-            <input id="san" name="san" type="text" autocomplete="off" autofocus placeholder="e4, Nf6, O-O">
-            <button type="submit" class="primary" id="play-btn">Play</button>
-          </div>
-        </form>
+      <div class="alerts">
+        <p class="message" id="message" {% if not message %}hidden{% endif %}>{{ message }}</p>
+        <p class="error" id="error" {% if not error %}hidden{% endif %}>{{ error }}</p>
+      </div>
 
-        <div class="actions">
-          <button type="button" id="hint-btn">Hint</button>
-          <button type="button" id="undo-btn">Undo</button>
-          <a class="button" href="{{ url_for('index') }}">Back to list</a>
+      <div class="coach-box" id="coach-box" {% if not coach %}hidden{% endif %}>
+        <div class="section-head">
+          <h2>Coach</h2>
+          <span class="badge coach-{{ (coach.classification if coach else 'best') }}" id="coach-badge">
+            {{ (coach.classification if coach else '')|title }}
+          </span>
         </div>
+        <p class="coach-text" id="coach-text">{% if coach %}{{ coach.message }}{% endif %}</p>
+        <p class="coach-better muted" id="coach-best" {% if not coach or coach.classification == 'best' or not coach.best_move_san %}hidden{% endif %}>
+          {% if coach and coach.classification != 'best' and coach.best_move_san %}Better was {{ coach.best_move_san }}{% endif %}
+        </p>
+      </div>
 
-        <div class="suggestions">
+      <div class="suggestions" id="suggestions-wrap" {% if mode == 'trainer' %}hidden{% endif %}>
+        <div class="section-head">
           <h2>Best moves</h2>
           <p class="plies-legend muted">
             <span class="ply ply-you">you</span>
-            <span class="ply ply-opp">opponent</span>
+            <span class="ply ply-opp">opp</span>
           </p>
-          <div id="suggestions">
-            {% if suggestions %}
-            <ol class="suggestion-list">
-              {% for option in suggestions %}
-              <li>
-                <button type="button" class="suggestion" data-san="{{ option.first_move }}" {% if not your_turn or game_over %}disabled{% endif %}>
-                  <span class="line">
-                    {% for ply in option.plies %}
-                    <span class="ply {% if ply.side == 'you' %}ply-you{% else %}ply-opp{% endif %}">{{ ply.san }}</span>
-                    {% endfor %}
-                  </span>
-                  <span class="eval">{{ option.evaluation }}</span>
-                </button>
-              </li>
-              {% endfor %}
-            </ol>
-            {% elif your_turn %}
-            <p class="muted">No lines yet — press Hint.</p>
-            {% else %}
-            <p class="muted">Waiting for opponent move.</p>
-            {% endif %}
-          </div>
+        </div>
+        <div id="suggestions">
+          {% if suggestions %}
+          <ol class="suggestion-list">
+            {% for option in suggestions %}
+            <li>
+              <button type="button" class="btn suggestion" data-variant="outline" data-san="{{ option.first_move }}" {% if not your_turn or game_over %}disabled{% endif %}>
+                <span class="line">
+                  {% for ply in option.plies %}
+                  <span class="ply {% if ply.side == 'you' %}ply-you{% else %}ply-opp{% endif %}">{{ ply.san }}</span>
+                  {% endfor %}
+                </span>
+                <span class="eval">{{ option.evaluation }}</span>
+              </button>
+            </li>
+            {% endfor %}
+          </ol>
+          {% elif your_turn %}
+          <p class="muted">Press Hint for engine lines.</p>
+          {% else %}
+          <p class="muted">Enter the opponent move, then your turn suggestions appear.</p>
+          {% endif %}
         </div>
       </div>
-    </section>
 
-    <div class="loader" id="loader" hidden>
-      <div class="loader-card">
-        <div class="spinner" aria-hidden="true"></div>
-        <p id="loader-text">Working…</p>
+      <div class="history-box">
+        <div class="section-head">
+          <h2>Move history</h2>
+        </div>
+        <div class="history-scroll" id="move-history" data-history="{{ (history or '')|e }}" tabindex="0" aria-label="Move history">
+          {% if not history %}<span class="muted">No moves yet.</span>{% endif %}
+        </div>
       </div>
     </div>
-  </main>
+  </section>
+</div>
 
-  <script src="{{ url_for('static', filename='app.js') }}"></script>
-</body>
-</html>
+<div class="loader" id="loader" hidden>
+  <div class="card loader-card">
+    <div class="spinner" aria-hidden="true"></div>
+    <p id="loader-text">Working…</p>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+{% endblock %}

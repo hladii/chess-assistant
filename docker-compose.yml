@@ -21,6 +21,9 @@ services:
     build: .
     expose:
       - "5050"
+    # Local access without Caddy (prod still reaches web via the Docker network).
+    ports:
+      - "${APP_PORT:-5050}:5050"
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-chess}:${POSTGRES_PASSWORD:-chess}@db:5432/${POSTGRES_DB:-chess_assistant}
       HOST: 0.0.0.0

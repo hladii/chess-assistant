@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="uk" class="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Chess Move Advisor{% endblock %}</title>
+  {% block head_meta %}{% endblock %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/basecoat.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  {% block head_extra %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  {% if is_authenticated %}
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="site-brand" href="{{ url_for('index') }}">Chess Advisor</a>
+      <nav class="site-nav" aria-label="Головне меню">
+        <a
+          href="{{ url_for('index') }}"
+          class="btn"
+          data-size="sm"
+          data-variant="{% if request.endpoint == 'index' %}secondary{% else %}ghost{% endif %}"
+        >Головна</a>
+        <a
+          href="{{ url_for('games_list') }}"
+          class="btn"
+          data-size="sm"
+          data-variant="{% if request.endpoint == 'games_list' or (request.endpoint == 'play_game' and mode is defined and mode != 'trainer') %}secondary{% else %}ghost{% endif %}"
+        >Ігри</a>
+        <a
+          href="{{ url_for('training_list') }}"
+          class="btn"
+          data-size="sm"
+          data-variant="{% if request.endpoint == 'training_list' or (request.endpoint == 'play_game' and mode is defined and mode == 'trainer') %}secondary{% else %}ghost{% endif %}"
+        >Навчання</a>
+      </nav>
+      <div class="user-nav">
+        <a href="{{ url_for('profile') }}" class="btn" data-variant="ghost" data-size="sm">{{ current_user_email }}</a>
+        <form method="post" action="{{ url_for('logout') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button type="submit" class="btn" data-variant="outline" data-size="sm">Вийти</button>
+        </form>
+      </div>
+    </div>
+  </header>
+  {% endif %}
+
+  <main class="{% block main_class %}page{% endblock %}">
+    {% block content %}{% endblock %}
+  </main>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

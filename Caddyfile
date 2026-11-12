@@ -1,0 +1,4 @@
+chess-assistant.duckdns.org {
+	encode gzip
+	reverse_proxy web:5050
+}

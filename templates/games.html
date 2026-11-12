@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Ігри · Chess Move Advisor{% endblock %}
+{% block body_class %}page-list{% endblock %}
+
+{% block content %}
+<header class="list-header">
+  <div class="list-header-text">
+    <h1>Ігри</h1>
+    <p class="tagline">Партії з асистентом ходів. Продовжуйте з того місця, де зупинились.</p>
+  </div>
+  <button type="button" class="btn" id="open-create" data-size="lg">+ Нова партія</button>
+</header>
+
+{% if error %}
+<p class="alert" data-variant="destructive" role="alert">{{ error }}</p>
+{% endif %}
+
+<section class="list-panel" aria-labelledby="games-heading">
+  <div class="list-panel-head">
+    <h2 id="games-heading">Ваші партії</h2>
+    <span class="list-count muted">{{ games|length }}</span>
+  </div>
+
+  {% if games %}
+  <ul class="games-list">
+    {% for game in games %}
+    <li class="game-row">
+      <a class="game-row-main" href="{{ url_for('play_game', game_id=game.id) }}">
+        <div class="game-row-title">
+          <h3>{{ game.name }}</h3>
+          <div class="game-row-chips">
+            <span class="chip">{{ game.side_label }}</span>
+            <span class="chip chip-muted">{{ game.updated_label }}</span>
+          </div>
+        </div>
+        <p class="history-preview">{{ game.history_preview }}</p>
+      </a>
+      <div class="game-row-actions">
+        <a class="btn" data-size="sm" href="{{ url_for('play_game', game_id=game.id) }}">Продовжити</a>
+        <form method="post" action="{{ url_for('remove_game', game_id=game.id) }}" onsubmit="return confirm('Видалити «{{ game.name }}»?');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <input type="hidden" name="return_to" value="games">
+          <button type="submit" class="btn" data-variant="ghost" data-size="sm" aria-label="Видалити {{ game.name }}">Видалити</button>
+        </form>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div class="empty-state">
+    <p class="empty-title">Ще немає партій</p>
+    <p class="muted">Створіть першу — можна з порожньої дошки або з PGN.</p>
+    <button type="button" class="btn" data-open-create>+ Нова партія</button>
+  </div>
+  {% endif %}
+</section>
+
+<dialog class="create-dialog" id="create-dialog" aria-labelledby="create-dialog-title">
+  <form method="post" action="{{ url_for('create') }}" class="create-dialog-form" id="create-form">
+    <header class="create-dialog-head">
+      <h2 id="create-dialog-title">Нова партія</h2>
+      <button type="button" class="btn" data-variant="ghost" data-size="sm" data-close-dialog aria-label="Закрити">✕</button>
+    </header>
+
+    <div class="form-stack create-dialog-body">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="mode" value="assistant">
+
+      <div role="group" class="field">
+        <label for="name">Назва</label>
+        <input id="name" class="input" name="name" type="text" required maxlength="80" placeholder="наприклад, Бліц з другом" autofocus>
+      </div>
+
+      <fieldset class="fieldset-card">
+        <legend>Ваш колір</legend>
+        <div class="choice-row">
+          <label class="choice">
+            <input type="radio" name="side" value="w" checked>
+            Білі
+          </label>
+          <label class="choice">
+            <input type="radio" name="side" value="b">
+            Чорні
+          </label>
+        </div>
+      </fieldset>
+
+      <div role="group" class="field">
+        <label for="history">Історія (необовʼязково)</label>
+        <textarea id="history" class="textarea input" name="history" rows="5" placeholder="1. e4 e5 2. Nf3 ..."></textarea>
+        <p class="muted field-hint">Вставте PGN / SAN, щоб продовжити вже зіграну партію.</p>
+      </div>
+    </div>
+
+    <footer class="create-dialog-foot">
+      <button type="button" class="btn" data-variant="outline" data-close-dialog>Скасувати</button>
+      <button type="submit" class="btn">Створити і почати</button>
+    </footer>
+  </form>
+</dialog>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='lists.js') }}"></script>
+{% if error %}
+<script>document.getElementById('create-dialog')?.showModal();</script>
+{% endif %}
+{% endblock %}

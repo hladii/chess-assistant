@@ -3,7 +3,7 @@ import os
 import secrets
 import threading
 import webbrowser
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 import chess
 import chess.svg
@@ -18,8 +18,11 @@ from flask import (
 )
 
 from assistant import (
+    TRAINER_ELO_LEVELS,
     analyze_position,
     board_from_saved_history,
+    engine_reply,
+    evaluate_user_move,
     find_engine,
     game_over_message,
     parse_history,
@@ -165,31 +168,66 @@ def board_svg(board, user_color):
     )
 
 
-def game_payload(game, board, start_fen, suggestions=None, message='', error='', analyze=False):
+def is_trainer_game(game):
+    return (game.get('mode') or 'assistant') == 'trainer'
+
+
+def game_payload(game, board, start_fen, suggestions=None, message='', error='', analyze=False, coach=None):
     user_color = parse_color(game['user_color'])
     ended = game_over_message(board)
     if ended:
         message = ended
     your_turn = board.turn == user_color and not ended
+    trainer = is_trainer_game(game)
+    # In trainer mode the engine replies automatically — never ask for opponent SAN.
+    if trainer and not your_turn and not ended:
+        move_prompt = 'Trainer thinking…'
+    else:
+        move_prompt = 'Your move' if your_turn else 'Opponent move'
     if suggestions is None:
-        suggestions = build_suggestions(board, user_color) if analyze and your_turn else []
+        # Skip heavy multipv suggestions in trainer to save CPU on small VMs.
+        if trainer:
+            suggestions = []
+        else:
+            suggestions = build_suggestions(board, user_color) if analyze and your_turn else []
     return {
         'started': True,
         'game_id': game['id'],
         'name': game['name'],
+        'mode': game.get('mode') or 'assistant',
+        'trainer_elo': game.get('trainer_elo'),
         'user_side': side_label(user_color),
         'side_to_move': side_label(board.turn),
         'your_turn': your_turn,
-        'move_prompt': 'Your move' if your_turn else 'Opponent move',
+        'move_prompt': move_prompt,
         'suggestions': suggestions,
         'message': message,
         'error': error,
+        'coach': coach,
         'board_svg': board_svg(board, user_color),
         'game_over': bool(ended),
         'move_count': len(board.move_stack),
         'history': format_move_history(board, start_fen),
         'csrf_token': get_csrf_token(),
     }
+
+
+def maybe_play_trainer_opening(game, board, start_fen):
+    """If user is Black in a fresh trainer game, Stockfish plays White's first move."""
+    if not is_trainer_game(game):
+        return board, None
+    user_color = parse_color(game['user_color'])
+    if board.turn == user_color or board.is_game_over() or board.move_stack:
+        return board, None
+    elo = game.get('trainer_elo') or 1200
+    engine = get_engine()
+    with _engine_lock:
+        san = engine_reply(engine, board, elo)
+    if not san:
+        return board, None
+    board.push_san(san)
+    update_game_history(game['id'], current_user_id(), format_move_history(board, start_fen))
+    return board, san
 
 
 def require_owned_game(game_id):
@@ -275,38 +313,111 @@ def profile():
     )
 
 
+def format_updated_at(value):
+    """Human-readable timestamp for list cards."""
+    if not value:
+        return ''
+    text = str(value).strip()
+    try:
+        # Accept both "...+00:00" and "...Z"
+        normalized = text.replace('Z', '+00:00')
+        dt = datetime.fromisoformat(normalized)
+        if dt.tzinfo is not None:
+            dt = dt.astimezone()
+        return dt.strftime('%d.%m.%Y · %H:%M')
+    except ValueError:
+        return text[:16].replace('T', ' ')
+
+
+def annotate_games(games):
+    for game in games:
+        game['side_label'] = side_label(parse_color(game['user_color']))
+        game['history_preview'] = history_preview(game['history'], limit=56)
+        game['updated_label'] = format_updated_at(game.get('updated_at'))
+        mode = game.get('mode') or 'assistant'
+        if mode == 'trainer':
+            game['mode_label'] = f"Тренер · {game.get('trainer_elo') or '?'} Elo"
+        else:
+            game['mode_label'] = 'Асистент'
+    return games
+
+
+def list_endpoint_for_mode(mode):
+    if mode == 'trainer':
+        return 'training_list'
+    return 'games_list'
+
+
 @app.route('/')
 @login_required
 def index():
-    games = list_games(current_user_id())
-    for game in games:
-        game['side_label'] = side_label(parse_color(game['user_color']))
-        game['history_preview'] = history_preview(game['history'])
+    return render_template('home.html')
+
+
+@app.route('/games', methods=['GET'])
+@login_required
+def games_list():
+    games = [
+        g for g in list_games(current_user_id())
+        if (g.get('mode') or 'assistant') != 'trainer'
+    ]
+    annotate_games(games)
     return render_template(
-        'index.html',
+        'games.html',
         games=games,
         error=request.args.get('error', ''),
-        csrf_token=get_csrf_token(),
+    )
+
+
+@app.route('/training', methods=['GET'])
+@login_required
+def training_list():
+    games = [
+        g for g in list_games(current_user_id())
+        if (g.get('mode') or 'assistant') == 'trainer'
+    ]
+    annotate_games(games)
+    return render_template(
+        'training.html',
+        games=games,
+        trainer_elo_levels=TRAINER_ELO_LEVELS,
+        error=request.args.get('error', ''),
     )
 
 
 @app.route('/games', methods=['POST'])
 @login_required
 def create():
+    mode = (request.form.get('mode') or 'assistant').strip().lower()
+    if mode not in ('assistant', 'trainer'):
+        mode = 'assistant'
+    list_endpoint = list_endpoint_for_mode(mode)
+
     if not validate_csrf():
-        return redirect(url_for('index', error='Invalid session token.'))
+        return redirect(url_for(list_endpoint, error='Invalid session token.'))
 
     name = (request.form.get('name') or '').strip()
     side = request.form.get('side', 'w').lower()
     history = request.form.get('history', '')
+    trainer_elo = None
+    if mode == 'trainer':
+        try:
+            trainer_elo = int(request.form.get('trainer_elo') or 1200)
+        except ValueError:
+            trainer_elo = 1200
+        if trainer_elo not in TRAINER_ELO_LEVELS:
+            trainer_elo = 1200
+        # Trainer starts from empty board; ignore pasted history for clarity.
+        history = ''
+
     if not name:
-        return redirect(url_for('index', error='Enter a game name.'))
+        return redirect(url_for(list_endpoint, error='Вкажіть назву партії.'))
 
     user_color = parse_color(side)
     try:
         board = parse_history(history)
     except ValueError as exc:
-        return redirect(url_for('index', error=f'Could not parse history: {exc}'))
+        return redirect(url_for(list_endpoint, error=f'Не вдалося розібрати історію: {exc}'))
 
     start_fen = starting_fen_from_board(board)
     history_text = format_move_history(board, start_fen)
@@ -316,6 +427,8 @@ def create():
         history=history_text,
         user_color=color_code(user_color),
         start_fen=start_fen,
+        mode=mode,
+        trainer_elo=trainer_elo,
     )
     return redirect(url_for('play_game', game_id=game_id))
 
@@ -325,24 +438,40 @@ def create():
 def play_game(game_id):
     game, board, start_fen = require_owned_game(game_id)
     if not game:
-        return redirect(url_for('index', error='Game not found.'))
-    payload = game_payload(
-        game,
-        board,
-        start_fen,
-        message=f'Playing "{game["name"]}" as {side_label(parse_color(game["user_color"]))}.',
-        analyze=True,
-    )
+        return redirect(url_for('games_list', error='Партію не знайдено.'))
+
+    opening_san = None
+    board, opening_san = maybe_play_trainer_opening(game, board, start_fen)
+    # Reload game row after possible opening move history update.
+    game, board, start_fen = require_owned_game(game_id)
+
+    if is_trainer_game(game):
+        msg = (
+            f'Trainer game "{game["name"]}" · you are '
+            f'{side_label(parse_color(game["user_color"]))} · '
+            f'{game.get("trainer_elo") or "?"} Elo'
+        )
+        if opening_san:
+            msg += f'. Trainer opened with {opening_san}.'
+        analyze = False
+    else:
+        msg = f'Playing "{game["name"]}" as {side_label(parse_color(game["user_color"]))}.'
+        analyze = True
+
+    payload = game_payload(game, board, start_fen, message=msg, analyze=analyze)
+    payload['list_endpoint'] = list_endpoint_for_mode(game.get('mode') or 'assistant')
     return render_template('game.html', **payload)
 
 
 @app.route('/games/<int:game_id>/delete', methods=['POST'])
 @login_required
 def remove_game(game_id):
+    return_to = (request.form.get('return_to') or 'games').strip().lower()
+    list_endpoint = 'training_list' if return_to == 'training' else 'games_list'
     if not validate_csrf():
-        return redirect(url_for('index', error='Invalid session token.'))
+        return redirect(url_for(list_endpoint, error='Invalid session token.'))
     delete_game(game_id, current_user_id())
-    return redirect(url_for('index'))
+    return redirect(url_for(list_endpoint))
 
 
 @app.route('/api/state', methods=['GET'])
@@ -362,17 +491,56 @@ def api_state():
 def apply_san_move(game, board, start_fen, san):
     san = (san or '').strip()
     if not san:
-        return False, 'Enter a move in SAN, e.g. e4 or Nf6.', board
+        return False, 'Enter a move in SAN, e.g. e4 or Nf6.', board, None
     try:
         parsed = board.parse_san(san)
     except ValueError:
-        return False, f'Invalid move: {san}', board
+        return False, f'Invalid move: {san}', board, None
 
     played = board.san(parsed)
     board.push(parsed)
     history = format_move_history(board, start_fen)
     update_game_history(game['id'], current_user_id(), history)
-    return True, f'Played {played}.', board
+    return True, f'Played {played}.', board, parsed
+
+
+def apply_trainer_user_move(game, board, start_fen, san):
+    """Evaluate user move, optionally let Stockfish reply. Returns payload extras."""
+    user_color = parse_color(game['user_color'])
+    if board.turn != user_color:
+        return False, 'Wait for the trainer to move.', board, None, None
+
+    san = (san or '').strip()
+    if not san:
+        return False, 'Enter a move in SAN, e.g. e4 or Nf6.', board, None, None
+    try:
+        parsed = board.parse_san(san)
+    except ValueError:
+        return False, f'Invalid move: {san}', board, None, None
+
+    board_before = board.copy()
+    engine = get_engine()
+    with _engine_lock:
+        coach = evaluate_user_move(engine, board_before, parsed, user_color)
+
+    board.push(parsed)
+    update_game_history(game['id'], current_user_id(), format_move_history(board, start_fen))
+
+    engine_san = None
+    if not board.is_game_over():
+        elo = game.get('trainer_elo') or 1200
+        with _engine_lock:
+            engine_san = engine_reply(engine, board, elo)
+        if engine_san:
+            board.push_san(engine_san)
+            update_game_history(
+                game['id'], current_user_id(), format_move_history(board, start_fen)
+            )
+
+    message = coach['message']
+    if engine_san:
+        message += f' Trainer played {engine_san}.'
+    return True, message, board, coach, engine_san
 
 
 @app.route('/api/move', methods=['POST'])
@@ -390,7 +558,21 @@ def play_move():
     if not game:
         return jsonify({'ok': False, 'error': 'Game not found.'}), 404
 
-    ok, message, board = apply_san_move(game, board, start_fen, payload.get('san', ''))
+    if is_trainer_game(game):
+        ok, message, board, coach, _engine_san = apply_trainer_user_move(
+            game, board, start_fen, payload.get('san', '')
+        )
+        if not ok:
+            body = game_payload(game, board, start_fen, message='', error=message, analyze=False)
+            body['ok'] = False
+            return jsonify(body), 400
+        body = game_payload(
+            game, board, start_fen, message=message, analyze=False, coach=coach
+        )
+        body['ok'] = True
+        return jsonify(body)
+
+    ok, message, board, _parsed = apply_san_move(game, board, start_fen, payload.get('san', ''))
     if not ok:
         body = game_payload(game, board, start_fen, message='', error=message, analyze=False)
         body['ok'] = False
@@ -421,10 +603,29 @@ def undo():
         body['ok'] = False
         return jsonify(body), 400
 
-    board.pop()
+    # Trainer: undo engine reply + user move when possible.
+    pops = 1
+    if is_trainer_game(game):
+        user_color = parse_color(game['user_color'])
+        if board.turn == user_color and len(board.move_stack) >= 2:
+            pops = 2
+        elif board.turn != user_color and board.move_stack:
+            pops = 1
+
+    for _ in range(pops):
+        if board.move_stack:
+            board.pop()
+
     history = format_move_history(board, start_fen)
     update_game_history(game['id'], current_user_id(), history)
-    body = game_payload(game, board, start_fen, message='Undid last move.', analyze=True)
+    body = game_payload(
+        game,
+        board,
+        start_fen,
+        message='Undid last move.',
+        analyze=not is_trainer_game(game),
+        coach=None,
+    )
     body['ok'] = True
     return jsonify(body)
 

@@ -89,11 +89,16 @@ def analyze_position(engine, board, user_color, time_limit=ANALYSIS_TIME, multip
         score = result['score'].pov(user_color)
         line_board = board.copy()
         moves = []
+        plies = []
         for move in result.get('pv', [])[:8]:
-            moves.append(line_board.san(move))
+            san = line_board.san(move)
+            side = 'you' if line_board.turn == user_color else 'opponent'
+            moves.append(san)
+            plies.append({'san': san, 'side': side})
             line_board.push(move)
         options.append({
             'moves': moves,
+            'plies': plies,
             'line': ' '.join(moves),
             'evaluation': format_score(score),
         })

@@ -50,10 +50,19 @@
     const items = list.map(function (option) {
       const san = option.first_move || '';
       const disabled = !canSelect || !san ? ' disabled' : '';
+      const plies = option.plies && option.plies.length
+        ? option.plies
+        : (option.moves || []).map(function (move, index) {
+            return { san: move, side: index % 2 === 0 ? 'you' : 'opponent' };
+          });
+      const lineHtml = plies.map(function (ply) {
+        const cls = ply.side === 'you' ? 'ply ply-you' : 'ply ply-opp';
+        return '<span class="' + cls + '">' + escapeHtml(ply.san) + '</span>';
+      }).join('');
       return (
         '<li>' +
         '<button type="button" class="suggestion" data-san="' + escapeAttr(san) + '"' + disabled + '>' +
-        '<span class="line">' + escapeHtml(option.line) + '</span>' +
+        '<span class="line">' + lineHtml + '</span>' +
         '<span class="eval">' + escapeHtml(option.evaluation) + '</span>' +
         '</button>' +
         '</li>'

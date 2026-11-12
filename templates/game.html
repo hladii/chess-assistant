@@ -49,13 +49,21 @@
 
         <div class="suggestions">
           <h2>Best moves</h2>
+          <p class="plies-legend muted">
+            <span class="ply ply-you">you</span>
+            <span class="ply ply-opp">opponent</span>
+          </p>
           <div id="suggestions">
             {% if suggestions %}
             <ol class="suggestion-list">
               {% for option in suggestions %}
               <li>
                 <button type="button" class="suggestion" data-san="{{ option.first_move }}" {% if not your_turn or game_over %}disabled{% endif %}>
-                  <span class="line">{{ option.line }}</span>
+                  <span class="line">
+                    {% for ply in option.plies %}
+                    <span class="ply {% if ply.side == 'you' %}ply-you{% else %}ply-opp{% endif %}">{{ ply.san }}</span>
+                    {% endfor %}
+                  </span>
                   <span class="eval">{{ option.evaluation }}</span>
                 </button>
               </li>

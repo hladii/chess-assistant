@@ -486,7 +486,7 @@ msgstr "Duels"
 #: templates/base.html:53 templates/base.html:109 templates/users.html:3
 #: templates/users.html:9
 msgid "Users"
-msgstr "Duels"
+msgstr "Users"
 
 #: templates/base.html:59 templates/base.html:114 templates/game.html:36
 #: templates/games.html:3 templates/games.html:9 templates/home.html:23

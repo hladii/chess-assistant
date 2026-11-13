@@ -10,6 +10,7 @@ import chess
 import chess.svg
 from flask import (
     Flask,
+    abort,
     flash,
     jsonify,
     make_response,
@@ -439,13 +440,16 @@ def maybe_play_trainer_opening(game, board, start_fen):
 
 
 def require_owned_game(game_id):
+    """Return (game, board, start_fen) or abort 404 if not visible to current user."""
     user_id = current_user_id()
     game = get_accessible_game(game_id, user_id)
     if not game:
-        return None, None, None
-    # Non-duel games still require ownership.
-    if not is_duel_game(game) and game.get('user_id') != user_id:
-        return None, None, None
+        abort(404)
+    if is_duel_game(game):
+        if user_id not in (game.get('white_user_id'), game.get('black_user_id')):
+            abort(404)
+    elif game.get('user_id') != user_id:
+        abort(404)
     board, start_fen = board_from_game(game)
     return game, board, start_fen
 
@@ -790,7 +794,8 @@ def create_duel():
 @login_required
 def api_users_search():
     q = request.args.get('q', '')
-    users = search_users(q, exclude_id=current_user_id(), limit=10)
+    limit = 5 if len((q or '').strip()) < 2 else 10
+    users = search_users(q, exclude_id=current_user_id(), limit=limit)
     return jsonify(
         {
             'ok': True,
@@ -812,10 +817,7 @@ def api_users_search():
 @app.route('/games', methods=['GET'])
 @login_required
 def games_list():
-    games = [
-        g for g in list_games(current_user_id())
-        if (g.get('mode') or 'assistant') not in ('trainer', 'duel')
-    ]
+    games = list_games(current_user_id(), modes=('assistant',))
     annotate_games(games)
     return render_template(
         'games.html',
@@ -828,10 +830,7 @@ def games_list():
 @app.route('/training', methods=['GET'])
 @login_required
 def training_list():
-    games = [
-        g for g in list_games(current_user_id())
-        if (g.get('mode') or 'assistant') == 'trainer'
-    ]
+    games = list_games(current_user_id(), modes=('trainer',))
     annotate_games(games)
     return render_template(
         'training.html',
@@ -894,8 +893,6 @@ def create():
 @login_required
 def play_game(game_id):
     game, board, start_fen = require_owned_game(game_id)
-    if not game:
-        return redirect(url_for('games_list', error=_('Game not found.')))
 
     opening_san = None
     board, opening_san = maybe_play_trainer_opening(game, board, start_fen)
@@ -964,8 +961,6 @@ def api_state():
     if not game_id:
         return jsonify({'ok': False, 'error': _('game_id required.')}), 400
     game, board, start_fen = require_owned_game(game_id)
-    if not game:
-        return jsonify({'ok': False, 'error': _('Game not found.')}), 404
     elo_info = maybe_finalize_duel(game, board)
     payload = game_payload(
         game, board, start_fen, analyze=False, elo_info=elo_info
@@ -1083,8 +1078,6 @@ def play_move():
         return jsonify({'ok': False, 'error': _('game_id required.')}), 400
 
     game, board, start_fen = require_owned_game(int(game_id))
-    if not game:
-        return jsonify({'ok': False, 'error': _('Game not found.')}), 404
 
     if is_trainer_game(game):
         ok, message, board, coach, _engine_san = apply_trainer_user_move(
@@ -1148,8 +1141,6 @@ def resign_duel():
         return jsonify({'ok': False, 'error': _('game_id required.')}), 400
 
     game, board, start_fen = require_owned_game(int(game_id))
-    if not game:
-        return jsonify({'ok': False, 'error': _('Game not found.')}), 404
     if not is_duel_game(game):
         return jsonify({'ok': False, 'error': _('Only duels can be resigned.')}), 400
     if game.get('result') or board.is_game_over():
@@ -1198,8 +1189,6 @@ def undo():
         return jsonify({'ok': False, 'error': _('game_id required.')}), 400
 
     game, board, start_fen = require_owned_game(int(game_id))
-    if not game:
-        return jsonify({'ok': False, 'error': _('Game not found.')}), 404
 
     if is_duel_game(game):
         body = game_payload(
@@ -1265,8 +1254,6 @@ def hint():
         return jsonify({'ok': False, 'error': _('game_id required.')}), 400
 
     game, board, start_fen = require_owned_game(int(game_id))
-    if not game:
-        return jsonify({'ok': False, 'error': _('Game not found.')}), 404
 
     if is_trainer_game(game):
         body = game_payload(
@@ -1327,6 +1314,52 @@ def hint():
     body['review_ply'] = review_ply
     body['ok'] = True
     return jsonify(body)
+
+
+def _wants_json_error():
+    if request.path.startswith('/api/'):
+        return True
+    best = request.accept_mimetypes.best_match(['application/json', 'text/html'])
+    return best == 'application/json' and (
+        request.accept_mimetypes[best] > request.accept_mimetypes['text/html']
+    )
+
+
+def _error_message(code):
+    messages = {
+        401: _('Authentication required.'),
+        403: _('You do not have permission to do that.'),
+        404: _('Not found.'),
+        500: _('Something went wrong on our side.'),
+    }
+    return messages.get(code, _('Something went wrong.'))
+
+
+def _render_http_error(code):
+    if _wants_json_error():
+        return jsonify({'ok': False, 'error': _error_message(code)}), code
+    template = f'errors/{code}.html'
+    return render_template(template), code
+
+
+@app.errorhandler(401)
+def error_401(exc):
+    return _render_http_error(401)
+
+
+@app.errorhandler(403)
+def error_403(exc):
+    return _render_http_error(403)
+
+
+@app.errorhandler(404)
+def error_404(exc):
+    return _render_http_error(404)
+
+
+@app.errorhandler(500)
+def error_500(exc):
+    return _render_http_error(500)
 
 
 def main():

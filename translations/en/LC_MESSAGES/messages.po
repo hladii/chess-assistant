@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chess Move Advisor 1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-13 21:40+0200\n"
+"POT-Creation-Date: 2026-11-13 22:04+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -19,277 +19,306 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app.py:155 app.py:646 assistant.py:273 i18n.py:56 templates/games.html:86
+#: app.py:157 app.py:675 assistant.py:292 i18n.py:56 templates/games.html:86
 #: templates/training.html:99
 msgid "White"
 msgstr "White"
 
-#: app.py:155 app.py:646 assistant.py:273 i18n.py:57 templates/games.html:90
+#: app.py:157 app.py:675 assistant.py:292 i18n.py:57 templates/games.html:90
 #: templates/training.html:103
 msgid "Black"
 msgstr "Black"
 
-#: app.py:187
+#: app.py:189
 msgid "No moves yet"
 msgstr "No moves yet"
 
-#: app.py:337
+#: app.py:361
 msgid "White wins by resignation."
 msgstr "White wins by resignation."
 
-#: app.py:339
+#: app.py:363
 msgid "Black wins by resignation."
 msgstr "Black wins by resignation."
 
-#: app.py:341
+#: app.py:365
 msgid "Draw."
 msgstr "Draw."
 
-#: app.py:346
+#: app.py:370
 msgid "Trainer thinking…"
 msgstr "Trainer thinking…"
 
-#: app.py:348 templates/game.html:90
+#: app.py:372
+msgid "Review position"
+msgstr "Review position"
+
+#: app.py:374 templates/game.html:90
 msgid "Waiting for opponent…"
 msgstr "Submitting opponent move…"
 
-#: app.py:350
+#: app.py:376
 msgid "Your move"
 msgstr "Your move"
 
-#: app.py:350
+#: app.py:376
 msgid "Opponent move"
 msgstr "Opponent move"
 
-#: app.py:436 app.py:471 app.py:553
+#: app.py:465 app.py:500 app.py:582
 msgid "Invalid session token. Refresh the page."
 msgstr "Invalid session token. Refresh the page."
 
-#: app.py:445
+#: app.py:474
 msgid "Invalid email or password."
 msgstr "Invalid email or password."
 
-#: app.py:486
+#: app.py:515
 msgid "A user with this email already exists."
 msgstr "A user with this email already exists."
 
-#: app.py:507 app.py:721 app.py:829 app.py:928
+#: app.py:536 app.py:750 app.py:853 app.py:952
 msgid "Invalid session token."
 msgstr "Invalid session token."
 
-#: app.py:562
+#: app.py:591
 msgid "Profile updated."
 msgstr "Profile updated."
 
-#: app.py:568
+#: app.py:597
 msgid "Current password is incorrect."
 msgstr "Current password is incorrect."
 
-#: app.py:574
+#: app.py:603
 msgid "New password must be different from the current one."
 msgstr "New password must be different from the current one."
 
-#: app.py:577
+#: app.py:606
 msgid "Password updated."
 msgstr "Password updated."
 
-#: app.py:585
+#: app.py:614
 msgid "Language updated."
 msgstr "Language updated."
 
-#: app.py:587
+#: app.py:616
 msgid "Unknown action."
 msgstr "Unknown action."
 
-#: app.py:631
+#: app.py:660
 #, python-format
 msgid "Trainer · %(elo)s Elo"
 msgstr "Trainer · %(elo)s Elo"
 
-#: app.py:633 i18n.py:74 templates/game.html:41
+#: app.py:662 i18n.py:74 templates/game.html:41
 msgid "Duel"
 msgstr "Delete"
 
-#: app.py:635 i18n.py:73 templates/game.html:41
+#: app.py:664 i18n.py:73 templates/game.html:41
 msgid "Assistant"
 msgstr "Assistant"
 
-#: app.py:650 app.py:652 app.py:899 templates/duels.html:86
+#: app.py:679 app.py:681 app.py:921 templates/duels.html:86
 msgid "Opponent"
 msgstr "Opponent move"
 
-#: app.py:656
+#: app.py:685
 msgid "1–0"
 msgstr "1–0"
 
-#: app.py:659
+#: app.py:688
 msgid "0–1"
 msgstr "0–1"
 
-#: app.py:662
+#: app.py:691
 msgid "½–½"
 msgstr "½–½"
 
-#: app.py:665
+#: app.py:694
 msgid "In progress"
 msgstr "In progress"
 
-#: app.py:731 app.py:846
+#: app.py:760 app.py:870
 msgid "Enter a game name."
 msgstr "Enter a game name."
 
-#: app.py:733
+#: app.py:762
 msgid "Choose an opponent."
 msgstr "Choose an opponent."
 
-#: app.py:737
+#: app.py:766
 msgid "You cannot challenge yourself."
 msgstr "You cannot challenge yourself."
 
-#: app.py:741
+#: app.py:770
 msgid "Opponent not found."
 msgstr "Game not found."
 
-#: app.py:852
+#: app.py:876
 #, python-format
 msgid "Could not parse history: %(exc)s"
 msgstr "Could not parse history: %(exc)s"
 
-#: app.py:873 app.py:941 app.py:1061 app.py:1126 app.py:1176 app.py:1243
-msgid "Game not found."
-msgstr "Game not found."
-
-#: app.py:885
+#: app.py:907
 #, python-format
 msgid "Trainer game \"%(name)s\" · you are %(side)s · %(elo)s Elo"
 msgstr "Trainer game \"%(name)s\" · you are %(side)s · %(elo)s Elo"
 
-#: app.py:891
+#: app.py:913
 #, python-format
 msgid "Trainer opened with %(san)s."
 msgstr "Trainer opened with %(san)s."
 
-#: app.py:896
+#: app.py:918
 #, python-format
 msgid "Duel \"%(name)s\" · you are %(side)s vs %(opponent)s"
 msgstr "Duel \"%(name)s\" · you are %(side)s vs %(opponent)s"
 
-#: app.py:904
+#: app.py:924
+msgid ""
+"Press Analyze to review engine lines. Click a move in the history to "
+"inspect that position."
+msgstr ""
+"Press Analyze to review engine lines. Click a move in the history to "
+"inspect that position."
+
+#: app.py:928
 #, python-format
 msgid "Playing \"%(name)s\" as %(side)s."
 msgstr "Playing \"%(name)s\" as %(side)s."
 
-#: app.py:938 app.py:1057 app.py:1122 app.py:1172 app.py:1239
+#: app.py:962 app.py:1078 app.py:1141 app.py:1189 app.py:1254
 msgid "game_id required."
 msgstr "game_id required."
 
-#: app.py:954 app.py:990 app.py:1036 i18n.py:62
+#: app.py:975 app.py:1011 app.py:1057 i18n.py:62
 msgid "Enter a move in SAN, e.g. e4 or Nf6."
 msgstr "Enter a move in SAN, e.g. e4 or Nf6."
 
-#: app.py:958 app.py:994 app.py:1040
+#: app.py:979 app.py:1015 app.py:1061
 #, python-format
 msgid "Invalid move: %(san)s"
 msgstr "Invalid move: %(san)s"
 
-#: app.py:978 app.py:1045
+#: app.py:999 app.py:1066
 #, python-format
 msgid "Played %(san)s."
 msgstr "Played %(san)s."
 
-#: app.py:986
+#: app.py:1007
 msgid "Wait for the trainer to move."
 msgstr "Wait for the trainer to move."
 
-#: app.py:1023
+#: app.py:1044
 #, python-format
 msgid "Trainer played %(san)s."
 msgstr "Trainer played %(san)s."
 
-#: app.py:1029 app.py:1132
+#: app.py:1050 app.py:1149
 msgid "This duel is already finished."
 msgstr "This duel is already finished."
 
-#: app.py:1032
+#: app.py:1053
 msgid "Wait for your opponent to move."
 msgstr "Wait for the trainer to move."
 
-#: app.py:1052 app.py:1117 app.py:1167 app.py:1234
+#: app.py:1073 app.py:1136 app.py:1184 app.py:1249
 msgid "Invalid CSRF token."
 msgstr "Invalid CSRF token."
 
-#: app.py:1128
+#: app.py:1145
 msgid "Only duels can be resigned."
 msgstr "Only duels can be resigned."
 
-#: app.py:1155
+#: app.py:1172
 msgid "You resigned."
 msgstr "You resigned."
 
-#: app.py:1180
+#: app.py:1195
 msgid "Undo is not available in duels."
 msgstr "Undo is not available in duels."
 
-#: app.py:1186
+#: app.py:1201
 msgid "No moves to undo."
 msgstr "No moves to undo."
 
-#: app.py:1222
+#: app.py:1237
 msgid "Undid last move."
 msgstr "Undid last move."
 
-#: app.py:1247
+#: app.py:1260
 msgid "Hints are not available in trainer mode."
 msgstr "Hints are not available in trainer mode."
 
-#: app.py:1257
+#: app.py:1270
 msgid "Analyze is available after the duel ends."
 msgstr "Analyze is available after the duel ends."
 
-#: app.py:1275
-msgid "Analysis ready."
-msgstr "Analysis ready."
+#: app.py:1295
+#, python-format
+msgid "Analysis after %(ply)s half-moves (before the final position)."
+msgstr "Analysis after %(ply)s half-moves (before the final position)."
 
-#: app.py:1277 app.py:1279
+#: app.py:1299 app.py:1303
 msgid "Suggestions updated."
 msgstr "Suggestions updated."
 
-#: app.py:1279
+#: app.py:1301 app.py:1303
 msgid "No suggestions for this position."
 msgstr "No suggestions for this position."
 
-#: assistant.py:82
+#: app.py:1330 auth.py:140
+msgid "Authentication required."
+msgstr "Authentication required."
+
+#: app.py:1331 templates/errors/403.html:11
+msgid "You do not have permission to do that."
+msgstr "You do not have permission to do that."
+
+#: app.py:1332
+msgid "Not found."
+msgstr "Game not found."
+
+#: app.py:1333
+msgid "Something went wrong on our side."
+msgstr "Something went wrong on our side."
+
+#: app.py:1335
+msgid "Something went wrong."
+msgstr "Something went wrong."
+
+#: assistant.py:101
 #, python-format
 msgid "mate in %(n)s"
 msgstr "mate in %(n)s"
 
-#: assistant.py:83
+#: assistant.py:102
 #, python-format
 msgid "mated in %(n)s"
 msgstr "mated in %(n)s"
 
-#: assistant.py:186 i18n.py:80 templates/game.html:107
+#: assistant.py:205 i18n.py:80 templates/game.html:107
 msgid "Best"
 msgstr "Best"
 
-#: assistant.py:187 i18n.py:81 templates/game.html:108
+#: assistant.py:206 i18n.py:81 templates/game.html:108
 msgid "Inaccuracy"
 msgstr "Inaccuracy"
 
-#: assistant.py:188 i18n.py:82 templates/game.html:109
+#: assistant.py:207 i18n.py:82 templates/game.html:109
 msgid "Mistake"
 msgstr "Mistake"
 
-#: assistant.py:189 i18n.py:83 templates/game.html:110
+#: assistant.py:208 i18n.py:83 templates/game.html:110
 msgid "Blunder"
 msgstr "Blunder"
 
-#: assistant.py:193
+#: assistant.py:212
 #, python-format
 msgid "Good move (%(san)s). Eval %(before)s → %(after)s."
 msgstr "Good move (%(san)s). Eval %(before)s → %(after)s."
 
-#: assistant.py:196
+#: assistant.py:215
 #, python-format
 msgid ""
 "%(label)s: %(san)s (eval %(before)s → %(after)s, loss %(loss)s). Better "
@@ -298,25 +327,25 @@ msgstr ""
 "%(label)s: %(san)s (eval %(before)s → %(after)s, loss %(loss)s). Better "
 "was %(best)s."
 
-#: assistant.py:205
+#: assistant.py:224
 #, python-format
 msgid "%(label)s: %(san)s (eval %(before)s → %(after)s, loss %(loss)s)."
 msgstr "%(label)s: %(san)s (eval %(before)s → %(after)s, loss %(loss)s)."
 
-#: assistant.py:274
+#: assistant.py:293
 #, python-format
 msgid "Checkmate. %(winner)s wins."
 msgstr "Checkmate. %(winner)s wins."
 
-#: assistant.py:276
+#: assistant.py:295
 msgid "Stalemate. Draw."
 msgstr "Stalemate. Draw."
 
-#: assistant.py:278
+#: assistant.py:297
 msgid "Draw by insufficient material."
 msgstr "Draw by insufficient material."
 
-#: assistant.py:279
+#: assistant.py:298
 #, python-format
 msgid "Game over: %(result)s"
 msgstr "Game over: %(result)s"
@@ -345,10 +374,6 @@ msgstr "Name must be at least 2 characters."
 #: auth.py:54
 msgid "Name must be at most 40 characters."
 msgstr "Name must be at most 40 characters."
-
-#: auth.py:140
-msgid "Authentication required."
-msgstr "Authentication required."
 
 #: i18n.py:52 templates/base.html:78
 msgid "Open menu"
@@ -428,7 +453,7 @@ msgid "(SAN)"
 msgstr "(SAN)"
 
 #: i18n.py:77
-msgid "Press Analyze for engine lines."
+msgid "Press Analyze for engine lines. Click a move to inspect that position."
 msgstr "Press Hint for engine lines."
 
 #: i18n.py:78
@@ -447,8 +472,9 @@ msgstr "Language"
 msgid "Main menu"
 msgstr "Main menu"
 
-#: templates/base.html:40 templates/base.html:90 templates/home.html:3
-#: templates/profile.html:10
+#: templates/base.html:40 templates/base.html:90 templates/errors/401.html:14
+#: templates/errors/403.html:13 templates/errors/404.html:13
+#: templates/errors/500.html:13 templates/home.html:3 templates/profile.html:10
 msgid "Home"
 msgstr "Home"
 
@@ -457,8 +483,9 @@ msgstr "Home"
 msgid "Duels"
 msgstr "Duels"
 
-#: templates/base.html:52 templates/base.html:100 templates/game.html:36
-#: templates/games.html:3 templates/games.html:9 templates/home.html:22
+#: templates/base.html:52 templates/base.html:100 templates/errors/404.html:15
+#: templates/game.html:36 templates/games.html:3 templates/games.html:9
+#: templates/home.html:22
 msgid "Games"
 msgstr "Games"
 
@@ -545,20 +572,20 @@ msgstr "Title"
 msgid "e.g. Friday blitz"
 msgstr "e.g. Friday blitz"
 
-#: templates/duels.html:92
+#: templates/duels.html:93
 msgid "Search by name or email"
 msgstr "Search by name or email"
 
-#: templates/duels.html:99
+#: templates/duels.html:101
 msgid "Your color is chosen at random."
 msgstr "Your color is chosen at random."
 
-#: templates/duels.html:104 templates/games.html:103
+#: templates/duels.html:106 templates/games.html:103
 #: templates/training.html:110
 msgid "Cancel"
 msgstr "Cancel"
 
-#: templates/duels.html:105
+#: templates/duels.html:107
 msgid "Challenge"
 msgstr "Challenge"
 
@@ -718,7 +745,8 @@ msgstr "Stockfish trainer (~800 / 1200 / 1600 Elo) with move evaluation."
 msgid "Train →"
 msgstr "Train →"
 
-#: templates/login.html:3 templates/login.html:31 templates/register.html:46
+#: templates/errors/401.html:13 templates/login.html:3 templates/login.html:31
+#: templates/register.html:46
 msgid "Log in"
 msgstr "Log in"
 
@@ -835,4 +863,35 @@ msgstr "e.g. Training 1200"
 #: templates/training.html:83
 msgid "Trainer strength"
 msgstr "Trainer strength"
+
+#: templates/errors/401.html:3 templates/errors/401.html:10
+msgid "Unauthorized"
+msgstr "Unauthorized"
+
+#: templates/errors/401.html:11
+msgid "You need to sign in to continue."
+msgstr "Sign in to continue your games."
+
+#: templates/errors/403.html:3 templates/errors/403.html:10
+msgid "Forbidden"
+msgstr "Forbidden"
+
+#: templates/errors/404.html:3 templates/errors/404.html:10
+msgid "Not found"
+msgstr "Game not found."
+
+#: templates/errors/404.html:11
+msgid "This page or game does not exist, or you cannot see it."
+msgstr "This page or game does not exist, or you cannot see it."
+
+#: templates/errors/500.html:3 templates/errors/500.html:10
+msgid "Server error"
+msgstr "Server error"
+
+#: templates/errors/500.html:11
+msgid "Something went wrong on our side. Try again in a moment."
+msgstr "Something went wrong on our side. Try again in a moment."
+
+#~ msgid "Analysis ready."
+#~ msgstr "Analysis ready."
 

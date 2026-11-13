@@ -29,6 +29,46 @@ body {
   max-width: 440px;
 }
 
+.page-error-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 6rem);
+}
+
+.error-panel {
+  text-align: center;
+  width: 100%;
+}
+
+.error-code {
+  margin: 0 0 0.35rem;
+  font-size: 3.5rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.error-panel h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.45rem;
+  font-weight: 650;
+}
+
+.error-panel .muted {
+  margin: 0 auto 1.35rem;
+  max-width: 28rem;
+}
+
+.error-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  justify-content: center;
+}
+
 .site-header {
   position: sticky;
   top: 0;

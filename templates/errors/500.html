@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}500 · {{ _('Server error') }}{% endblock %}
+{% block body_class %}page-error{% endblock %}
+{% block main_class %}page page-error-main narrow{% endblock %}
+
+{% block content %}
+<section class="error-panel" aria-labelledby="error-title">
+  <p class="error-code">500</p>
+  <h1 id="error-title">{{ _('Server error') }}</h1>
+  <p class="muted">{{ _('Something went wrong on our side. Try again in a moment.') }}</p>
+  <div class="error-actions">
+    <a class="btn" href="{{ url_for('index') }}">{{ _('Home') }}</a>
+  </div>
+</section>
+{% endblock %}

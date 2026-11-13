@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}403 · {{ _('Forbidden') }}{% endblock %}
+{% block body_class %}page-error{% endblock %}
+{% block main_class %}page page-error-main narrow{% endblock %}
+
+{% block content %}
+<section class="error-panel" aria-labelledby="error-title">
+  <p class="error-code">403</p>
+  <h1 id="error-title">{{ _('Forbidden') }}</h1>
+  <p class="muted">{{ _('You do not have permission to do that.') }}</p>
+  <div class="error-actions">
+    <a class="btn" href="{{ url_for('index') }}">{{ _('Home') }}</a>
+  </div>
+</section>
+{% endblock %}

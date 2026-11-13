@@ -256,30 +256,41 @@ def get_user_by_id(user_id):
 
 
 def search_users(query, exclude_id, limit=10):
+    """Search users by name/email. Empty/short query → first `limit` others (default list)."""
     q = (query or '').strip()
-    if len(q) < 2:
-        return []
-    pattern = f'%{q}%'
     with get_connection() as conn:
-        rows = conn.execute(
-            '''
-            SELECT id, email, display_name, elo_rating
-            FROM users
-            WHERE id <> %s
-              AND (
-                display_name ILIKE %s
-                OR email ILIKE %s
-              )
-            ORDER BY
-              CASE WHEN lower(display_name) = lower(%s) THEN 0
-                   WHEN lower(email) = lower(%s) THEN 1
-                   ELSE 2 END,
-              display_name ASC,
-              email ASC
-            LIMIT %s
-            ''',
-            (exclude_id, pattern, pattern, q, q, limit),
-        ).fetchall()
+        if len(q) < 2:
+            rows = conn.execute(
+                '''
+                SELECT id, email, display_name, elo_rating
+                FROM users
+                WHERE id <> %s
+                ORDER BY display_name ASC, email ASC, id ASC
+                LIMIT %s
+                ''',
+                (exclude_id, limit),
+            ).fetchall()
+        else:
+            pattern = f'%{q}%'
+            rows = conn.execute(
+                '''
+                SELECT id, email, display_name, elo_rating
+                FROM users
+                WHERE id <> %s
+                  AND (
+                    display_name ILIKE %s
+                    OR email ILIKE %s
+                  )
+                ORDER BY
+                  CASE WHEN lower(display_name) = lower(%s) THEN 0
+                       WHEN lower(email) = lower(%s) THEN 1
+                       ELSE 2 END,
+                  display_name ASC,
+                  email ASC
+                LIMIT %s
+                ''',
+                (exclude_id, pattern, pattern, q, q, limit),
+            ).fetchall()
     return [dict(row) for row in rows]
 
 
@@ -399,17 +410,31 @@ def pop_quality_score(game_id, user_id):
     return _write_quality_scores(game_id, user_id, scores)
 
 
-def list_games(user_id):
+def list_games(user_id, modes=None):
+    """List games owned by user_id. If modes is set, restrict to those modes."""
     with get_connection() as conn:
-        rows = conn.execute(
-            f'''
-            SELECT {GAME_COLUMNS}
-            FROM games
-            WHERE user_id = %s
-            ORDER BY updated_at DESC, id DESC
-            ''',
-            (user_id,),
-        ).fetchall()
+        if modes:
+            mode_list = tuple(modes)
+            rows = conn.execute(
+                f'''
+                SELECT {GAME_COLUMNS}
+                FROM games
+                WHERE user_id = %s
+                  AND mode = ANY(%s)
+                ORDER BY updated_at DESC, id DESC
+                ''',
+                (user_id, list(mode_list)),
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                f'''
+                SELECT {GAME_COLUMNS}
+                FROM games
+                WHERE user_id = %s
+                ORDER BY updated_at DESC, id DESC
+                ''',
+                (user_id,),
+            ).fetchall()
     return [dict(row) for row in rows]
 
 
@@ -427,7 +452,7 @@ def get_game_for_user(game_id, user_id):
 
 
 def get_accessible_game(game_id, user_id):
-    """Owner (assistant/trainer) or duel participant."""
+    """Assistant/trainer: owner only. Duel: white/black participants only."""
     with get_connection() as conn:
         row = conn.execute(
             f'''
@@ -435,9 +460,14 @@ def get_accessible_game(game_id, user_id):
             FROM games
             WHERE id = %s
               AND (
-                user_id = %s
-                OR white_user_id = %s
-                OR black_user_id = %s
+                (
+                  COALESCE(mode, 'assistant') = 'duel'
+                  AND (white_user_id = %s OR black_user_id = %s)
+                )
+                OR (
+                  COALESCE(mode, 'assistant') <> 'duel'
+                  AND user_id = %s
+                )
               )
             ''',
             (game_id, user_id, user_id, user_id),

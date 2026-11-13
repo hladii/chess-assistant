@@ -7,8 +7,10 @@
   const listEl = document.getElementById('opponent-suggestions');
   const pickedEl = document.getElementById('opponent-picked');
   const submitBtn = document.getElementById('create-duel-submit');
+  const dialog = document.getElementById('create-dialog');
   let timer = null;
-  let lastQuery = '';
+  let lastQuery = null;
+  let requestSeq = 0;
 
   function escapeHtml(value) {
     return String(value)
@@ -83,33 +85,44 @@
   }
 
   async function search(q) {
-    lastQuery = q;
+    const normalized = (q || '').trim();
+    lastQuery = normalized;
+    const seq = ++requestSeq;
     try {
-      const response = await fetch('/api/users/search?q=' + encodeURIComponent(q), {
-        headers: { Accept: 'application/json' },
-        credentials: 'same-origin',
-      });
+      const response = await fetch(
+        '/api/users/search?q=' + encodeURIComponent(normalized),
+        {
+          headers: { Accept: 'application/json' },
+          credentials: 'same-origin',
+        }
+      );
       if (!response.ok) return;
       const data = await response.json();
-      if (lastQuery !== q) return;
+      if (seq !== requestSeq || lastQuery !== normalized) return;
       renderUsers((data && data.users) || []);
     } catch (err) {
       /* ignore network errors while typing */
     }
   }
 
+  function scheduleSearch(q) {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(function () {
+      search(q);
+    }, 200);
+  }
+
   if (queryInput) {
+    queryInput.addEventListener('focus', function () {
+      if (hiddenId.value) return;
+      search((queryInput.value || '').trim());
+    });
+
     queryInput.addEventListener('input', function () {
       setPicked(null);
       const q = queryInput.value.trim();
-      if (timer) clearTimeout(timer);
-      if (q.length < 2) {
-        hideList();
-        return;
-      }
-      timer = setTimeout(function () {
-        search(q);
-      }, 200);
+      // Empty / short query → default first users; longer → filtered search.
+      scheduleSearch(q);
     });
 
     queryInput.addEventListener('keydown', function (event) {
@@ -150,6 +163,23 @@
     const anchor = queryInput && queryInput.closest('.autocomplete-anchor');
     if (anchor && anchor.contains(event.target)) return;
     hideList();
+  });
+
+  if (dialog) {
+    dialog.addEventListener('close', function () {
+      hideList();
+    });
+  }
+
+  // Prefetch defaults when the create dialog opens.
+  document.querySelectorAll('[data-open-create], #open-create').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      setTimeout(function () {
+        if (queryInput && !hiddenId.value) {
+          search('');
+        }
+      }, 0);
+    });
   });
 
   form.addEventListener('submit', function (event) {

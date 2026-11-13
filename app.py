@@ -1237,7 +1237,7 @@ def undo():
             pops = 1
 
     removed_user_move = False
-    for _ in range(pops):
+    for _ply in range(pops):
         if not board.move_stack:
             break
         # Color that just played the ply we are about to pop.

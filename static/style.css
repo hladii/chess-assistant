@@ -189,6 +189,10 @@ body.nav-open .nav-burger-lines::after {
   font-size: 1.05rem;
 }
 
+.page.page-profile-main {
+  max-width: 1100px;
+}
+
 .profile-hero {
   margin-bottom: 1.25rem;
 }
@@ -198,6 +202,10 @@ body.nav-open .nav-burger-lines::after {
   align-items: center;
   gap: 0.9rem;
   margin-top: 0.5rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: color-mix(in oklab, var(--card) 88%, transparent);
 }
 
 .profile-hero-card h1 {
@@ -206,8 +214,46 @@ body.nav-open .nav-burger-lines::after {
   font-size: 1.45rem;
 }
 
+.page-profile-main .profile-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  align-items: stretch;
+  width: 100%;
+}
+
+.page-profile-main .profile-card {
+  margin: 0;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.page-profile-main .profile-card > header {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.profile-card-desc {
+  margin: 0;
+  font-size: 0.86rem;
+  line-height: 1.35;
+}
+
+.page-profile-main .profile-card .form-stack {
+  flex: 1;
+}
+
 .banner-ok {
   margin: 0 0 1rem;
+}
+
+@media (max-width: 800px) {
+  .page-profile-main .profile-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .guest-locale-bar {

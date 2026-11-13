@@ -2,7 +2,8 @@
 
 {% block title %}{{ _('Profile') }} · Chess Move Advisor{% endblock %}
 
-{% block main_class %}page narrow{% endblock %}
+{% block body_class %}page-profile{% endblock %}
+{% block main_class %}page page-profile-main{% endblock %}
 
 {% block content %}
 <header class="profile-hero">
@@ -19,69 +20,73 @@
 {% if message %}<p class="message banner-ok">{{ message }}</p>{% endif %}
 {% if error %}<p class="alert" data-variant="destructive" role="alert">{{ error }}</p>{% endif %}
 
-<section class="card card-section">
-  <header>
-    <h2>{{ _('Language') }}</h2>
-  </header>
-  <form method="post" action="{{ url_for('profile') }}" class="form-stack">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-    <input type="hidden" name="form" value="locale">
+<div class="profile-grid">
+  <section class="card card-section profile-card">
+    <header>
+      <h2>{{ _('Language') }}</h2>
+      <p class="muted profile-card-desc">{{ _('Interface language') }}</p>
+    </header>
+    <form method="post" action="{{ url_for('profile') }}" class="form-stack">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="form" value="locale">
 
-    <div role="group" class="field">
-      <label for="locale">{{ _('Interface language') }}</label>
-      <select id="locale" class="input" name="locale">
-        {% for code in supported_locales %}
-        <option value="{{ code }}" {% if (user.locale or current_locale or 'en') == code %}selected{% endif %}>{{ locale_labels[code] }}</option>
-        {% endfor %}
-      </select>
-    </div>
+      <div role="group" class="field">
+        <label for="locale">{{ _('Language') }}</label>
+        <select id="locale" class="input" name="locale">
+          {% for code in supported_locales %}
+          <option value="{{ code }}" {% if (user.locale or current_locale or 'en') == code %}selected{% endif %}>{{ locale_labels[code] }}</option>
+          {% endfor %}
+        </select>
+      </div>
 
-    <button type="submit" class="btn">{{ _('Save language') }}</button>
-  </form>
-</section>
+      <button type="submit" class="btn">{{ _('Save language') }}</button>
+    </form>
+  </section>
 
-<section class="card card-section" style="margin-top:1rem">
-  <header>
-    <h2>{{ _('Name') }}</h2>
-  </header>
-  <form method="post" action="{{ url_for('profile') }}" class="form-stack">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-    <input type="hidden" name="form" value="profile">
+  <section class="card card-section profile-card">
+    <header>
+      <h2>{{ _('Name') }}</h2>
+      <p class="muted profile-card-desc">{{ _('What should we call you') }}</p>
+    </header>
+    <form method="post" action="{{ url_for('profile') }}" class="form-stack">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="form" value="profile">
 
-    <div role="group" class="field">
-      <label for="display_name">{{ _('What should we call you') }}</label>
-      <input id="display_name" class="input" name="display_name" type="text" required maxlength="40" value="{{ user.display_name or '' }}" autocomplete="nickname">
-    </div>
+      <div role="group" class="field">
+        <label for="display_name">{{ _('Name') }}</label>
+        <input id="display_name" class="input" name="display_name" type="text" required maxlength="40" value="{{ user.display_name or '' }}" autocomplete="nickname">
+      </div>
 
-    <button type="submit" class="btn">{{ _('Save name') }}</button>
-  </form>
-</section>
+      <button type="submit" class="btn">{{ _('Save name') }}</button>
+    </form>
+  </section>
 
-<section class="card card-section" style="margin-top:1rem">
-  <header>
-    <h2>{{ _('Password') }}</h2>
-  </header>
-  <form method="post" action="{{ url_for('profile') }}" class="form-stack">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-    <input type="hidden" name="form" value="password">
+  <section class="card card-section profile-card">
+    <header>
+      <h2>{{ _('Password') }}</h2>
+      <p class="muted profile-card-desc">{{ _('At least 8 characters.') }}</p>
+    </header>
+    <form method="post" action="{{ url_for('profile') }}" class="form-stack">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="form" value="password">
 
-    <div role="group" class="field">
-      <label for="current_password">{{ _('Current password') }}</label>
-      <input id="current_password" class="input" name="current_password" type="password" required autocomplete="current-password">
-    </div>
+      <div role="group" class="field">
+        <label for="current_password">{{ _('Current password') }}</label>
+        <input id="current_password" class="input" name="current_password" type="password" required autocomplete="current-password">
+      </div>
 
-    <div role="group" class="field">
-      <label for="new_password">{{ _('New password') }}</label>
-      <input id="new_password" class="input" name="new_password" type="password" required minlength="8" autocomplete="new-password">
-    </div>
+      <div role="group" class="field">
+        <label for="new_password">{{ _('New password') }}</label>
+        <input id="new_password" class="input" name="new_password" type="password" required minlength="8" autocomplete="new-password">
+      </div>
 
-    <div role="group" class="field">
-      <label for="confirm_password">{{ _('Confirmation') }}</label>
-      <input id="confirm_password" class="input" name="confirm_password" type="password" required minlength="8" autocomplete="new-password">
-    </div>
+      <div role="group" class="field">
+        <label for="confirm_password">{{ _('Confirmation') }}</label>
+        <input id="confirm_password" class="input" name="confirm_password" type="password" required minlength="8" autocomplete="new-password">
+      </div>
 
-    <p class="muted">{{ _('At least 8 characters.') }}</p>
-    <button type="submit" class="btn" data-variant="secondary">{{ _('Update password') }}</button>
-  </form>
-</section>
+      <button type="submit" class="btn" data-variant="secondary">{{ _('Update password') }}</button>
+    </form>
+  </section>
+</div>
 {% endblock %}

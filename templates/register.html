@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}Реєстрація · Chess Move Advisor{% endblock %}
+{% block title %}{{ _('Sign up') }} · Chess Move Advisor{% endblock %}
 
 {% block main_class %}page narrow{% endblock %}
 
 {% block content %}
 <header class="header">
   <p class="home-brand" style="font-size:1.75rem">Chess Move Advisor</p>
-  <p class="tagline">Створіть акаунт, щоб зберігати партії та тренуватись.</p>
+  <p class="tagline">{{ _('Create an account to save games and training.') }}</p>
 </header>
 
 <section class="card card-section">
@@ -15,8 +15,8 @@
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 
     <div role="group" class="field">
-      <label for="display_name">Імʼя</label>
-      <input id="display_name" class="input" name="display_name" type="text" required maxlength="40" autocomplete="nickname" autofocus placeholder="наприклад, hladii">
+      <label for="display_name">{{ _('Name') }}</label>
+      <input id="display_name" class="input" name="display_name" type="text" required maxlength="40" autocomplete="nickname" autofocus placeholder="{{ _('e.g. hladii') }}">
     </div>
 
     <div role="group" class="field">
@@ -25,12 +25,12 @@
     </div>
 
     <div role="group" class="field">
-      <label for="password">Пароль</label>
+      <label for="password">{{ _('Password') }}</label>
       <input id="password" class="input" name="password" type="password" required minlength="8" autocomplete="new-password">
     </div>
 
     <div role="group" class="field">
-      <label for="confirm_password">Підтвердження пароля</label>
+      <label for="confirm_password">{{ _('Confirm password') }}</label>
       <input id="confirm_password" class="input" name="confirm_password" type="password" required minlength="8" autocomplete="new-password">
     </div>
 
@@ -38,10 +38,10 @@
     <p class="alert" data-variant="destructive" role="alert">{{ error }}</p>
     {% endif %}
 
-    <p class="muted">Мінімум 8 символів у паролі.</p>
-    <button type="submit" class="btn">Зареєструватись</button>
+    <p class="muted">{{ _('At least 8 characters in the password.') }}</p>
+    <button type="submit" class="btn">{{ _('Sign up') }}</button>
   </form>
 </section>
 
-<p class="auth-switch muted">Уже є акаунт? <a href="{{ url_for('login') }}">Увійти</a></p>
+<p class="auth-switch muted">{{ _('Already have an account?') }} <a href="{{ url_for('login') }}">{{ _('Log in') }}</a></p>
 {% endblock %}

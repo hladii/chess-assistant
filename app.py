@@ -11,11 +11,15 @@ from flask import (
     Flask,
     flash,
     jsonify,
+    make_response,
     redirect,
     render_template,
     request,
+    session,
     url_for,
 )
+from flask_babel import Babel, get_locale
+from flask_babel import gettext as _
 
 from assistant import (
     TRAINER_ELO_LEVELS,
@@ -59,8 +63,20 @@ from db import (
     pop_quality_score,
     scores_from_game,
     update_game_history,
+    update_user_locale,
     update_user_password,
     update_user_profile,
+)
+from i18n import (
+    DEFAULT_LOCALE,
+    LOCALE_COOKIE,
+    LOCALE_COOKIE_MAX_AGE,
+    LOCALE_LABELS,
+    SUPPORTED_LOCALES,
+    js_messages,
+    normalize_locale,
+    resolve_locale,
+    set_session_locale,
 )
 
 app = Flask(__name__)
@@ -70,7 +86,22 @@ app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE='Lax',
     SESSION_COOKIE_SECURE=os.environ.get('SESSION_COOKIE_SECURE', '0') in ('1', 'true', 'True'),
+    BABEL_DEFAULT_LOCALE=DEFAULT_LOCALE,
+    BABEL_TRANSLATION_DIRECTORIES='translations',
 )
+
+babel = Babel()
+
+
+def select_locale():
+    user = None
+    uid = current_user_id()
+    if uid:
+        user = get_user_by_id(uid)
+    return resolve_locale(user)
+
+
+babel.init_app(app, locale_selector=select_locale)
 
 init_db()
 
@@ -107,11 +138,16 @@ def inject_auth():
         'current_user_name': current_user_name(),
         'current_user_initials': current_user_initials(),
         'is_authenticated': is_authenticated(),
+        'get_locale': get_locale,
+        'current_locale': str(get_locale()),
+        'supported_locales': SUPPORTED_LOCALES,
+        'locale_labels': LOCALE_LABELS,
+        'i18n_js': js_messages(),
     }
 
 
 def side_label(color):
-    return 'White' if color == chess.WHITE else 'Black'
+    return _('White') if color == chess.WHITE else _('Black')
 
 
 def color_code(color):
@@ -143,7 +179,7 @@ def starting_fen_from_board(board):
 def history_preview(history, limit=72):
     text = (history or '').strip()
     if not text:
-        return 'No moves yet'
+        return _('No moves yet')
     if len(text) <= limit:
         return text
     return text[: limit - 1] + '…'
@@ -194,9 +230,9 @@ def game_payload(game, board, start_fen, suggestions=None, message='', error='',
     trainer = is_trainer_game(game)
     # In trainer mode the engine replies automatically — never ask for opponent SAN.
     if trainer and not your_turn and not ended:
-        move_prompt = 'Trainer thinking…'
+        move_prompt = _('Trainer thinking…')
     else:
-        move_prompt = 'Your move' if your_turn else 'Opponent move'
+        move_prompt = _('Your move') if your_turn else _('Opponent move')
     if suggestions is None:
         # Skip heavy multipv suggestions in trainer to save CPU on small VMs.
         if trainer:
@@ -267,7 +303,7 @@ def login():
     error = ''
     if request.method == 'POST':
         if not validate_csrf():
-            error = 'Невірний токен сесії. Оновіть сторінку.'
+            error = _('Invalid session token. Refresh the page.')
         else:
             email, email_error = validate_email(request.form.get('email', ''))
             password = request.form.get('password') or ''
@@ -276,13 +312,20 @@ def login():
             else:
                 user = get_user_by_email(email)
                 if not user or not verify_password(user['password_hash'], password):
-                    error = 'Невірний email або пароль.'
+                    error = _('Invalid email or password.')
                 else:
                     login_user(user)
                     next_url = request.args.get('next') or url_for('index')
                     if not next_url.startswith('/'):
                         next_url = url_for('index')
-                    return redirect(next_url)
+                    resp = make_response(redirect(next_url))
+                    resp.set_cookie(
+                        LOCALE_COOKIE,
+                        session.get('locale') or DEFAULT_LOCALE,
+                        max_age=LOCALE_COOKIE_MAX_AGE,
+                        samesite='Lax',
+                    )
+                    return resp
 
     return render_template('login.html', error=error, csrf_token=get_csrf_token())
 
@@ -295,7 +338,7 @@ def register():
     error = ''
     if request.method == 'POST':
         if not validate_csrf():
-            error = 'Невірний токен сесії. Оновіть сторінку.'
+            error = _('Invalid session token. Refresh the page.')
         else:
             name, name_error = validate_display_name(request.form.get('display_name', ''))
             email, email_error = validate_email(request.form.get('email', ''))
@@ -310,12 +353,19 @@ def register():
                 if pwd_error:
                     error = pwd_error
                 elif get_user_by_email(email):
-                    error = 'Користувач із таким email уже існує.'
+                    error = _('A user with this email already exists.')
                 else:
                     user_id = create_user(email, password, name)
                     user = get_user_by_id(user_id)
                     login_user(user)
-                    return redirect(url_for('index'))
+                    resp = make_response(redirect(url_for('index')))
+                    resp.set_cookie(
+                        LOCALE_COOKIE,
+                        session.get('locale') or DEFAULT_LOCALE,
+                        max_age=LOCALE_COOKIE_MAX_AGE,
+                        samesite='Lax',
+                    )
+                    return resp
 
     return render_template('register.html', error=error, csrf_token=get_csrf_token())
 
@@ -324,10 +374,39 @@ def register():
 @login_required
 def logout():
     if not validate_csrf():
-        flash('Invalid session token.', 'error')
+        flash(_('Invalid session token.'), 'error')
         return redirect(url_for('index'))
     logout_user()
     return redirect(url_for('login'))
+
+
+@app.route('/set-locale', methods=['POST'])
+def set_locale():
+    """Guest (or anyone) language preference via cookie + session."""
+    next_url = (request.form.get('next') or '').strip() or url_for('login')
+    if not next_url.startswith('/') or next_url.startswith('//'):
+        next_url = url_for('login')
+    # Avoid awkward trailing "?" from request.full_path when no query string.
+    if next_url.endswith('?'):
+        next_url = next_url[:-1]
+
+    if not validate_csrf():
+        return redirect(next_url)
+
+    loc = set_session_locale(request.form.get('locale', ''))
+    # Persist for logged-in users too when they use the guest bar (rare).
+    uid = current_user_id()
+    if uid:
+        update_user_locale(uid, loc)
+
+    resp = make_response(redirect(next_url))
+    resp.set_cookie(
+        LOCALE_COOKIE,
+        loc,
+        max_age=LOCALE_COOKIE_MAX_AGE,
+        samesite='Lax',
+    )
+    return resp
 
 
 @app.route('/profile', methods=['GET', 'POST'])
@@ -337,10 +416,11 @@ def profile():
     message = ''
     error = ''
     form = (request.form.get('form') or '').strip()
+    locale_cookie = None
 
     if request.method == 'POST':
         if not validate_csrf():
-            error = 'Невірний токен сесії. Оновіть сторінку.'
+            error = _('Invalid session token. Refresh the page.')
         elif form == 'profile':
             name, name_error = validate_display_name(request.form.get('display_name', ''))
             if name_error:
@@ -349,27 +429,34 @@ def profile():
                 update_user_profile(user['id'], name)
                 user = get_user_by_id(user['id'])
                 login_user(user)  # refresh session name
-                message = 'Профіль оновлено.'
+                message = _('Profile updated.')
         elif form == 'password':
             current_password = request.form.get('current_password') or ''
             new_password = request.form.get('new_password') or ''
             confirm_password = request.form.get('confirm_password') or ''
             if not verify_password(user['password_hash'], current_password):
-                error = 'Поточний пароль невірний.'
+                error = _('Current password is incorrect.')
             else:
                 pwd_error = validate_new_password(new_password, confirm_password)
                 if pwd_error:
                     error = pwd_error
                 elif verify_password(user['password_hash'], new_password):
-                    error = 'Новий пароль має відрізнятися від поточного.'
+                    error = _('New password must be different from the current one.')
                 else:
                     update_user_password(user['id'], new_password)
-                    message = 'Пароль оновлено.'
+                    message = _('Password updated.')
                     user = get_user_by_id(user['id'])
+        elif form == 'locale':
+            loc = normalize_locale(request.form.get('locale', '')) or DEFAULT_LOCALE
+            update_user_locale(user['id'], loc)
+            set_session_locale(loc)
+            locale_cookie = loc
+            user = get_user_by_id(user['id'])
+            message = _('Language updated.')
         else:
-            error = 'Невідома дія.'
+            error = _('Unknown action.')
 
-    return render_template(
+    html = render_template(
         'profile.html',
         user=user,
         user_initials=user_initials(user.get('display_name'), user.get('email')),
@@ -377,6 +464,15 @@ def profile():
         error=error,
         csrf_token=get_csrf_token(),
     )
+    resp = make_response(html)
+    if locale_cookie:
+        resp.set_cookie(
+            LOCALE_COOKIE,
+            locale_cookie,
+            max_age=LOCALE_COOKIE_MAX_AGE,
+            samesite='Lax',
+        )
+    return resp
 
 
 def format_updated_at(value):
@@ -402,9 +498,9 @@ def annotate_games(games):
         game['updated_label'] = format_updated_at(game.get('updated_at'))
         mode = game.get('mode') or 'assistant'
         if mode == 'trainer':
-            game['mode_label'] = f"Тренер · {game.get('trainer_elo') or '?'} Elo"
+            game['mode_label'] = _('Trainer · %(elo)s Elo', elo=game.get('trainer_elo') or '?')
         else:
-            game['mode_label'] = 'Асистент'
+            game['mode_label'] = _('Assistant')
         scores = scores_from_game(game)
         game['accuracy'] = accuracy_from_scores(scores)
         game['quality_move_count'] = len(scores)
@@ -479,7 +575,7 @@ def create():
     list_endpoint = list_endpoint_for_mode(mode)
 
     if not validate_csrf():
-        return redirect(url_for(list_endpoint, error='Invalid session token.'))
+        return redirect(url_for(list_endpoint, error=_('Invalid session token.')))
 
     name = (request.form.get('name') or '').strip()
     side = request.form.get('side', 'w').lower()
@@ -496,13 +592,13 @@ def create():
         history = ''
 
     if not name:
-        return redirect(url_for(list_endpoint, error='Вкажіть назву партії.'))
+        return redirect(url_for(list_endpoint, error=_('Enter a game name.')))
 
     user_color = parse_color(side)
     try:
         board = parse_history(history)
     except ValueError as exc:
-        return redirect(url_for(list_endpoint, error=f'Не вдалося розібрати історію: {exc}'))
+        return redirect(url_for(list_endpoint, error=_('Could not parse history: %(exc)s', exc=exc)))
 
     start_fen = starting_fen_from_board(board)
     history_text = format_move_history(board, start_fen)
@@ -523,7 +619,7 @@ def create():
 def play_game(game_id):
     game, board, start_fen = require_owned_game(game_id)
     if not game:
-        return redirect(url_for('games_list', error='Партію не знайдено.'))
+        return redirect(url_for('games_list', error=_('Game not found.')))
 
     opening_san = None
     board, opening_san = maybe_play_trainer_opening(game, board, start_fen)
@@ -531,16 +627,21 @@ def play_game(game_id):
     game, board, start_fen = require_owned_game(game_id)
 
     if is_trainer_game(game):
-        msg = (
-            f'Trainer game "{game["name"]}" · you are '
-            f'{side_label(parse_color(game["user_color"]))} · '
-            f'{game.get("trainer_elo") or "?"} Elo'
+        msg = _(
+            'Trainer game "%(name)s" · you are %(side)s · %(elo)s Elo',
+            name=game['name'],
+            side=side_label(parse_color(game['user_color'])),
+            elo=game.get('trainer_elo') or '?',
         )
         if opening_san:
-            msg += f'. Trainer opened with {opening_san}.'
+            msg += ' ' + _('Trainer opened with %(san)s.', san=opening_san)
         analyze = False
     else:
-        msg = f'Playing "{game["name"]}" as {side_label(parse_color(game["user_color"]))}.'
+        msg = _(
+            'Playing "%(name)s" as %(side)s.',
+            name=game['name'],
+            side=side_label(parse_color(game['user_color'])),
+        )
         analyze = True
 
     payload = game_payload(game, board, start_fen, message=msg, analyze=analyze)
@@ -554,7 +655,7 @@ def remove_game(game_id):
     return_to = (request.form.get('return_to') or 'games').strip().lower()
     list_endpoint = 'training_list' if return_to == 'training' else 'games_list'
     if not validate_csrf():
-        return redirect(url_for(list_endpoint, error='Invalid session token.'))
+        return redirect(url_for(list_endpoint, error=_('Invalid session token.')))
     delete_game(game_id, current_user_id())
     return redirect(url_for(list_endpoint))
 
@@ -564,10 +665,10 @@ def remove_game(game_id):
 def api_state():
     game_id = request.args.get('game_id', type=int)
     if not game_id:
-        return jsonify({'ok': False, 'error': 'game_id required.'}), 400
+        return jsonify({'ok': False, 'error': _('game_id required.')}), 400
     game, board, start_fen = require_owned_game(game_id)
     if not game:
-        return jsonify({'ok': False, 'error': 'Game not found.'}), 404
+        return jsonify({'ok': False, 'error': _('Game not found.')}), 404
     payload = game_payload(game, board, start_fen, analyze=False)
     payload['ok'] = True
     return jsonify(payload)
@@ -576,11 +677,11 @@ def api_state():
 def apply_san_move(game, board, start_fen, san):
     san = (san or '').strip()
     if not san:
-        return False, 'Enter a move in SAN, e.g. e4 or Nf6.', board, None, None
+        return False, _('Enter a move in SAN, e.g. e4 or Nf6.'), board, None, None
     try:
         parsed = board.parse_san(san)
     except ValueError:
-        return False, f'Invalid move: {san}', board, None, None
+        return False, _('Invalid move: %(san)s', san=san), board, None, None
 
     user_color = parse_color(game['user_color'])
     scoring_user_move = board.turn == user_color
@@ -600,7 +701,7 @@ def apply_san_move(game, board, start_fen, san):
     board.push(parsed)
     history = format_move_history(board, start_fen)
     update_game_history(game['id'], current_user_id(), history)
-    message = coach['message'] if coach else f'Played {played}.'
+    message = coach['message'] if coach else _('Played %(san)s.', san=played)
     return True, message, board, parsed, coach
 
 
@@ -608,15 +709,15 @@ def apply_trainer_user_move(game, board, start_fen, san):
     """Evaluate user move, optionally let Stockfish reply. Returns payload extras."""
     user_color = parse_color(game['user_color'])
     if board.turn != user_color:
-        return False, 'Wait for the trainer to move.', board, None, None
+        return False, _('Wait for the trainer to move.'), board, None, None
 
     san = (san or '').strip()
     if not san:
-        return False, 'Enter a move in SAN, e.g. e4 or Nf6.', board, None, None
+        return False, _('Enter a move in SAN, e.g. e4 or Nf6.'), board, None, None
     try:
         parsed = board.parse_san(san)
     except ValueError:
-        return False, f'Invalid move: {san}', board, None, None
+        return False, _('Invalid move: %(san)s', san=san), board, None, None
 
     board_before = board.copy()
     engine = get_engine()
@@ -645,7 +746,7 @@ def apply_trainer_user_move(game, board, start_fen, san):
 
     message = coach['message']
     if engine_san:
-        message += f' Trainer played {engine_san}.'
+        message += ' ' + _('Trainer played %(san)s.', san=engine_san)
     return True, message, board, coach, engine_san
 
 
@@ -653,16 +754,16 @@ def apply_trainer_user_move(game, board, start_fen, san):
 @login_required
 def play_move():
     if not validate_csrf():
-        return jsonify({'ok': False, 'error': 'Invalid CSRF token.'}), 403
+        return jsonify({'ok': False, 'error': _('Invalid CSRF token.')}), 403
 
     payload = request.get_json(silent=True) or {}
     game_id = payload.get('game_id')
     if game_id is None:
-        return jsonify({'ok': False, 'error': 'game_id required.'}), 400
+        return jsonify({'ok': False, 'error': _('game_id required.')}), 400
 
     game, board, start_fen = require_owned_game(int(game_id))
     if not game:
-        return jsonify({'ok': False, 'error': 'Game not found.'}), 404
+        return jsonify({'ok': False, 'error': _('Game not found.')}), 404
 
     if is_trainer_game(game):
         ok, message, board, coach, _engine_san = apply_trainer_user_move(
@@ -697,19 +798,19 @@ def play_move():
 @login_required
 def undo():
     if not validate_csrf():
-        return jsonify({'ok': False, 'error': 'Invalid CSRF token.'}), 403
+        return jsonify({'ok': False, 'error': _('Invalid CSRF token.')}), 403
 
     payload = request.get_json(silent=True) or {}
     game_id = payload.get('game_id')
     if game_id is None:
-        return jsonify({'ok': False, 'error': 'game_id required.'}), 400
+        return jsonify({'ok': False, 'error': _('game_id required.')}), 400
 
     game, board, start_fen = require_owned_game(int(game_id))
     if not game:
-        return jsonify({'ok': False, 'error': 'Game not found.'}), 404
+        return jsonify({'ok': False, 'error': _('Game not found.')}), 404
 
     if not board.move_stack:
-        body = game_payload(game, board, start_fen, error='No moves to undo.', analyze=False)
+        body = game_payload(game, board, start_fen, error=_('No moves to undo.'), analyze=False)
         body['ok'] = False
         return jsonify(body), 400
 
@@ -745,7 +846,7 @@ def undo():
         game,
         board,
         start_fen,
-        message='Undid last move.',
+        message=_('Undid last move.'),
         analyze=not is_trainer_game(game),
         coach=None,
     )
@@ -757,16 +858,16 @@ def undo():
 @login_required
 def hint():
     if not validate_csrf():
-        return jsonify({'ok': False, 'error': 'Invalid CSRF token.'}), 403
+        return jsonify({'ok': False, 'error': _('Invalid CSRF token.')}), 403
 
     payload = request.get_json(silent=True) or {}
     game_id = payload.get('game_id')
     if game_id is None:
-        return jsonify({'ok': False, 'error': 'game_id required.'}), 400
+        return jsonify({'ok': False, 'error': _('game_id required.')}), 400
 
     game, board, start_fen = require_owned_game(int(game_id))
     if not game:
-        return jsonify({'ok': False, 'error': 'Game not found.'}), 404
+        return jsonify({'ok': False, 'error': _('Game not found.')}), 404
 
     user_color = parse_color(game['user_color'])
     if board.is_game_over():
@@ -783,7 +884,7 @@ def hint():
             }
             for option in raw
         ]
-        message = 'Suggestions updated.' if suggestions else 'No suggestions for this position.'
+        message = _('Suggestions updated.') if suggestions else _('No suggestions for this position.')
 
     body = game_payload(
         game,

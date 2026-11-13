@@ -1,0 +1,501 @@
+# Ukrainian translations for Chess Move Advisor.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the Chess Move Advisor project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Chess Move Advisor 1.0\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-11-13 21:15+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: uk\n"
+"Language-Team: uk <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || "
+"n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+msgid "Main menu"
+msgstr "Головне меню"
+
+msgid "Home"
+msgstr "Головна"
+
+msgid "Games"
+msgstr "Ігри"
+
+msgid "Training"
+msgstr "Навчання"
+
+msgid "Log out"
+msgstr "Вийти"
+
+msgid "Open menu"
+msgstr "Відкрити меню"
+
+msgid "Close menu"
+msgstr "Закрити меню"
+
+msgid "Mobile menu"
+msgstr "Мобільне меню"
+
+msgid "Play. Analyze. Learn."
+msgstr "Грайте. Аналізуйте. Вчіться."
+
+msgid ""
+"Save games with Stockfish hints or train against the engine with instant feedback after every "
+"move."
+msgstr ""
+"Зберігайте партії з підказками Stockfish або тренуйтесь проти двигуна з миттєвим фідбеком після "
+"кожного ходу."
+
+msgid "Move assistant: record a game and get the best lines."
+msgstr "Асистент ходів: записуйте партію, отримуйте найкращі лінії."
+
+msgid "Stockfish trainer (~800 / 1200 / 1600 Elo) with move evaluation."
+msgstr "Тренер Stockfish (~800 / 1200 / 1600 Elo) з оцінкою ваших ходів."
+
+msgid "Open →"
+msgstr "Відкрити →"
+
+msgid "Train →"
+msgstr "Тренуватись →"
+
+msgid "Log in"
+msgstr "Увійти"
+
+msgid "Sign in to continue your games."
+msgstr "Увійдіть, щоб продовжити партії."
+
+msgid "Password"
+msgstr "Пароль"
+
+msgid "No account?"
+msgstr "Немає акаунта?"
+
+msgid "Sign up"
+msgstr "Зареєструватись"
+
+msgid "Create an account to save games and training."
+msgstr "Створіть акаунт, щоб зберігати партії та тренуватись."
+
+msgid "Name"
+msgstr "Імʼя"
+
+msgid "e.g. hladii"
+msgstr "наприклад, hladii"
+
+msgid "Confirm password"
+msgstr "Підтвердження пароля"
+
+msgid "At least 8 characters in the password."
+msgstr "Мінімум 8 символів у паролі."
+
+msgid "Already have an account?"
+msgstr "Уже є акаунт?"
+
+msgid "Profile"
+msgstr "Профіль"
+
+msgid "Player"
+msgstr "Гравець"
+
+msgid "Language"
+msgstr "Мова"
+
+msgid "Interface language"
+msgstr "Мова інтерфейсу"
+
+msgid "Save language"
+msgstr "Зберегти мову"
+
+msgid "What should we call you"
+msgstr "Як вас називати"
+
+msgid "Save name"
+msgstr "Зберегти імʼя"
+
+msgid "Current password"
+msgstr "Поточний пароль"
+
+msgid "New password"
+msgstr "Новий пароль"
+
+msgid "Confirmation"
+msgstr "Підтвердження"
+
+msgid "At least 8 characters."
+msgstr "Мінімум 8 символів."
+
+msgid "Update password"
+msgstr "Оновити пароль"
+
+msgid "Games with the move assistant. Continue where you left off."
+msgstr "Партії з асистентом ходів. Продовжуйте з того місця, де зупинились."
+
+msgid "New game"
+msgstr "Нова партія"
+
+msgid "Your games"
+msgstr "Ваші партії"
+
+msgid "Accuracy"
+msgstr "Точність"
+
+msgid "Continue"
+msgstr "Продовжити"
+
+msgid "Delete"
+msgstr "Видалити"
+
+#, python-format
+msgid "Delete “%(name)s”?"
+msgstr "Видалити «%(name)s»?"
+
+#, python-format
+msgid "Delete %(name)s"
+msgstr "Видалити %(name)s"
+
+msgid "No games yet"
+msgstr "Ще немає партій"
+
+msgid "Create the first one — from an empty board or from PGN."
+msgstr "Створіть першу — можна з порожньої дошки або з PGN."
+
+msgid "Close"
+msgstr "Закрити"
+
+msgid "Title"
+msgstr "Назва"
+
+msgid "e.g. Blitz with a friend"
+msgstr "наприклад, Бліц з другом"
+
+msgid "Your color"
+msgstr "Ваш колір"
+
+msgid "White"
+msgstr "Білі"
+
+msgid "Black"
+msgstr "Чорні"
+
+msgid "History (optional)"
+msgstr "Історія (необовʼязково)"
+
+msgid "Paste PGN / SAN to continue an already played game."
+msgstr "Вставте PGN / SAN, щоб продовжити вже зіграну партію."
+
+msgid "Cancel"
+msgstr "Скасувати"
+
+msgid "Create and start"
+msgstr "Створити і почати"
+
+msgid "Play against Stockfish with feedback after every move of yours."
+msgstr "Гра проти Stockfish з фідбеком після кожного вашого ходу."
+
+msgid "New training"
+msgstr "Нове тренування"
+
+msgid "Training games"
+msgstr "Тренувальні партії"
+
+msgid "No training games yet"
+msgstr "Ще немає тренувань"
+
+msgid "Pick a Stockfish strength and play a game with instant feedback."
+msgstr "Оберіть силу Stockfish і зіграйте партію з миттєвим фідбеком."
+
+msgid "e.g. Training 1200"
+msgstr "наприклад, Тренування 1200"
+
+msgid "Trainer strength"
+msgstr "Сила тренера"
+
+msgid "Game status"
+msgstr "Статус партії"
+
+msgid "Mode"
+msgstr "Режим"
+
+msgid "Trainer"
+msgstr "Тренер"
+
+msgid "Assistant"
+msgstr "Асистент"
+
+msgid "You"
+msgstr "Ви"
+
+msgid "To move"
+msgstr "Хід"
+
+msgid "Moves"
+msgstr "Ходи"
+
+msgid "Queen"
+msgstr "Ферзь"
+
+msgid "Rook"
+msgstr "Тура"
+
+msgid "Bishop"
+msgstr "Слон"
+
+msgid "Knight"
+msgstr "Кінь"
+
+msgid "(SAN)"
+msgstr "(SAN)"
+
+msgid "Play"
+msgstr "Зіграти"
+
+msgid "Drag a piece on the board, type SAN, or pick a suggestion."
+msgstr "Перетягніть фігуру на дошці, введіть SAN або оберіть підказку."
+
+msgid "Hint"
+msgstr "Підказка"
+
+msgid "Undo"
+msgstr "Скасувати"
+
+msgid "Coach"
+msgstr "Тренер"
+
+msgid "Best"
+msgstr "Найкращий"
+
+msgid "Inaccuracy"
+msgstr "Неточність"
+
+msgid "Mistake"
+msgstr "Помилка"
+
+msgid "Blunder"
+msgstr "Груба помилка"
+
+#, python-format
+msgid "Better was %(move)s"
+msgstr "Краще було %(move)s"
+
+msgid "Best moves"
+msgstr "Найкращі ходи"
+
+msgid "you"
+msgstr "ви"
+
+msgid "opp"
+msgstr "опп"
+
+msgid "Press Hint for engine lines."
+msgstr "Натисніть «Підказка» для ліній двигуна."
+
+msgid "Enter the opponent move, then your turn suggestions appear."
+msgstr "Введіть хід суперника — тоді зʼявляться підказки на ваш хід."
+
+msgid "Move history"
+msgstr "Історія ходів"
+
+msgid "No moves yet."
+msgstr "Ще немає ходів."
+
+msgid "Working…"
+msgstr "Працюємо…"
+
+msgid "Enter a valid email address."
+msgstr "Вкажіть коректний email."
+
+#, python-format
+msgid "Password must be at least %(n)s characters."
+msgstr "Пароль має містити щонайменше %(n)s символів."
+
+msgid "New password and confirmation do not match."
+msgstr "Новий пароль і підтвердження не збігаються."
+
+msgid "Enter a name."
+msgstr "Вкажіть імʼя."
+
+msgid "Name must be at least 2 characters."
+msgstr "Імʼя має містити щонайменше 2 символи."
+
+msgid "Name must be at most 40 characters."
+msgstr "Імʼя має бути до 40 символів."
+
+msgid "Authentication required."
+msgstr "Потрібна автентифікація."
+
+msgid "Invalid session token. Refresh the page."
+msgstr "Невірний токен сесії. Оновіть сторінку."
+
+msgid "Invalid email or password."
+msgstr "Невірний email або пароль."
+
+msgid "A user with this email already exists."
+msgstr "Користувач із таким email уже існує."
+
+msgid "Invalid session token."
+msgstr "Невірний токен сесії."
+
+msgid "Profile updated."
+msgstr "Профіль оновлено."
+
+msgid "Current password is incorrect."
+msgstr "Поточний пароль невірний."
+
+msgid "New password must be different from the current one."
+msgstr "Новий пароль має відрізнятися від поточного."
+
+msgid "Password updated."
+msgstr "Пароль оновлено."
+
+msgid "Language updated."
+msgstr "Мову оновлено."
+
+msgid "Unknown action."
+msgstr "Невідома дія."
+
+msgid "No moves yet"
+msgstr "Ще немає ходів"
+
+msgid "Trainer thinking…"
+msgstr "Тренер думає…"
+
+msgid "Your move"
+msgstr "Ваш хід"
+
+msgid "Opponent move"
+msgstr "Хід суперника"
+
+#, python-format
+msgid "Trainer · %(elo)s Elo"
+msgstr "Тренер · %(elo)s Elo"
+
+msgid "Enter a game name."
+msgstr "Вкажіть назву партії."
+
+#, python-format
+msgid "Could not parse history: %(exc)s"
+msgstr "Не вдалося розібрати історію: %(exc)s"
+
+msgid "Game not found."
+msgstr "Партію не знайдено."
+
+msgid "game_id required."
+msgstr "Потрібен game_id."
+
+msgid "Invalid CSRF token."
+msgstr "Невірний CSRF-токен."
+
+msgid "Enter a move in SAN, e.g. e4 or Nf6."
+msgstr "Введіть хід у SAN, напр. e4 або Nf6."
+
+#, python-format
+msgid "Invalid move: %(san)s"
+msgstr "Невірний хід: %(san)s"
+
+#, python-format
+msgid "Played %(san)s."
+msgstr "Зіграно %(san)s."
+
+msgid "Wait for the trainer to move."
+msgstr "Зачекайте на хід тренера."
+
+#, python-format
+msgid "Trainer played %(san)s."
+msgstr "Тренер зіграв %(san)s."
+
+msgid "No moves to undo."
+msgstr "Немає ходів для скасування."
+
+msgid "Undid last move."
+msgstr "Останній хід скасовано."
+
+msgid "Suggestions updated."
+msgstr "Підказки оновлено."
+
+msgid "No suggestions for this position."
+msgstr "Немає підказок для цієї позиції."
+
+#, python-format
+msgid "Trainer game \"%(name)s\" · you are %(side)s · %(elo)s Elo"
+msgstr "Тренування «%(name)s» · ви %(side)s · %(elo)s Elo"
+
+#, python-format
+msgid "Trainer opened with %(san)s."
+msgstr "Тренер відкрив %(san)s."
+
+#, python-format
+msgid "Playing \"%(name)s\" as %(side)s."
+msgstr "Партія «%(name)s» за %(side)s."
+
+#, python-format
+msgid "mate in %(n)s"
+msgstr "мат за %(n)s"
+
+#, python-format
+msgid "mated in %(n)s"
+msgstr "мат через %(n)s"
+
+#, python-format
+msgid "Good move (%(san)s). Eval %(before)s → %(after)s."
+msgstr "Хороший хід (%(san)s). Оцінка %(before)s → %(after)s."
+
+#, python-format
+msgid "%(label)s: %(san)s (eval %(before)s → %(after)s, loss %(loss)s). Better was %(best)s."
+msgstr "%(label)s: %(san)s (оцінка %(before)s → %(after)s, втрата %(loss)s). Краще було %(best)s."
+
+#, python-format
+msgid "%(label)s: %(san)s (eval %(before)s → %(after)s, loss %(loss)s)."
+msgstr "%(label)s: %(san)s (оцінка %(before)s → %(after)s, втрата %(loss)s)."
+
+#, python-format
+msgid "Checkmate. %(winner)s wins."
+msgstr "Мат. Перемагають %(winner)s."
+
+msgid "Stalemate. Draw."
+msgstr "Пат. Нічия."
+
+msgid "Draw by insufficient material."
+msgstr "Нічия через недостатній матеріал."
+
+#, python-format
+msgid "Game over: %(result)s"
+msgstr "Партію завершено: %(result)s"
+
+msgid "Illegal move."
+msgstr "Нелегальний хід."
+
+msgid "Request failed. Try again."
+msgstr "Запит не вдався. Спробуйте ще."
+
+msgid "Checking your move…"
+msgstr "Перевіряємо ваш хід…"
+
+msgid "Analyzing position…"
+msgstr "Аналізуємо позицію…"
+
+msgid "Submitting opponent move…"
+msgstr "Надсилаємо хід суперника…"
+
+msgid "Playing move…"
+msgstr "Робимо хід…"
+
+msgid "Playing selected move…"
+msgstr "Робимо обраний хід…"
+
+msgid "Analyzing…"
+msgstr "Аналіз…"
+
+msgid "Undoing…"
+msgstr "Скасування…"
+
+msgid "Move"
+msgstr "Хід"
+

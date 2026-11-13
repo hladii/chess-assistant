@@ -4,6 +4,7 @@ import secrets
 from functools import wraps
 
 from flask import jsonify, redirect, request, session, url_for
+from flask_babel import gettext as _
 from werkzeug.security import check_password_hash, generate_password_hash
 
 EMAIL_RE = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
@@ -27,15 +28,15 @@ def normalize_email(email: str) -> str:
 def validate_email(email: str):
     email = normalize_email(email)
     if not email or not EMAIL_RE.match(email):
-        return None, 'Enter a valid email address.'
+        return None, _('Enter a valid email address.')
     return email, None
 
 
 def validate_new_password(password: str, confirm: str = None):
     if not password or len(password) < MIN_PASSWORD_LENGTH:
-        return f'Password must be at least {MIN_PASSWORD_LENGTH} characters.'
+        return _('Password must be at least %(n)s characters.', n=MIN_PASSWORD_LENGTH)
     if confirm is not None and password != confirm:
-        return 'New password and confirmation do not match.'
+        return _('New password and confirmation do not match.')
     return None
 
 
@@ -46,11 +47,11 @@ def normalize_display_name(name: str) -> str:
 def validate_display_name(name: str):
     name = normalize_display_name(name)
     if not name:
-        return None, 'Вкажіть імʼя.'
+        return None, _('Enter a name.')
     if len(name) < 2:
-        return None, 'Імʼя має містити щонайменше 2 символи.'
+        return None, _('Name must be at least 2 characters.')
     if len(name) > 40:
-        return None, 'Імʼя має бути до 40 символів.'
+        return None, _('Name must be at most 40 characters.')
     return name, None
 
 
@@ -79,6 +80,10 @@ def login_user(user):
     session['user_id'] = user['id']
     session['user_email'] = user['email']
     session['user_name'] = user.get('display_name') or ''
+    locale = (user.get('locale') or 'en').strip().lower()
+    if locale not in ('uk', 'en', 'it'):
+        locale = 'en'
+    session['locale'] = locale
     session.permanent = True
     rotate_csrf_token()
 
@@ -132,7 +137,7 @@ def login_required(view):
     def wrapped(*args, **kwargs):
         if not is_authenticated():
             if request.path.startswith('/api/'):
-                return jsonify({'ok': False, 'error': 'Authentication required.'}), 401
+                return jsonify({'ok': False, 'error': _('Authentication required.')}), 401
             return redirect(url_for('login', next=request.path))
         return view(*args, **kwargs)
 

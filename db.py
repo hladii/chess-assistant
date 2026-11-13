@@ -52,6 +52,7 @@ def init_db():
                 email TEXT NOT NULL UNIQUE,
                 password_hash TEXT NOT NULL,
                 display_name TEXT NOT NULL DEFAULT '',
+                locale TEXT NOT NULL DEFAULT 'en',
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL
             )
@@ -109,6 +110,12 @@ def init_db():
                 ) THEN
                     ALTER TABLE users ADD COLUMN display_name TEXT NOT NULL DEFAULT '';
                 END IF;
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_name = 'users' AND column_name = 'locale'
+                ) THEN
+                    ALTER TABLE users ADD COLUMN locale TEXT NOT NULL DEFAULT 'en';
+                END IF;
             END $$;
             '''
         )
@@ -151,7 +158,7 @@ def get_user_by_email(email):
     with get_connection() as conn:
         row = conn.execute(
             '''
-            SELECT id, email, password_hash, display_name, created_at, updated_at
+            SELECT id, email, password_hash, display_name, locale, created_at, updated_at
             FROM users
             WHERE email = %s
             ''',
@@ -164,7 +171,7 @@ def get_user_by_id(user_id):
     with get_connection() as conn:
         row = conn.execute(
             '''
-            SELECT id, email, password_hash, display_name, created_at, updated_at
+            SELECT id, email, password_hash, display_name, locale, created_at, updated_at
             FROM users
             WHERE id = %s
             ''',
@@ -196,6 +203,22 @@ def update_user_profile(user_id, display_name):
             WHERE id = %s
             ''',
             (display_name, _now(), user_id),
+        )
+        return cur.rowcount > 0
+
+
+def update_user_locale(user_id, locale):
+    locale = (locale or 'en').strip().lower()
+    if locale not in ('uk', 'en', 'it'):
+        locale = 'en'
+    with get_connection() as conn:
+        cur = conn.execute(
+            '''
+            UPDATE users
+            SET locale = %s, updated_at = %s
+            WHERE id = %s
+            ''',
+            (locale, _now(), user_id),
         )
         return cur.rowcount > 0
 

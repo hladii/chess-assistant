@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="uk" class="dark">
+<html lang="{{ get_locale() }}" class="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -8,32 +8,48 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='vendor/basecoat.min.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   {% block head_extra %}{% endblock %}
+  <script>window.I18N = {{ i18n_js|tojson }};</script>
 </head>
 <body class="{% block body_class %}{% endblock %}">
+  {% if not is_authenticated %}
+  <div class="guest-locale-bar">
+    <form method="post" action="{{ url_for('set_locale') }}" class="guest-locale-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="next" value="{{ request.full_path if request.query_string else request.path }}">
+      <label for="guest-locale">{{ _('Language') }}</label>
+      <select id="guest-locale" class="input guest-locale-select" name="locale" onchange="this.form.submit()">
+        {% for code in supported_locales %}
+        <option value="{{ code }}" {% if current_locale == code %}selected{% endif %}>{{ locale_labels[code] }}</option>
+        {% endfor %}
+      </select>
+    </form>
+  </div>
+  {% endif %}
+
   {% if is_authenticated %}
   <header class="site-header">
     <div class="site-header-inner">
       <a class="site-brand" href="{{ url_for('index') }}">Chess Advisor</a>
 
-      <nav class="site-nav site-nav-desktop" aria-label="Головне меню">
+      <nav class="site-nav site-nav-desktop" aria-label="{{ _('Main menu') }}">
         <a
           href="{{ url_for('index') }}"
           class="btn"
           data-size="sm"
           data-variant="{% if request.endpoint == 'index' %}secondary{% else %}ghost{% endif %}"
-        >Головна</a>
+        >{{ _('Home') }}</a>
         <a
           href="{{ url_for('games_list') }}"
           class="btn"
           data-size="sm"
           data-variant="{% if request.endpoint == 'games_list' or (request.endpoint == 'play_game' and mode is defined and mode != 'trainer') %}secondary{% else %}ghost{% endif %}"
-        >Ігри</a>
+        >{{ _('Games') }}</a>
         <a
           href="{{ url_for('training_list') }}"
           class="btn"
           data-size="sm"
           data-variant="{% if request.endpoint == 'training_list' or (request.endpoint == 'play_game' and mode is defined and mode == 'trainer') %}secondary{% else %}ghost{% endif %}"
-        >Навчання</a>
+        >{{ _('Training') }}</a>
       </nav>
 
       <div class="user-nav user-nav-desktop">
@@ -43,7 +59,7 @@
         </a>
         <form method="post" action="{{ url_for('logout') }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-          <button type="submit" class="btn" data-variant="outline" data-size="sm">Вийти</button>
+          <button type="submit" class="btn" data-variant="outline" data-size="sm">{{ _('Log out') }}</button>
         </form>
       </div>
 
@@ -53,29 +69,29 @@
         id="nav-burger"
         aria-controls="mobile-nav"
         aria-expanded="false"
-        aria-label="Відкрити меню"
+        aria-label="{{ _('Open menu') }}"
       >
         <span class="nav-burger-lines" aria-hidden="true"></span>
       </button>
     </div>
 
     <div class="mobile-nav" id="mobile-nav" hidden>
-      <nav class="mobile-nav-links" aria-label="Мобільне меню">
+      <nav class="mobile-nav-links" aria-label="{{ _('Mobile menu') }}">
         <a
           href="{{ url_for('index') }}"
           class="btn mobile-nav-link"
           data-variant="{% if request.endpoint == 'index' %}secondary{% else %}ghost{% endif %}"
-        >Головна</a>
+        >{{ _('Home') }}</a>
         <a
           href="{{ url_for('games_list') }}"
           class="btn mobile-nav-link"
           data-variant="{% if request.endpoint == 'games_list' or (request.endpoint == 'play_game' and mode is defined and mode != 'trainer') %}secondary{% else %}ghost{% endif %}"
-        >Ігри</a>
+        >{{ _('Games') }}</a>
         <a
           href="{{ url_for('training_list') }}"
           class="btn mobile-nav-link"
           data-variant="{% if request.endpoint == 'training_list' or (request.endpoint == 'play_game' and mode is defined and mode == 'trainer') %}secondary{% else %}ghost{% endif %}"
-        >Навчання</a>
+        >{{ _('Training') }}</a>
       </nav>
       <div class="mobile-nav-user">
         <a href="{{ url_for('profile') }}" class="nav-profile mobile-nav-profile">
@@ -84,7 +100,7 @@
         </a>
         <form method="post" action="{{ url_for('logout') }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-          <button type="submit" class="btn" data-variant="outline" data-size="sm">Вийти</button>
+          <button type="submit" class="btn" data-variant="outline" data-size="sm">{{ _('Log out') }}</button>
         </form>
       </div>
     </div>

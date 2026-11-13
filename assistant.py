@@ -5,6 +5,7 @@ from pathlib import Path
 import chess
 import chess.engine
 import chess.pgn
+from flask_babel import gettext as _
 
 
 COMMANDS = {'undo', 'board', 'hint', 'resign', 'quit', 'help'}
@@ -77,7 +78,9 @@ def board_from_saved_history(start_fen, history_text):
 def format_score(score):
     if score.is_mate():
         mate = score.mate()
-        return f'mate in {mate}' if mate and mate > 0 else f'mated in {abs(mate)}'
+        if mate and mate > 0:
+            return _('mate in %(n)s', n=mate)
+        return _('mated in %(n)s', n=abs(mate) if mate else 0)
     return f'{score.score() / 100:.2f}'
 
 
@@ -179,14 +182,33 @@ def coach_message(classification, played_san, best_san, cp_before, cp_after, cp_
     before = f'{cp_before / 100:.2f}'
     after = f'{cp_after / 100:.2f}'
     loss = f'{cp_loss / 100:.2f}'
+    labels = {
+        'best': _('Best'),
+        'inaccuracy': _('Inaccuracy'),
+        'mistake': _('Mistake'),
+        'blunder': _('Blunder'),
+    }
+    label = labels.get(classification, classification)
     if classification == 'best':
-        return f'Good move ({played_san}). Eval {before} → {after}.'
+        return _('Good move (%(san)s). Eval %(before)s → %(after)s.', san=played_san, before=before, after=after)
     if best_san and best_san != played_san:
-        return (
-            f'{classification.title()}: {played_san} (eval {before} → {after}, '
-            f'loss {loss}). Better was {best_san}.'
+        return _(
+            '%(label)s: %(san)s (eval %(before)s → %(after)s, loss %(loss)s). Better was %(best)s.',
+            label=label,
+            san=played_san,
+            before=before,
+            after=after,
+            loss=loss,
+            best=best_san,
         )
-    return f'{classification.title()}: {played_san} (eval {before} → {after}, loss {loss}).'
+    return _(
+        '%(label)s: %(san)s (eval %(before)s → %(after)s, loss %(loss)s).',
+        label=label,
+        san=played_san,
+        before=before,
+        after=after,
+        loss=loss,
+    )
 
 
 def evaluate_user_move(engine, board_before, move, user_color, time_limit=TRAINER_ANALYSIS_TIME):
@@ -248,13 +270,13 @@ def game_over_message(board):
     if not board.is_game_over():
         return None
     if board.is_checkmate():
-        winner = 'Black' if board.turn == chess.WHITE else 'White'
-        return f'Checkmate. {winner} wins.'
+        winner = _('Black') if board.turn == chess.WHITE else _('White')
+        return _('Checkmate. %(winner)s wins.', winner=winner)
     if board.is_stalemate():
-        return 'Stalemate. Draw.'
+        return _('Stalemate. Draw.')
     if board.is_insufficient_material():
-        return 'Draw by insufficient material.'
-    return f'Game over: {board.result()}'
+        return _('Draw by insufficient material.')
+    return _('Game over: %(result)s', result=board.result())
 
 
 def parse_move_or_command(board, text):

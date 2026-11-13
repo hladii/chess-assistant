@@ -29,19 +29,19 @@
   <header class="game-toolbar">
     <div class="game-toolbar-top">
       {% if mode == 'trainer' %}
-      <a class="btn" data-variant="ghost" data-size="sm" href="{{ url_for('training_list') }}">← Навчання</a>
+      <a class="btn" data-variant="ghost" data-size="sm" href="{{ url_for('training_list') }}">← {{ _('Training') }}</a>
       {% else %}
-      <a class="btn" data-variant="ghost" data-size="sm" href="{{ url_for('games_list') }}">← Ігри</a>
+      <a class="btn" data-variant="ghost" data-size="sm" href="{{ url_for('games_list') }}">← {{ _('Games') }}</a>
       {% endif %}
       <h1 id="game-name" class="game-title">{{ name }}</h1>
     </div>
-    <div class="meta-chips" aria-label="Game status">
-      <span class="chip"><span class="chip-label">Mode</span> <span id="mode-label">{% if mode == 'trainer' %}Trainer · {{ trainer_elo }}{% else %}Assistant{% endif %}</span></span>
-      <span class="chip"><span class="chip-label">You</span> <span id="user-side">{{ user_side }}</span></span>
-      <span class="chip chip-turn"><span class="chip-label">To move</span> <span id="side-to-move">{{ side_to_move }}</span></span>
-      <span class="chip"><span class="chip-label">Moves</span> <span id="move-count">{{ move_count }}</span></span>
+    <div class="meta-chips" aria-label="{{ _('Game status') }}">
+      <span class="chip"><span class="chip-label">{{ _('Mode') }}</span> <span id="mode-label">{% if mode == 'trainer' %}{{ _('Trainer') }} · {{ trainer_elo }}{% else %}{{ _('Assistant') }}{% endif %}</span></span>
+      <span class="chip"><span class="chip-label">{{ _('You') }}</span> <span id="user-side">{{ user_side }}</span></span>
+      <span class="chip chip-turn"><span class="chip-label">{{ _('To move') }}</span> <span id="side-to-move">{{ side_to_move }}</span></span>
+      <span class="chip"><span class="chip-label">{{ _('Moves') }}</span> <span id="move-count">{{ move_count }}</span></span>
       <span class="chip chip-accuracy" id="accuracy-chip">
-        <span class="chip-label">Accuracy</span>
+        <span class="chip-label">{{ _('Accuracy') }}</span>
         <span id="accuracy-value">{% if accuracy is none %}—{% else %}{{ accuracy }}%{% endif %}</span>
       </span>
     </div>
@@ -52,25 +52,25 @@
       <div class="board-wrap">
         <div class="cg-wrap" id="board"></div>
         <div class="promo-picker" id="promo-picker" hidden>
-          <button type="button" class="promo-btn" data-piece="q" aria-label="Queen">Queen</button>
-          <button type="button" class="promo-btn" data-piece="r" aria-label="Rook">Rook</button>
-          <button type="button" class="promo-btn" data-piece="b" aria-label="Bishop">Bishop</button>
-          <button type="button" class="promo-btn" data-piece="n" aria-label="Knight">Knight</button>
+          <button type="button" class="promo-btn" data-piece="q" aria-label="{{ _('Queen') }}">{{ _('Queen') }}</button>
+          <button type="button" class="promo-btn" data-piece="r" aria-label="{{ _('Rook') }}">{{ _('Rook') }}</button>
+          <button type="button" class="promo-btn" data-piece="b" aria-label="{{ _('Bishop') }}">{{ _('Bishop') }}</button>
+          <button type="button" class="promo-btn" data-piece="n" aria-label="{{ _('Knight') }}">{{ _('Knight') }}</button>
         </div>
       </div>
     </aside>
 
     <div class="panel">
       <form id="move-form" class="move-composer" {% if game_over or (mode == 'trainer' and not your_turn) %}hidden{% endif %}>
-        <label for="san" id="move-prompt-label" class="move-label">{{ move_prompt }} (SAN)</label>
+        <label for="san" id="move-prompt-label" class="move-label">{{ move_prompt }} {{ _('(SAN)') }}</label>
         <div class="move-row">
           <input id="san" class="input" name="san" type="text" autocomplete="off" autofocus placeholder="e4, Nf6, O-O" aria-describedby="move-help">
-          <button type="submit" class="btn" id="play-btn" data-size="lg">Play</button>
+          <button type="submit" class="btn" id="play-btn" data-size="lg">{{ _('Play') }}</button>
         </div>
-        <p id="move-help" class="move-help muted">Drag a piece on the board, type SAN, or pick a suggestion.</p>
+        <p id="move-help" class="move-help muted">{{ _('Drag a piece on the board, type SAN, or pick a suggestion.') }}</p>
         <div class="move-actions">
-          <button type="button" class="btn" data-variant="secondary" data-size="sm" id="hint-btn" {% if mode == 'trainer' %}hidden{% endif %}>Hint</button>
-          <button type="button" class="btn" data-variant="outline" data-size="sm" id="undo-btn">Undo</button>
+          <button type="button" class="btn" data-variant="secondary" data-size="sm" id="hint-btn" {% if mode == 'trainer' %}hidden{% endif %}>{{ _('Hint') }}</button>
+          <button type="button" class="btn" data-variant="outline" data-size="sm" id="undo-btn">{{ _('Undo') }}</button>
         </div>
       </form>
 
@@ -81,23 +81,27 @@
 
       <div class="coach-box" id="coach-box" {% if not coach %}hidden{% endif %}>
         <div class="section-head">
-          <h2>Coach</h2>
+          <h2>{{ _('Coach') }}</h2>
           <span class="badge coach-{{ (coach.classification if coach else 'best') }}" id="coach-badge">
-            {{ (coach.classification if coach else '')|title }}
+            {% if coach and coach.classification == 'best' %}{{ _('Best') }}
+            {% elif coach and coach.classification == 'inaccuracy' %}{{ _('Inaccuracy') }}
+            {% elif coach and coach.classification == 'mistake' %}{{ _('Mistake') }}
+            {% elif coach and coach.classification == 'blunder' %}{{ _('Blunder') }}
+            {% elif coach %}{{ coach.classification|title }}{% endif %}
           </span>
         </div>
         <p class="coach-text" id="coach-text">{% if coach %}{{ coach.message }}{% endif %}</p>
         <p class="coach-better muted" id="coach-best" {% if not coach or coach.classification == 'best' or not coach.best_move_san %}hidden{% endif %}>
-          {% if coach and coach.classification != 'best' and coach.best_move_san %}Better was {{ coach.best_move_san }}{% endif %}
+          {% if coach and coach.classification != 'best' and coach.best_move_san %}{{ _('Better was %(move)s', move=coach.best_move_san) }}{% endif %}
         </p>
       </div>
 
       <div class="suggestions" id="suggestions-wrap" {% if mode == 'trainer' %}hidden{% endif %}>
         <div class="section-head">
-          <h2>Best moves</h2>
+          <h2>{{ _('Best moves') }}</h2>
           <p class="plies-legend muted">
-            <span class="ply ply-you">you</span>
-            <span class="ply ply-opp">opp</span>
+            <span class="ply ply-you">{{ _('you') }}</span>
+            <span class="ply ply-opp">{{ _('opp') }}</span>
           </p>
         </div>
         <div id="suggestions">
@@ -117,19 +121,19 @@
             {% endfor %}
           </ol>
           {% elif your_turn %}
-          <p class="muted">Press Hint for engine lines.</p>
+          <p class="muted">{{ _('Press Hint for engine lines.') }}</p>
           {% else %}
-          <p class="muted">Enter the opponent move, then your turn suggestions appear.</p>
+          <p class="muted">{{ _('Enter the opponent move, then your turn suggestions appear.') }}</p>
           {% endif %}
         </div>
       </div>
 
       <div class="history-box">
         <div class="section-head">
-          <h2>Move history</h2>
+          <h2>{{ _('Move history') }}</h2>
         </div>
-        <div class="history-scroll" id="move-history" data-history="{{ (history or '')|e }}" tabindex="0" aria-label="Move history">
-          {% if not history %}<span class="muted">No moves yet.</span>{% endif %}
+        <div class="history-scroll" id="move-history" data-history="{{ (history or '')|e }}" tabindex="0" aria-label="{{ _('Move history') }}">
+          {% if not history %}<span class="muted">{{ _('No moves yet.') }}</span>{% endif %}
         </div>
       </div>
     </div>
@@ -139,7 +143,7 @@
 <div class="loader" id="loader" hidden>
   <div class="card loader-card">
     <div class="spinner" aria-hidden="true"></div>
-    <p id="loader-text">Working…</p>
+    <p id="loader-text">{{ _('Working…') }}</p>
   </div>
 </div>
 {% endblock %}

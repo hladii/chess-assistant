@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 
-{% block title %}Навчання · Chess Move Advisor{% endblock %}
+{% block title %}{{ _('Training') }} · Chess Move Advisor{% endblock %}
 {% block body_class %}page-list{% endblock %}
 
 {% block content %}
 <header class="list-header">
   <div class="list-header-text">
-    <h1>Навчання</h1>
-    <p class="tagline">Гра проти Stockfish з фідбеком після кожного вашого ходу.</p>
+    <h1>{{ _('Training') }}</h1>
+    <p class="tagline">{{ _('Play against Stockfish with feedback after every move of yours.') }}</p>
   </div>
-  <button type="button" class="btn" id="open-create" data-size="lg">+ Нове тренування</button>
+  <button type="button" class="btn" id="open-create" data-size="lg">+ {{ _('New training') }}</button>
 </header>
 
 {% if error %}
@@ -18,10 +18,10 @@
 
 <section class="list-panel" aria-labelledby="training-heading">
   <div class="list-panel-head">
-    <h2 id="training-heading">Тренувальні партії</h2>
+    <h2 id="training-heading">{{ _('Training games') }}</h2>
     <div class="list-panel-meta">
       <span class="list-accuracy{% if overall_accuracy is none %} muted{% endif %}">
-        Точність · {% if overall_accuracy is none %}—{% else %}{{ overall_accuracy }}%{% endif %}
+        {{ _('Accuracy') }} · {% if overall_accuracy is none %}—{% else %}{{ overall_accuracy }}%{% endif %}
       </span>
       <span class="list-count muted">{{ games|length }}</span>
     </div>
@@ -44,11 +44,11 @@
         <p class="history-preview">{{ game.history_preview }}</p>
       </a>
       <div class="game-row-actions">
-        <a class="btn" data-size="sm" href="{{ url_for('play_game', game_id=game.id) }}">Продовжити</a>
-        <form method="post" action="{{ url_for('remove_game', game_id=game.id) }}" onsubmit="return confirm('Видалити «{{ game.name }}»?');">
+        <a class="btn" data-size="sm" href="{{ url_for('play_game', game_id=game.id) }}">{{ _('Continue') }}</a>
+        <form method="post" action="{{ url_for('remove_game', game_id=game.id) }}" onsubmit="return confirm({{ _('Delete “%(name)s”?', name=game.name)|tojson }});">
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
           <input type="hidden" name="return_to" value="training">
-          <button type="submit" class="btn" data-variant="ghost" data-size="sm" aria-label="Видалити {{ game.name }}">Видалити</button>
+          <button type="submit" class="btn" data-variant="ghost" data-size="sm" aria-label="{{ _('Delete %(name)s', name=game.name) }}">{{ _('Delete') }}</button>
         </form>
       </div>
     </li>
@@ -56,9 +56,9 @@
   </ul>
   {% else %}
   <div class="empty-state">
-    <p class="empty-title">Ще немає тренувань</p>
-    <p class="muted">Оберіть силу Stockfish і зіграйте партію з миттєвим фідбеком.</p>
-    <button type="button" class="btn" data-open-create>+ Нове тренування</button>
+    <p class="empty-title">{{ _('No training games yet') }}</p>
+    <p class="muted">{{ _('Pick a Stockfish strength and play a game with instant feedback.') }}</p>
+    <button type="button" class="btn" data-open-create>+ {{ _('New training') }}</button>
   </div>
   {% endif %}
 </section>
@@ -66,8 +66,8 @@
 <dialog class="create-dialog" id="create-dialog" aria-labelledby="create-dialog-title">
   <form method="post" action="{{ url_for('create') }}" class="create-dialog-form" id="create-form">
     <header class="create-dialog-head">
-      <h2 id="create-dialog-title">Нове тренування</h2>
-      <button type="button" class="btn" data-variant="ghost" data-size="sm" data-close-dialog aria-label="Закрити">✕</button>
+      <h2 id="create-dialog-title">{{ _('New training') }}</h2>
+      <button type="button" class="btn" data-variant="ghost" data-size="sm" data-close-dialog aria-label="{{ _('Close') }}">✕</button>
     </header>
 
     <div class="form-stack create-dialog-body">
@@ -75,12 +75,12 @@
       <input type="hidden" name="mode" value="trainer">
 
       <div role="group" class="field">
-        <label for="name">Назва</label>
-        <input id="name" class="input" name="name" type="text" required maxlength="80" placeholder="наприклад, Тренування 1200" autofocus>
+        <label for="name">{{ _('Title') }}</label>
+        <input id="name" class="input" name="name" type="text" required maxlength="80" placeholder="{{ _('e.g. Training 1200') }}" autofocus>
       </div>
 
       <fieldset class="fieldset-card">
-        <legend>Сила тренера</legend>
+        <legend>{{ _('Trainer strength') }}</legend>
         <div class="choice-row">
           {% for elo in trainer_elo_levels %}
           <label class="choice">
@@ -92,23 +92,23 @@
       </fieldset>
 
       <fieldset class="fieldset-card">
-        <legend>Ваш колір</legend>
+        <legend>{{ _('Your color') }}</legend>
         <div class="choice-row">
           <label class="choice">
             <input type="radio" name="side" value="w" checked>
-            Білі
+            {{ _('White') }}
           </label>
           <label class="choice">
             <input type="radio" name="side" value="b">
-            Чорні
+            {{ _('Black') }}
           </label>
         </div>
       </fieldset>
     </div>
 
     <footer class="create-dialog-foot">
-      <button type="button" class="btn" data-variant="outline" data-close-dialog>Скасувати</button>
-      <button type="submit" class="btn">Створити і почати</button>
+      <button type="button" class="btn" data-variant="outline" data-close-dialog>{{ _('Cancel') }}</button>
+      <button type="submit" class="btn">{{ _('Create and start') }}</button>
     </footer>
   </form>
 </dialog>

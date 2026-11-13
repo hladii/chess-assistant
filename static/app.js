@@ -6,6 +6,18 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
   if (!gameEl) return;
 
   const gameId = Number(gameEl.dataset.gameId);
+
+  const I18N = window.I18N || {};
+  function t(key, vars) {
+    let s = I18N[key] != null ? I18N[key] : key;
+    if (vars) {
+      Object.keys(vars).forEach(function (k) {
+        s = s.replace('%(' + k + ')s', vars[k]).replace('%(' + k + ')s', vars[k]);
+      });
+    }
+    return s;
+  }
+
   const isTrainer = gameEl.dataset.mode === 'trainer';
   const csrfToken = (
     gameEl.dataset.csrf ||
@@ -94,7 +106,7 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
     if (!historyEl) return;
     const rows = parseHistoryRows(historyText);
     if (!rows.length) {
-      historyEl.innerHTML = '<span class="muted">No moves yet.</span>';
+      historyEl.innerHTML = '<span class="muted">' + t('noMovesYet') + '</span>';
       historyEl.dataset.history = '';
       return;
     }
@@ -109,7 +121,7 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
     }).join('');
     historyEl.innerHTML =
       '<table class="history-table">' +
-      '<thead><tr><th scope="col">#</th><th scope="col">White</th><th scope="col">Black</th></tr></thead>' +
+      '<thead><tr><th scope="col">' + t('colNum') + '</th><th scope="col">' + t('colWhite') + '</th><th scope="col">' + t('colBlack') + '</th></tr></thead>' +
       '<tbody>' + body + '</tbody></table>';
     historyEl.dataset.history = historyText || '';
     historyEl.scrollTop = historyEl.scrollHeight;
@@ -124,12 +136,13 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
     coachBox.hidden = false;
     const cls = coach.classification || 'best';
     coachBadge.className = 'badge coach-' + cls;
-    coachBadge.textContent = cls.charAt(0).toUpperCase() + cls.slice(1);
+    const classKey = 'classification_' + cls;
+    coachBadge.textContent = I18N[classKey] || (cls.charAt(0).toUpperCase() + cls.slice(1));
     coachText.textContent = coach.message || '';
     if (coach.best_move_san && cls !== 'best') {
       coachBest.hidden = false;
       coachBest.className = 'coach-better muted';
-      coachBest.textContent = 'Better was ' + coach.best_move_san;
+      coachBest.textContent = t('betterWas', { move: coach.best_move_san });
     } else {
       coachBest.hidden = true;
       coachBest.textContent = '';
@@ -147,8 +160,8 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
     const list = state.suggestions || [];
     if (!list.length) {
       suggestionsEl.innerHTML = state.your_turn
-        ? '<p class="muted">Press Hint for engine lines.</p>'
-        : '<p class="muted">Enter the opponent move, then your turn suggestions appear.</p>';
+        ? '<p class="muted">' + t('pressHint') + '</p>'
+        : '<p class="muted">' + t('enterOpponent') + '</p>';
       return;
     }
 
@@ -233,12 +246,12 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
       });
     } catch (err) {
       syncBoardFromChess();
-      setText(errorEl, 'Illegal move.');
+      setText(errorEl, t('illegalMove'));
       return;
     }
     if (!result) {
       syncBoardFromChess();
-      setText(errorEl, 'Illegal move.');
+      setText(errorEl, t('illegalMove'));
       return;
     }
     const san = result.san;
@@ -247,14 +260,12 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
     syncBoardFromChess();
     if (sanInput) sanInput.value = san;
     const trainerMode = isTrainer;
-    const analyzing = trainerMode
-      ? false
-      : ((movePromptLabel && movePromptLabel.textContent) || '').indexOf('Your move') !== -1;
+    const analyzing = trainerMode ? false : (gameEl.dataset.yourTurn === '1');
     playSan(
       san,
       trainerMode
-        ? 'Checking your move…'
-        : (analyzing ? 'Analyzing position…' : 'Submitting opponent move…')
+        ? t('checkingMove')
+        : (analyzing ? t('analyzingPosition') : t('submittingOpponent'))
     );
   }
 
@@ -367,8 +378,8 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
     }
     if (modeLabelEl && state.mode) {
       modeLabelEl.textContent = state.mode === 'trainer'
-        ? ('Trainer · ' + (state.trainer_elo || ''))
-        : 'Assistant';
+        ? (t('trainer') + ' · ' + (state.trainer_elo || ''))
+        : t('assistant');
     }
     setText(messageEl, state.message || '');
     setText(errorEl, state.error || '');
@@ -377,7 +388,7 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
 
     const trainerMode = isTrainer || state.mode === 'trainer';
     if (movePromptLabel) {
-      movePromptLabel.textContent = (state.move_prompt || 'Move') + ' (SAN)';
+      movePromptLabel.textContent = (state.move_prompt || t('move')) + ' ' + t('sanSuffix');
     }
     if (trainerMode) {
       moveForm.hidden = !!state.game_over || !state.your_turn;
@@ -402,7 +413,7 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
       game_over: gameEl.dataset.gameOver === '1',
       mode: gameEl.dataset.mode || 'assistant',
     });
-    setLoader(true, loaderMessage || 'Working…');
+    setLoader(true, loaderMessage || t('working'));
     try {
       const payload = Object.assign({ game_id: gameId }, body || {});
       const response = await fetch(url, {
@@ -426,7 +437,7 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
       }
       return data;
     } catch (err) {
-      setText(errorEl, 'Request failed. Try again.');
+      setText(errorEl, t('requestFailed'));
       syncBoardFromChess();
       return null;
     } finally {
@@ -445,10 +456,10 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
   async function playSan(san, loaderMessage) {
     const trimmed = (san || '').trim();
     if (!trimmed) {
-      setText(errorEl, 'Enter a move in SAN, e.g. e4 or Nf6.');
+      setText(errorEl, t('enterSan'));
       return;
     }
-    const data = await apiPost('/api/move', { san: trimmed }, loaderMessage || 'Playing move…');
+    const data = await apiPost('/api/move', { san: trimmed }, loaderMessage || t('playingMove'));
     if (data && data.ok) {
       if (sanInput) sanInput.value = '';
     } else {
@@ -483,14 +494,13 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
     moveForm.addEventListener('submit', function (event) {
       event.preventDefault();
       if (isTrainer) {
-        playSan(sanInput.value, 'Checking your move…');
+        playSan(sanInput.value, t('checkingMove'));
         return;
       }
-      const prompt = movePromptLabel.textContent || '';
-      const analyzing = prompt.indexOf('Your move') !== -1;
+      const analyzing = gameEl.dataset.yourTurn === '1';
       playSan(
         sanInput.value,
-        analyzing ? 'Analyzing position…' : 'Submitting opponent move…'
+        analyzing ? t('analyzingPosition') : t('submittingOpponent')
       );
     });
   }
@@ -502,19 +512,19 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
       const san = button.getAttribute('data-san');
       if (!san) return;
       sanInput.value = san;
-      playSan(san, isTrainer ? 'Checking your move…' : 'Playing selected move…');
+      playSan(san, isTrainer ? t('checkingMove') : t('playingSelected'));
     });
   }
 
   if (hintBtn) {
     hintBtn.addEventListener('click', function () {
-      apiPost('/api/hint', null, 'Analyzing…');
+      apiPost('/api/hint', null, t('analyzing'));
     });
   }
 
   if (undoBtn) {
     undoBtn.addEventListener('click', function () {
-      apiPost('/api/undo', null, 'Undoing…');
+      apiPost('/api/undo', null, t('undoing'));
     });
   }
 })();

@@ -210,6 +210,32 @@ body.nav-open .nav-burger-lines::after {
   margin: 0 0 1rem;
 }
 
+.guest-locale-bar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0.65rem 1rem 0;
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.guest-locale-form {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.guest-locale-form label {
+  font-size: 0.85rem;
+  color: var(--muted-foreground);
+}
+
+.guest-locale-select {
+  width: auto;
+  min-width: 8.5rem;
+  padding: 0.35rem 0.55rem;
+  font-size: 0.85rem;
+}
+
 .auth-switch {
   margin: 1rem 0 0;
   text-align: center;

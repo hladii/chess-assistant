@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 
-{% block title %}Ігри · Chess Move Advisor{% endblock %}
+{% block title %}{{ _('Games') }} · Chess Move Advisor{% endblock %}
 {% block body_class %}page-list{% endblock %}
 
 {% block content %}
 <header class="list-header">
   <div class="list-header-text">
-    <h1>Ігри</h1>
-    <p class="tagline">Партії з асистентом ходів. Продовжуйте з того місця, де зупинились.</p>
+    <h1>{{ _('Games') }}</h1>
+    <p class="tagline">{{ _('Games with the move assistant. Continue where you left off.') }}</p>
   </div>
-  <button type="button" class="btn" id="open-create" data-size="lg">+ Нова партія</button>
+  <button type="button" class="btn" id="open-create" data-size="lg">+ {{ _('New game') }}</button>
 </header>
 
 {% if error %}
@@ -18,10 +18,10 @@
 
 <section class="list-panel" aria-labelledby="games-heading">
   <div class="list-panel-head">
-    <h2 id="games-heading">Ваші партії</h2>
+    <h2 id="games-heading">{{ _('Your games') }}</h2>
     <div class="list-panel-meta">
       <span class="list-accuracy{% if overall_accuracy is none %} muted{% endif %}">
-        Точність · {% if overall_accuracy is none %}—{% else %}{{ overall_accuracy }}%{% endif %}
+        {{ _('Accuracy') }} · {% if overall_accuracy is none %}—{% else %}{{ overall_accuracy }}%{% endif %}
       </span>
       <span class="list-count muted">{{ games|length }}</span>
     </div>
@@ -43,11 +43,11 @@
         <p class="history-preview">{{ game.history_preview }}</p>
       </a>
       <div class="game-row-actions">
-        <a class="btn" data-size="sm" href="{{ url_for('play_game', game_id=game.id) }}">Продовжити</a>
-        <form method="post" action="{{ url_for('remove_game', game_id=game.id) }}" onsubmit="return confirm('Видалити «{{ game.name }}»?');">
+        <a class="btn" data-size="sm" href="{{ url_for('play_game', game_id=game.id) }}">{{ _('Continue') }}</a>
+        <form method="post" action="{{ url_for('remove_game', game_id=game.id) }}" onsubmit="return confirm({{ _('Delete “%(name)s”?', name=game.name)|tojson }});">
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
           <input type="hidden" name="return_to" value="games">
-          <button type="submit" class="btn" data-variant="ghost" data-size="sm" aria-label="Видалити {{ game.name }}">Видалити</button>
+          <button type="submit" class="btn" data-variant="ghost" data-size="sm" aria-label="{{ _('Delete %(name)s', name=game.name) }}">{{ _('Delete') }}</button>
         </form>
       </div>
     </li>
@@ -55,9 +55,9 @@
   </ul>
   {% else %}
   <div class="empty-state">
-    <p class="empty-title">Ще немає партій</p>
-    <p class="muted">Створіть першу — можна з порожньої дошки або з PGN.</p>
-    <button type="button" class="btn" data-open-create>+ Нова партія</button>
+    <p class="empty-title">{{ _('No games yet') }}</p>
+    <p class="muted">{{ _('Create the first one — from an empty board or from PGN.') }}</p>
+    <button type="button" class="btn" data-open-create>+ {{ _('New game') }}</button>
   </div>
   {% endif %}
 </section>
@@ -65,8 +65,8 @@
 <dialog class="create-dialog" id="create-dialog" aria-labelledby="create-dialog-title">
   <form method="post" action="{{ url_for('create') }}" class="create-dialog-form" id="create-form">
     <header class="create-dialog-head">
-      <h2 id="create-dialog-title">Нова партія</h2>
-      <button type="button" class="btn" data-variant="ghost" data-size="sm" data-close-dialog aria-label="Закрити">✕</button>
+      <h2 id="create-dialog-title">{{ _('New game') }}</h2>
+      <button type="button" class="btn" data-variant="ghost" data-size="sm" data-close-dialog aria-label="{{ _('Close') }}">✕</button>
     </header>
 
     <div class="form-stack create-dialog-body">
@@ -74,34 +74,34 @@
       <input type="hidden" name="mode" value="assistant">
 
       <div role="group" class="field">
-        <label for="name">Назва</label>
-        <input id="name" class="input" name="name" type="text" required maxlength="80" placeholder="наприклад, Бліц з другом" autofocus>
+        <label for="name">{{ _('Title') }}</label>
+        <input id="name" class="input" name="name" type="text" required maxlength="80" placeholder="{{ _('e.g. Blitz with a friend') }}" autofocus>
       </div>
 
       <fieldset class="fieldset-card">
-        <legend>Ваш колір</legend>
+        <legend>{{ _('Your color') }}</legend>
         <div class="choice-row">
           <label class="choice">
             <input type="radio" name="side" value="w" checked>
-            Білі
+            {{ _('White') }}
           </label>
           <label class="choice">
             <input type="radio" name="side" value="b">
-            Чорні
+            {{ _('Black') }}
           </label>
         </div>
       </fieldset>
 
       <div role="group" class="field">
-        <label for="history">Історія (необовʼязково)</label>
+        <label for="history">{{ _('History (optional)') }}</label>
         <textarea id="history" class="textarea input" name="history" rows="5" placeholder="1. e4 e5 2. Nf3 ..."></textarea>
-        <p class="muted field-hint">Вставте PGN / SAN, щоб продовжити вже зіграну партію.</p>
+        <p class="muted field-hint">{{ _('Paste PGN / SAN to continue an already played game.') }}</p>
       </div>
     </div>
 
     <footer class="create-dialog-foot">
-      <button type="button" class="btn" data-variant="outline" data-close-dialog>Скасувати</button>
-      <button type="submit" class="btn">Створити і почати</button>
+      <button type="button" class="btn" data-variant="outline" data-close-dialog>{{ _('Cancel') }}</button>
+      <button type="submit" class="btn">{{ _('Create and start') }}</button>
     </footer>
   </form>
 </dialog>

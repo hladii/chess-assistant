@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}Вхід · Chess Move Advisor{% endblock %}
+{% block title %}{{ _('Log in') }} · Chess Move Advisor{% endblock %}
 
 {% block main_class %}page narrow{% endblock %}
 
 {% block content %}
 <header class="header">
   <p class="home-brand" style="font-size:1.75rem">Chess Move Advisor</p>
-  <p class="tagline">Увійдіть, щоб продовжити партії.</p>
+  <p class="tagline">{{ _('Sign in to continue your games.') }}</p>
 </header>
 
 <section class="card card-section">
@@ -20,7 +20,7 @@
     </div>
 
     <div role="group" class="field">
-      <label for="password">Пароль</label>
+      <label for="password">{{ _('Password') }}</label>
       <input id="password" class="input" name="password" type="password" required autocomplete="current-password">
     </div>
 
@@ -28,9 +28,9 @@
     <p class="alert" data-variant="destructive" role="alert">{{ error }}</p>
     {% endif %}
 
-    <button type="submit" class="btn">Увійти</button>
+    <button type="submit" class="btn">{{ _('Log in') }}</button>
   </form>
 </section>
 
-<p class="auth-switch muted">Немає акаунта? <a href="{{ url_for('register') }}">Зареєструватись</a></p>
+<p class="auth-switch muted">{{ _('No account?') }} <a href="{{ url_for('register') }}">{{ _('Sign up') }}</a></p>
 {% endblock %}

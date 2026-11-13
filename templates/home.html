@@ -1,27 +1,27 @@
 {% extends "base.html" %}
 
-{% block title %}Головна · Chess Move Advisor{% endblock %}
+{% block title %}{{ _('Home') }} · Chess Move Advisor{% endblock %}
 
 {% block body_class %}page-home{% endblock %}
 
 {% block content %}
 <section class="home-hero">
   <p class="home-brand">Chess Move Advisor</p>
-  <h1>Грайте. Аналізуйте. Вчіться.</h1>
+  <h1>{{ _('Play. Analyze. Learn.') }}</h1>
   <p class="home-lead">
-    Зберігайте партії з підказками Stockfish або тренуйтесь проти двигуна з миттєвим фідбеком після кожного ходу.
+    {{ _('Save games with Stockfish hints or train against the engine with instant feedback after every move.') }}
   </p>
 
   <div class="home-cta-grid">
     <a class="home-cta" href="{{ url_for('games_list') }}">
-      <span class="home-cta-label">Ігри</span>
-      <span class="home-cta-desc">Асистент ходів: записуйте партію, отримуйте найкращі лінії.</span>
-      <span class="home-cta-action">Відкрити →</span>
+      <span class="home-cta-label">{{ _('Games') }}</span>
+      <span class="home-cta-desc">{{ _('Move assistant: record a game and get the best lines.') }}</span>
+      <span class="home-cta-action">{{ _('Open →') }}</span>
     </a>
     <a class="home-cta" href="{{ url_for('training_list') }}">
-      <span class="home-cta-label">Навчання</span>
-      <span class="home-cta-desc">Тренер Stockfish (~800 / 1200 / 1600 Elo) з оцінкою ваших ходів.</span>
-      <span class="home-cta-action">Тренуватись →</span>
+      <span class="home-cta-label">{{ _('Training') }}</span>
+      <span class="home-cta-desc">{{ _('Stockfish trainer (~800 / 1200 / 1600 Elo) with move evaluation.') }}</span>
+      <span class="home-cta-action">{{ _('Train →') }}</span>
     </a>
   </div>
 </section>

@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 
-{% block title %}Профіль · Chess Move Advisor{% endblock %}
+{% block title %}{{ _('Profile') }} · Chess Move Advisor{% endblock %}
 
 {% block main_class %}page narrow{% endblock %}
 
 {% block content %}
 <header class="profile-hero">
-  <p class="back-link"><a href="{{ url_for('index') }}">← Головна</a></p>
+  <p class="back-link"><a href="{{ url_for('index') }}">← {{ _('Home') }}</a></p>
   <div class="profile-hero-card">
     <div class="avatar avatar-lg" aria-hidden="true">{{ user_initials }}</div>
     <div>
-      <h1>{{ user.display_name or 'Гравець' }}</h1>
+      <h1>{{ user.display_name or _('Player') }}</h1>
       <p class="muted">{{ user.email }}</p>
     </div>
   </div>
@@ -21,46 +21,67 @@
 
 <section class="card card-section">
   <header>
-    <h2>Імʼя</h2>
+    <h2>{{ _('Language') }}</h2>
+  </header>
+  <form method="post" action="{{ url_for('profile') }}" class="form-stack">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <input type="hidden" name="form" value="locale">
+
+    <div role="group" class="field">
+      <label for="locale">{{ _('Interface language') }}</label>
+      <select id="locale" class="input" name="locale">
+        {% for code in supported_locales %}
+        <option value="{{ code }}" {% if (user.locale or current_locale or 'en') == code %}selected{% endif %}>{{ locale_labels[code] }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <button type="submit" class="btn">{{ _('Save language') }}</button>
+  </form>
+</section>
+
+<section class="card card-section" style="margin-top:1rem">
+  <header>
+    <h2>{{ _('Name') }}</h2>
   </header>
   <form method="post" action="{{ url_for('profile') }}" class="form-stack">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <input type="hidden" name="form" value="profile">
 
     <div role="group" class="field">
-      <label for="display_name">Як вас називати</label>
+      <label for="display_name">{{ _('What should we call you') }}</label>
       <input id="display_name" class="input" name="display_name" type="text" required maxlength="40" value="{{ user.display_name or '' }}" autocomplete="nickname">
     </div>
 
-    <button type="submit" class="btn">Зберегти імʼя</button>
+    <button type="submit" class="btn">{{ _('Save name') }}</button>
   </form>
 </section>
 
 <section class="card card-section" style="margin-top:1rem">
   <header>
-    <h2>Пароль</h2>
+    <h2>{{ _('Password') }}</h2>
   </header>
   <form method="post" action="{{ url_for('profile') }}" class="form-stack">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <input type="hidden" name="form" value="password">
 
     <div role="group" class="field">
-      <label for="current_password">Поточний пароль</label>
+      <label for="current_password">{{ _('Current password') }}</label>
       <input id="current_password" class="input" name="current_password" type="password" required autocomplete="current-password">
     </div>
 
     <div role="group" class="field">
-      <label for="new_password">Новий пароль</label>
+      <label for="new_password">{{ _('New password') }}</label>
       <input id="new_password" class="input" name="new_password" type="password" required minlength="8" autocomplete="new-password">
     </div>
 
     <div role="group" class="field">
-      <label for="confirm_password">Підтвердження</label>
+      <label for="confirm_password">{{ _('Confirmation') }}</label>
       <input id="confirm_password" class="input" name="confirm_password" type="password" required minlength="8" autocomplete="new-password">
     </div>
 
-    <p class="muted">Мінімум 8 символів.</p>
-    <button type="submit" class="btn" data-variant="secondary">Оновити пароль</button>
+    <p class="muted">{{ _('At least 8 characters.') }}</p>
+    <button type="submit" class="btn" data-variant="secondary">{{ _('Update password') }}</button>
   </form>
 </section>
 {% endblock %}

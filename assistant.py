@@ -163,6 +163,18 @@ def classify_cp_loss(loss):
     return 'blunder'
 
 
+QUALITY_POINTS = {
+    'best': 100,
+    'inaccuracy': 80,
+    'mistake': 50,
+    'blunder': 20,
+}
+
+
+def classification_to_points(classification):
+    return QUALITY_POINTS.get(classification, 20)
+
+
 def coach_message(classification, played_san, best_san, cp_before, cp_after, cp_loss):
     before = f'{cp_before / 100:.2f}'
     after = f'{cp_after / 100:.2f}'

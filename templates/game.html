@@ -7,6 +7,9 @@
 
 {% block head_meta %}
 <meta name="csrf-token" content="{{ csrf_token }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='vendor/chessground/chessground.base.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='vendor/chessground/chessground.brown.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='vendor/chessground/chessground.cburnett.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -16,6 +19,12 @@
   data-game-id="{{ game_id }}"
   data-csrf="{{ csrf_token }}"
   data-mode="{{ mode or 'assistant' }}"
+  data-fen="{{ fen }}"
+  data-orientation="{{ orientation }}"
+  data-last-move="{{ last_move or '' }}"
+  data-your-turn="{{ '1' if your_turn else '0' }}"
+  data-game-over="{{ '1' if game_over else '0' }}"
+  data-side-to-move="{{ side_to_move }}"
 >
   <header class="game-toolbar">
     <div class="game-toolbar-top">
@@ -31,13 +40,23 @@
       <span class="chip"><span class="chip-label">You</span> <span id="user-side">{{ user_side }}</span></span>
       <span class="chip chip-turn"><span class="chip-label">To move</span> <span id="side-to-move">{{ side_to_move }}</span></span>
       <span class="chip"><span class="chip-label">Moves</span> <span id="move-count">{{ move_count }}</span></span>
+      <span class="chip chip-accuracy" id="accuracy-chip">
+        <span class="chip-label">Accuracy</span>
+        <span id="accuracy-value">{% if accuracy is none %}—{% else %}{{ accuracy }}%{% endif %}</span>
+      </span>
     </div>
   </header>
 
   <section class="game-layout">
     <aside class="board-column">
-      <div class="board-wrap" id="board">
-        {{ board_svg|safe }}
+      <div class="board-wrap">
+        <div class="cg-wrap" id="board"></div>
+        <div class="promo-picker" id="promo-picker" hidden>
+          <button type="button" class="promo-btn" data-piece="q" aria-label="Queen">Queen</button>
+          <button type="button" class="promo-btn" data-piece="r" aria-label="Rook">Rook</button>
+          <button type="button" class="promo-btn" data-piece="b" aria-label="Bishop">Bishop</button>
+          <button type="button" class="promo-btn" data-piece="n" aria-label="Knight">Knight</button>
+        </div>
       </div>
     </aside>
 
@@ -48,7 +67,7 @@
           <input id="san" class="input" name="san" type="text" autocomplete="off" autofocus placeholder="e4, Nf6, O-O" aria-describedby="move-help">
           <button type="submit" class="btn" id="play-btn" data-size="lg">Play</button>
         </div>
-        <p id="move-help" class="move-help muted">Type a move in SAN, or pick a suggestion below.</p>
+        <p id="move-help" class="move-help muted">Drag a piece on the board, type SAN, or pick a suggestion.</p>
         <div class="move-actions">
           <button type="button" class="btn" data-variant="secondary" data-size="sm" id="hint-btn" {% if mode == 'trainer' %}hidden{% endif %}>Hint</button>
           <button type="button" class="btn" data-variant="outline" data-size="sm" id="undo-btn">Undo</button>
@@ -126,5 +145,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='app.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='app.js') }}"></script>
 {% endblock %}

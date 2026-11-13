@@ -1,3 +1,4 @@
+import json
 import os
 from contextlib import contextmanager
 from datetime import datetime, timezone
@@ -67,6 +68,7 @@ def init_db():
                 start_fen TEXT NOT NULL,
                 mode TEXT NOT NULL DEFAULT 'assistant',
                 trainer_elo INT,
+                quality_scores TEXT NOT NULL DEFAULT '[]',
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL
             )
@@ -94,6 +96,12 @@ def init_db():
                     WHERE table_name = 'games' AND column_name = 'trainer_elo'
                 ) THEN
                     ALTER TABLE games ADD COLUMN trainer_elo INT;
+                END IF;
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_name = 'games' AND column_name = 'quality_scores'
+                ) THEN
+                    ALTER TABLE games ADD COLUMN quality_scores TEXT NOT NULL DEFAULT '[]';
                 END IF;
                 IF NOT EXISTS (
                     SELECT 1 FROM information_schema.columns
@@ -204,12 +212,73 @@ def assign_orphan_games(user_id):
         )
 
 
+def scores_from_game(game):
+    raw = (game or {}).get('quality_scores')
+    if raw is None or raw == '':
+        return []
+    if isinstance(raw, list):
+        return [int(x) for x in raw]
+    try:
+        data = json.loads(raw)
+    except (TypeError, ValueError, json.JSONDecodeError):
+        return []
+    if not isinstance(data, list):
+        return []
+    scores = []
+    for item in data:
+        try:
+            scores.append(int(item))
+        except (TypeError, ValueError):
+            continue
+    return scores
+
+
+def accuracy_from_scores(scores):
+    if not scores:
+        return None
+    return int(round(sum(scores) / len(scores)))
+
+
+def _write_quality_scores(game_id, user_id, scores):
+    payload = json.dumps(scores)
+    with get_connection() as conn:
+        cur = conn.execute(
+            '''
+            UPDATE games
+            SET quality_scores = %s, updated_at = %s
+            WHERE id = %s AND user_id = %s
+            ''',
+            (payload, _now(), game_id, user_id),
+        )
+        return cur.rowcount > 0
+
+
+def append_quality_score(game_id, user_id, points):
+    game = get_game_for_user(game_id, user_id)
+    if not game:
+        return False
+    scores = scores_from_game(game)
+    scores.append(int(points))
+    return _write_quality_scores(game_id, user_id, scores)
+
+
+def pop_quality_score(game_id, user_id):
+    game = get_game_for_user(game_id, user_id)
+    if not game:
+        return False
+    scores = scores_from_game(game)
+    if not scores:
+        return True
+    scores.pop()
+    return _write_quality_scores(game_id, user_id, scores)
+
+
 def list_games(user_id):
     with get_connection() as conn:
         rows = conn.execute(
             '''
             SELECT id, user_id, name, history, user_color, start_fen, mode, trainer_elo,
-                   created_at, updated_at
+                   quality_scores, created_at, updated_at
             FROM games
             WHERE user_id = %s
             ORDER BY updated_at DESC, id DESC
@@ -224,7 +293,7 @@ def get_game_for_user(game_id, user_id):
         row = conn.execute(
             '''
             SELECT id, user_id, name, history, user_color, start_fen, mode, trainer_elo,
-                   created_at, updated_at
+                   quality_scores, created_at, updated_at
             FROM games
             WHERE id = %s AND user_id = %s
             ''',
@@ -243,9 +312,9 @@ def create_game(user_id, name, history, user_color, start_fen, mode='assistant',
             '''
             INSERT INTO games (
                 user_id, name, history, user_color, start_fen, mode, trainer_elo,
-                created_at, updated_at
+                quality_scores, created_at, updated_at
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id
             ''',
             (
@@ -256,6 +325,7 @@ def create_game(user_id, name, history, user_color, start_fen, mode='assistant',
                 start_fen,
                 mode,
                 trainer_elo,
+                '[]',
                 now,
                 now,
             ),

@@ -21,6 +21,7 @@ from assistant import (
     TRAINER_ELO_LEVELS,
     analyze_position,
     board_from_saved_history,
+    classification_to_points,
     engine_reply,
     evaluate_user_move,
     find_engine,
@@ -45,6 +46,8 @@ from auth import (
     verify_password,
 )
 from db import (
+    accuracy_from_scores,
+    append_quality_score,
     create_game,
     create_user,
     delete_game,
@@ -53,6 +56,8 @@ from db import (
     get_user_by_id,
     init_db,
     list_games,
+    pop_quality_score,
+    scores_from_game,
     update_game_history,
     update_user_password,
     update_user_profile,
@@ -198,6 +203,9 @@ def game_payload(game, board, start_fen, suggestions=None, message='', error='',
             suggestions = []
         else:
             suggestions = build_suggestions(board, user_color) if analyze and your_turn else []
+    last_move = board.peek().uci() if board.move_stack else None
+    orientation = 'white' if user_color == chess.WHITE else 'black'
+    accuracy = accuracy_from_scores(scores_from_game(game))
     return {
         'started': True,
         'game_id': game['id'],
@@ -213,8 +221,12 @@ def game_payload(game, board, start_fen, suggestions=None, message='', error='',
         'error': error,
         'coach': coach,
         'board_svg': board_svg(board, user_color),
+        'fen': board.fen(),
+        'orientation': orientation,
+        'last_move': last_move,
         'game_over': bool(ended),
         'move_count': len(board.move_stack),
+        'accuracy': accuracy,
         'history': format_move_history(board, start_fen),
         'csrf_token': get_csrf_token(),
     }
@@ -393,7 +405,24 @@ def annotate_games(games):
             game['mode_label'] = f"Тренер · {game.get('trainer_elo') or '?'} Elo"
         else:
             game['mode_label'] = 'Асистент'
+        scores = scores_from_game(game)
+        game['accuracy'] = accuracy_from_scores(scores)
+        game['quality_move_count'] = len(scores)
     return games
+
+
+def summarize_accuracy(games):
+    total_points = 0
+    total_moves = 0
+    for game in games:
+        scores = scores_from_game(game)
+        if not scores:
+            continue
+        total_points += sum(scores)
+        total_moves += len(scores)
+    if not total_moves:
+        return None
+    return int(round(total_points / total_moves))
 
 
 def list_endpoint_for_mode(mode):
@@ -419,6 +448,7 @@ def games_list():
     return render_template(
         'games.html',
         games=games,
+        overall_accuracy=summarize_accuracy(games),
         error=request.args.get('error', ''),
     )
 
@@ -434,6 +464,7 @@ def training_list():
     return render_template(
         'training.html',
         games=games,
+        overall_accuracy=summarize_accuracy(games),
         trainer_elo_levels=TRAINER_ELO_LEVELS,
         error=request.args.get('error', ''),
     )
@@ -545,17 +576,32 @@ def api_state():
 def apply_san_move(game, board, start_fen, san):
     san = (san or '').strip()
     if not san:
-        return False, 'Enter a move in SAN, e.g. e4 or Nf6.', board, None
+        return False, 'Enter a move in SAN, e.g. e4 or Nf6.', board, None, None
     try:
         parsed = board.parse_san(san)
     except ValueError:
-        return False, f'Invalid move: {san}', board, None
+        return False, f'Invalid move: {san}', board, None, None
+
+    user_color = parse_color(game['user_color'])
+    scoring_user_move = board.turn == user_color
+    coach = None
+    if scoring_user_move:
+        board_before = board.copy()
+        engine = get_engine()
+        with _engine_lock:
+            coach = evaluate_user_move(engine, board_before, parsed, user_color)
+        points = classification_to_points(coach['classification'])
+        append_quality_score(game['id'], current_user_id(), points)
+        scores = scores_from_game(game)
+        scores.append(points)
+        game['quality_scores'] = scores
 
     played = board.san(parsed)
     board.push(parsed)
     history = format_move_history(board, start_fen)
     update_game_history(game['id'], current_user_id(), history)
-    return True, f'Played {played}.', board, parsed
+    message = coach['message'] if coach else f'Played {played}.'
+    return True, message, board, parsed, coach
 
 
 def apply_trainer_user_move(game, board, start_fen, san):
@@ -576,6 +622,12 @@ def apply_trainer_user_move(game, board, start_fen, san):
     engine = get_engine()
     with _engine_lock:
         coach = evaluate_user_move(engine, board_before, parsed, user_color)
+
+    points = classification_to_points(coach['classification'])
+    append_quality_score(game['id'], current_user_id(), points)
+    scores = scores_from_game(game)
+    scores.append(points)
+    game['quality_scores'] = scores
 
     board.push(parsed)
     update_game_history(game['id'], current_user_id(), format_move_history(board, start_fen))
@@ -626,13 +678,17 @@ def play_move():
         body['ok'] = True
         return jsonify(body)
 
-    ok, message, board, _parsed = apply_san_move(game, board, start_fen, payload.get('san', ''))
+    ok, message, board, _parsed, coach = apply_san_move(
+        game, board, start_fen, payload.get('san', '')
+    )
     if not ok:
         body = game_payload(game, board, start_fen, message='', error=message, analyze=False)
         body['ok'] = False
         return jsonify(body), 400
 
-    body = game_payload(game, board, start_fen, message=message, analyze=True)
+    body = game_payload(
+        game, board, start_fen, message=message, analyze=True, coach=coach
+    )
     body['ok'] = True
     return jsonify(body)
 
@@ -658,17 +714,30 @@ def undo():
         return jsonify(body), 400
 
     # Trainer: undo engine reply + user move when possible.
+    user_color = parse_color(game['user_color'])
     pops = 1
     if is_trainer_game(game):
-        user_color = parse_color(game['user_color'])
         if board.turn == user_color and len(board.move_stack) >= 2:
             pops = 2
         elif board.turn != user_color and board.move_stack:
             pops = 1
 
+    removed_user_move = False
     for _ in range(pops):
-        if board.move_stack:
-            board.pop()
+        if not board.move_stack:
+            break
+        # Color that just played the ply we are about to pop.
+        mover = not board.turn
+        if mover == user_color:
+            removed_user_move = True
+        board.pop()
+
+    if removed_user_move:
+        pop_quality_score(game['id'], current_user_id())
+        scores = scores_from_game(game)
+        if scores:
+            scores.pop()
+        game['quality_scores'] = scores
 
     history = format_move_history(board, start_fen)
     update_game_history(game['id'], current_user_id(), history)

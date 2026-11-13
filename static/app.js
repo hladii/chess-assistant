@@ -1,3 +1,6 @@
+import { Chess } from './vendor/chess.bundle.js';
+import { Chessground } from './vendor/chessground/chessground.min.js';
+
 (function () {
   const gameEl = document.getElementById('game');
   if (!gameEl) return;
@@ -10,9 +13,12 @@
     ''
   );
   const boardEl = document.getElementById('board');
+  const promoPicker = document.getElementById('promo-picker');
   const userSideEl = document.getElementById('user-side');
   const sideToMoveEl = document.getElementById('side-to-move');
   const moveCountEl = document.getElementById('move-count');
+  const accuracyChip = document.getElementById('accuracy-chip');
+  const accuracyValueEl = document.getElementById('accuracy-value');
   const modeLabelEl = document.getElementById('mode-label');
   const messageEl = document.getElementById('message');
   const errorEl = document.getElementById('error');
@@ -32,6 +38,9 @@
   const coachBest = document.getElementById('coach-best');
 
   let busy = false;
+  let chess = new Chess(gameEl.dataset.fen || undefined);
+  let ground = null;
+  let pendingPromo = null;
 
   function setLoader(visible, text) {
     if (!loader) return;
@@ -40,7 +49,7 @@
     document.body.classList.toggle('is-loading', visible);
   }
 
-  function setText(el, value, isError) {
+  function setText(el, value) {
     if (!el) return;
     const text = value || '';
     el.textContent = text;
@@ -168,13 +177,194 @@
     suggestionsEl.innerHTML = '<ol class="suggestion-list">' + items + '</ol>';
   }
 
-  function applyState(state) {
-    if (state.board_svg && boardEl) {
-      boardEl.innerHTML = state.board_svg;
+  function parseLastMove(uci) {
+    if (!uci || uci.length < 4) return undefined;
+    return [uci.slice(0, 2), uci.slice(2, 4)];
+  }
+
+  function turnColor() {
+    return chess.turn() === 'w' ? 'white' : 'black';
+  }
+
+  function toDests() {
+    const dests = new Map();
+    chess.moves({ verbose: true }).forEach(function (move) {
+      const from = move.from;
+      if (!dests.has(from)) dests.set(from, []);
+      dests.get(from).push(move.to);
+    });
+    return dests;
+  }
+
+  function canInteract(state) {
+    if (busy || pendingPromo) return false;
+    if (state.game_over) return false;
+    const trainerMode = isTrainer || state.mode === 'trainer';
+    if (trainerMode) return !!state.your_turn;
+    return true;
+  }
+
+  function hidePromo() {
+    pendingPromo = null;
+    if (promoPicker) promoPicker.hidden = true;
+  }
+
+  function showPromo(orig, dest, color) {
+    pendingPromo = { orig: orig, dest: dest, color: color };
+    if (!promoPicker) return;
+    promoPicker.hidden = false;
+    promoPicker.dataset.color = color;
+  }
+
+  function isPromotion(orig, dest) {
+    const piece = chess.get(orig);
+    if (!piece || piece.type !== 'p') return false;
+    const rank = dest[1];
+    return rank === '8' || rank === '1';
+  }
+
+  function submitBoardMove(orig, dest, promotion) {
+    let result;
+    try {
+      result = chess.move({
+        from: orig,
+        to: dest,
+        promotion: promotion || undefined,
+      });
+    } catch (err) {
+      syncBoardFromChess();
+      setText(errorEl, 'Illegal move.');
+      return;
     }
+    if (!result) {
+      syncBoardFromChess();
+      setText(errorEl, 'Illegal move.');
+      return;
+    }
+    const san = result.san;
+    // Keep client position unchanged until the server confirms (and may reply in trainer).
+    chess.undo();
+    syncBoardFromChess();
+    if (sanInput) sanInput.value = san;
+    const trainerMode = isTrainer;
+    const analyzing = trainerMode
+      ? false
+      : ((movePromptLabel && movePromptLabel.textContent) || '').indexOf('Your move') !== -1;
+    playSan(
+      san,
+      trainerMode
+        ? 'Checking your move…'
+        : (analyzing ? 'Analyzing position…' : 'Submitting opponent move…')
+    );
+  }
+
+  function onAfterMove(orig, dest) {
+    if (busy) {
+      syncBoardFromChess();
+      return;
+    }
+    if (isPromotion(orig, dest)) {
+      const color = turnColor();
+      // Revert visual until promotion chosen; Chessground already moved the piece.
+      syncBoardFromChess();
+      showPromo(orig, dest, color);
+      return;
+    }
+    submitBoardMove(orig, dest);
+  }
+
+  function boardConfig(state) {
+    const interactive = canInteract(state);
+    const color = turnColor();
+    return {
+      fen: chess.fen(),
+      orientation: state.orientation || gameEl.dataset.orientation || 'white',
+      turnColor: color,
+      lastMove: parseLastMove(state.last_move || gameEl.dataset.lastMove || ''),
+      check: chess.isCheck() ? color : false,
+      viewOnly: !interactive,
+      draggable: {
+        enabled: interactive,
+      },
+      selectable: {
+        enabled: interactive,
+      },
+      movable: {
+        free: false,
+        color: interactive ? color : undefined,
+        dests: interactive ? toDests() : new Map(),
+        showDests: true,
+        events: {
+          after: onAfterMove,
+        },
+      },
+      highlight: {
+        lastMove: true,
+        check: true,
+      },
+      animation: {
+        enabled: true,
+        duration: 160,
+      },
+    };
+  }
+
+  function syncBoardFromChess(stateOverrides) {
+    if (!ground) return;
+    const state = Object.assign({
+      orientation: gameEl.dataset.orientation || 'white',
+      last_move: gameEl.dataset.lastMove || '',
+      your_turn: gameEl.dataset.yourTurn === '1',
+      game_over: gameEl.dataset.gameOver === '1',
+      mode: gameEl.dataset.mode || 'assistant',
+    }, stateOverrides || {});
+    ground.set(boardConfig(state));
+  }
+
+  function initBoard() {
+    if (!boardEl) return;
+    const initial = {
+      fen: gameEl.dataset.fen || chess.fen(),
+      orientation: gameEl.dataset.orientation || 'white',
+      last_move: gameEl.dataset.lastMove || '',
+      your_turn: gameEl.dataset.yourTurn === '1',
+      game_over: gameEl.dataset.gameOver === '1',
+      mode: gameEl.dataset.mode || 'assistant',
+    };
+    try {
+      chess = new Chess(initial.fen);
+    } catch (err) {
+      chess = new Chess();
+    }
+    ground = Chessground(boardEl, boardConfig(initial));
+  }
+
+  function applyState(state) {
+    if (state.fen) {
+      try {
+        chess.load(state.fen);
+      } catch (err) {
+        /* keep previous position */
+      }
+      gameEl.dataset.fen = state.fen;
+    }
+    if (state.orientation) gameEl.dataset.orientation = state.orientation;
+    if (state.last_move != null) gameEl.dataset.lastMove = state.last_move || '';
+    gameEl.dataset.yourTurn = state.your_turn ? '1' : '0';
+    gameEl.dataset.gameOver = state.game_over ? '1' : '0';
+    if (state.mode) gameEl.dataset.mode = state.mode;
+    if (state.side_to_move) gameEl.dataset.sideToMove = state.side_to_move;
+
+    hidePromo();
+    syncBoardFromChess(state);
+
     if (userSideEl) userSideEl.textContent = state.user_side || '';
     if (sideToMoveEl) sideToMoveEl.textContent = state.side_to_move || '';
     if (moveCountEl) moveCountEl.textContent = String(state.move_count || 0);
+    if (accuracyValueEl) {
+      accuracyValueEl.textContent =
+        state.accuracy == null ? '—' : String(state.accuracy) + '%';
+    }
     if (modeLabelEl && state.mode) {
       modeLabelEl.textContent = state.mode === 'trainer'
         ? ('Trainer · ' + (state.trainer_elo || ''))
@@ -205,6 +395,13 @@
   async function apiPost(url, body, loaderMessage) {
     if (busy) return null;
     busy = true;
+    syncBoardFromChess({
+      orientation: gameEl.dataset.orientation || 'white',
+      last_move: gameEl.dataset.lastMove || '',
+      your_turn: gameEl.dataset.yourTurn === '1',
+      game_over: gameEl.dataset.gameOver === '1',
+      mode: gameEl.dataset.mode || 'assistant',
+    });
     setLoader(true, loaderMessage || 'Working…');
     try {
       const payload = Object.assign({ game_id: gameId }, body || {});
@@ -230,10 +427,18 @@
       return data;
     } catch (err) {
       setText(errorEl, 'Request failed. Try again.');
+      syncBoardFromChess();
       return null;
     } finally {
       busy = false;
       setLoader(false);
+      syncBoardFromChess({
+        orientation: gameEl.dataset.orientation || 'white',
+        last_move: gameEl.dataset.lastMove || '',
+        your_turn: gameEl.dataset.yourTurn === '1',
+        game_over: gameEl.dataset.gameOver === '1',
+        mode: gameEl.dataset.mode || 'assistant',
+      });
     }
   }
 
@@ -245,12 +450,34 @@
     }
     const data = await apiPost('/api/move', { san: trimmed }, loaderMessage || 'Playing move…');
     if (data && data.ok) {
-      sanInput.value = '';
+      if (sanInput) sanInput.value = '';
+    } else {
+      // Server rejected — reload position from dataset fen if present.
+      if (gameEl.dataset.fen) {
+        try {
+          chess.load(gameEl.dataset.fen);
+        } catch (err) {
+          /* ignore */
+        }
+      }
+      syncBoardFromChess();
     }
+  }
+
+  if (promoPicker) {
+    promoPicker.addEventListener('click', function (event) {
+      const btn = event.target.closest('.promo-btn');
+      if (!btn || !pendingPromo) return;
+      const piece = btn.getAttribute('data-piece');
+      const { orig, dest } = pendingPromo;
+      hidePromo();
+      submitBoardMove(orig, dest, piece);
+    });
   }
 
   // Initial history from server-rendered data attribute.
   renderHistory(historyEl ? historyEl.dataset.history : '');
+  initBoard();
 
   if (moveForm) {
     moveForm.addEventListener('submit', function (event) {

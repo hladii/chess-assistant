@@ -422,9 +422,31 @@ body.nav-open .nav-burger-lines::after {
   font-weight: 600;
 }
 
+.list-panel-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .list-count {
   font-size: 0.85rem;
   font-variant-numeric: tabular-nums;
+}
+
+.list-accuracy {
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.chip-accuracy {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 12%, var(--card));
 }
 
 .games-list {
@@ -703,21 +725,59 @@ body.nav-open .nav-burger-lines::after {
 }
 
 .board-wrap {
+  position: relative;
   padding: 0.35rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  width: 100%;
+  max-width: 460px;
   background: color-mix(in oklab, var(--card) 88%, #1a1a1a);
   border: 1px solid var(--border);
   border-radius: calc(var(--radius) + 2px);
   overflow: hidden;
 }
 
-.board-wrap svg {
-  display: block;
+.board-wrap .cg-wrap {
   width: 100%;
-  max-width: 460px;
-  height: auto;
+  aspect-ratio: 1 / 1;
+  display: block;
+}
+
+.board-wrap cg-container {
+  border-radius: calc(var(--radius) - 2px);
+}
+
+.promo-picker {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  place-content: center;
+  padding: 1.25rem;
+  background: color-mix(in oklab, var(--card) 72%, transparent);
+  backdrop-filter: blur(2px);
+}
+
+.promo-picker[hidden] {
+  display: none !important;
+}
+
+.promo-btn {
+  appearance: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--foreground);
+  font: inherit;
+  font-weight: 600;
+  padding: 0.75rem 0.5rem;
+  cursor: pointer;
+}
+
+.promo-btn:hover,
+.promo-btn:focus-visible {
+  border-color: var(--primary);
+  outline: none;
 }
 
 .panel {
@@ -1117,10 +1177,8 @@ body.is-loading {
 
   .board-wrap {
     padding: 0.2rem;
-  }
-
-  .board-wrap svg {
-    max-width: min(100%, 100vw - 1.8rem);
+    max-width: min(460px, 100%);
+    margin-inline: auto;
   }
 
   .game-title {

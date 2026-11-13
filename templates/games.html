@@ -19,7 +19,12 @@
 <section class="list-panel" aria-labelledby="games-heading">
   <div class="list-panel-head">
     <h2 id="games-heading">Ваші партії</h2>
-    <span class="list-count muted">{{ games|length }}</span>
+    <div class="list-panel-meta">
+      <span class="list-accuracy{% if overall_accuracy is none %} muted{% endif %}">
+        Точність · {% if overall_accuracy is none %}—{% else %}{{ overall_accuracy }}%{% endif %}
+      </span>
+      <span class="list-count muted">{{ games|length }}</span>
+    </div>
   </div>
 
   {% if games %}
@@ -31,6 +36,7 @@
           <h3>{{ game.name }}</h3>
           <div class="game-row-chips">
             <span class="chip">{{ game.side_label }}</span>
+            <span class="chip chip-accuracy">{% if game.accuracy is none %}—{% else %}{{ game.accuracy }}%{% endif %}</span>
             <span class="chip chip-muted">{{ game.updated_label }}</span>
           </div>
         </div>

@@ -413,6 +413,45 @@ body.nav-open .nav-burger-lines::after {
   animation: rise 0.7s ease 0.08s both;
 }
 
+.home-cta-grid-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.users-table-wrap {
+  overflow-x: auto;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.users-table th,
+.users-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.users-table th {
+  color: var(--muted-foreground);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.users-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.users-elo {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--primary);
+}
+
 .home-cta {
   display: flex;
   flex-direction: column;
@@ -541,7 +580,7 @@ body.nav-open .nav-burger-lines::after {
 
 .autocomplete-list li[role="option"] {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
   padding: 0.55rem 0.7rem;
@@ -556,9 +595,23 @@ body.nav-open .nav-burger-lines::after {
   outline: none;
 }
 
+.autocomplete-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
 .autocomplete-name {
   font-weight: 550;
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.autocomplete-email {
+  font-size: 0.78rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

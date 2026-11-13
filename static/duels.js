@@ -49,10 +49,14 @@
     if (queryInput) queryInput.setAttribute('aria-expanded', 'false');
   }
 
-  function renderUsers(users) {
+  function renderUsers(users, query) {
     if (!listEl) return;
+    const q = (query || '').trim();
     if (!users.length) {
-      listEl.innerHTML = '<li class="autocomplete-empty muted">—</li>';
+      listEl.innerHTML =
+        '<li class="autocomplete-empty muted">' +
+        (q ? escapeHtml('—') : '—') +
+        '</li>';
       listEl.hidden = false;
       if (queryInput) queryInput.setAttribute('aria-expanded', 'true');
       return;
@@ -60,8 +64,10 @@
     listEl.innerHTML = users
       .map(function (u) {
         const name = u.display_name || u.email || String(u.id);
+        const email = u.email || '';
         const elo = u.elo_rating != null ? String(u.elo_rating) : '';
         const label = u.label || (name + (elo ? ' · ' + elo : ''));
+        const showEmail = email && email !== name;
         return (
           '<li role="option" tabindex="-1" data-id="' +
           escapeHtml(u.id) +
@@ -70,8 +76,13 @@
           '" data-name="' +
           escapeHtml(name) +
           '">' +
+          '<span class="autocomplete-main">' +
           '<span class="autocomplete-name">' +
           escapeHtml(name) +
+          '</span>' +
+          (showEmail
+            ? '<span class="autocomplete-email muted">' + escapeHtml(email) + '</span>'
+            : '') +
           '</span>' +
           (elo
             ? '<span class="autocomplete-elo">' + escapeHtml(elo) + '</span>'
@@ -99,7 +110,7 @@
       if (!response.ok) return;
       const data = await response.json();
       if (seq !== requestSeq || lastQuery !== normalized) return;
-      renderUsers((data && data.users) || []);
+      renderUsers((data && data.users) || [], normalized);
     } catch (err) {
       /* ignore network errors while typing */
     }
@@ -109,7 +120,7 @@
     if (timer) clearTimeout(timer);
     timer = setTimeout(function () {
       search(q);
-    }, 200);
+    }, 150);
   }
 
   if (queryInput) {
@@ -121,13 +132,21 @@
     queryInput.addEventListener('input', function () {
       setPicked(null);
       const q = queryInput.value.trim();
-      // Empty / short query → default first users; longer → filtered search.
+      // Empty → default users; any text → live search by name/email.
       scheduleSearch(q);
     });
 
     queryInput.addEventListener('keydown', function (event) {
       if (event.key === 'Escape') {
         hideList();
+        return;
+      }
+      if (event.key === 'ArrowDown' && listEl && !listEl.hidden) {
+        const first = listEl.querySelector('[data-id]');
+        if (first) {
+          event.preventDefault();
+          first.focus();
+        }
         return;
       }
       if (event.key !== 'Enter' || !listEl || listEl.hidden) return;
@@ -156,6 +175,30 @@
         display_name: item.getAttribute('data-name'),
       });
     });
+    listEl.addEventListener('keydown', function (event) {
+      const item = event.target.closest('[data-id]');
+      if (!item) return;
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        setPicked({
+          id: item.getAttribute('data-id'),
+          label: item.getAttribute('data-label'),
+          display_name: item.getAttribute('data-name'),
+        });
+        return;
+      }
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        const next = item.nextElementSibling;
+        if (next && next.matches('[data-id]')) next.focus();
+      }
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        const prev = item.previousElementSibling;
+        if (prev && prev.matches('[data-id]')) prev.focus();
+        else if (queryInput) queryInput.focus();
+      }
+    });
   }
 
   document.addEventListener('click', function (event) {
@@ -171,7 +214,6 @@
     });
   }
 
-  // Prefetch defaults when the create dialog opens.
   document.querySelectorAll('[data-open-create], #open-create').forEach(function (btn) {
     btn.addEventListener('click', function () {
       setTimeout(function () {

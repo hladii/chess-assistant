@@ -255,11 +255,24 @@ def get_user_by_id(user_id):
     return dict(row) if row else None
 
 
+def list_users_for_admin():
+    """All users with Elo, for the admin Users page."""
+    with get_connection() as conn:
+        rows = conn.execute(
+            '''
+            SELECT id, email, display_name, elo_rating, created_at
+            FROM users
+            ORDER BY elo_rating DESC, display_name ASC, email ASC, id ASC
+            '''
+        ).fetchall()
+    return [dict(row) for row in rows]
+
+
 def search_users(query, exclude_id, limit=10):
-    """Search users by name/email. Empty/short query → first `limit` others (default list)."""
+    """Search users by name/email. Empty query → first `limit` others (default list)."""
     q = (query or '').strip()
     with get_connection() as conn:
-        if len(q) < 2:
+        if not q:
             rows = conn.execute(
                 '''
                 SELECT id, email, display_name, elo_rating
@@ -282,14 +295,27 @@ def search_users(query, exclude_id, limit=10):
                     OR email ILIKE %s
                   )
                 ORDER BY
-                  CASE WHEN lower(display_name) = lower(%s) THEN 0
-                       WHEN lower(email) = lower(%s) THEN 1
-                       ELSE 2 END,
+                  CASE
+                    WHEN lower(display_name) = lower(%s) THEN 0
+                    WHEN lower(email) = lower(%s) THEN 1
+                    WHEN lower(display_name) LIKE lower(%s) THEN 2
+                    WHEN lower(email) LIKE lower(%s) THEN 3
+                    ELSE 4
+                  END,
                   display_name ASC,
                   email ASC
                 LIMIT %s
                 ''',
-                (exclude_id, pattern, pattern, q, q, limit),
+                (
+                    exclude_id,
+                    pattern,
+                    pattern,
+                    q,
+                    q,
+                    f'{q}%',
+                    f'{q}%',
+                    limit,
+                ),
             ).fetchall()
     return [dict(row) for row in rows]
 

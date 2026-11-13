@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chess Move Advisor 1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-13 22:04+0200\n"
+"POT-Creation-Date: 2026-11-13 22:18+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: uk\n"
@@ -20,269 +20,269 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app.py:157 app.py:675 assistant.py:292 i18n.py:56 templates/games.html:86
+#: app.py:165 app.py:686 assistant.py:292 i18n.py:56 templates/games.html:86
 #: templates/training.html:99
 msgid "White"
 msgstr "Білі"
 
-#: app.py:157 app.py:675 assistant.py:292 i18n.py:57 templates/games.html:90
+#: app.py:165 app.py:686 assistant.py:292 i18n.py:57 templates/games.html:90
 #: templates/training.html:103
 msgid "Black"
 msgstr "Чорні"
 
-#: app.py:189
+#: app.py:197
 msgid "No moves yet"
 msgstr "Ще немає ходів"
 
-#: app.py:361
+#: app.py:369
 msgid "White wins by resignation."
 msgstr "Білі виграли через здачу."
 
-#: app.py:363
+#: app.py:371
 msgid "Black wins by resignation."
 msgstr "Чорні виграли через здачу."
 
-#: app.py:365
+#: app.py:373
 msgid "Draw."
 msgstr "Нічия."
 
-#: app.py:370
+#: app.py:378
 msgid "Trainer thinking…"
 msgstr "Тренер думає…"
 
-#: app.py:372
+#: app.py:380
 msgid "Review position"
 msgstr ""
 
-#: app.py:374 templates/game.html:90
+#: app.py:382 templates/game.html:90
 msgid "Waiting for opponent…"
 msgstr "Очікування суперника…"
 
-#: app.py:376
+#: app.py:384
 msgid "Your move"
 msgstr "Ваш хід"
 
-#: app.py:376
+#: app.py:384
 msgid "Opponent move"
 msgstr "Хід суперника"
 
-#: app.py:465 app.py:500 app.py:582
+#: app.py:476 app.py:511 app.py:593
 msgid "Invalid session token. Refresh the page."
 msgstr "Невірний токен сесії. Оновіть сторінку."
 
-#: app.py:474
+#: app.py:485
 msgid "Invalid email or password."
 msgstr "Невірний email або пароль."
 
-#: app.py:515
+#: app.py:526
 msgid "A user with this email already exists."
 msgstr "Користувач із таким email уже існує."
 
-#: app.py:536 app.py:750 app.py:853 app.py:952
+#: app.py:547 app.py:769 app.py:875 app.py:974
 msgid "Invalid session token."
 msgstr "Невірний токен сесії."
 
-#: app.py:591
+#: app.py:602
 msgid "Profile updated."
 msgstr "Профіль оновлено."
 
-#: app.py:597
+#: app.py:608
 msgid "Current password is incorrect."
 msgstr "Поточний пароль невірний."
 
-#: app.py:603
+#: app.py:614
 msgid "New password must be different from the current one."
 msgstr "Новий пароль має відрізнятися від поточного."
 
-#: app.py:606
+#: app.py:617
 msgid "Password updated."
 msgstr "Пароль оновлено."
 
-#: app.py:614
+#: app.py:625
 msgid "Language updated."
 msgstr "Мову оновлено."
 
-#: app.py:616
+#: app.py:627
 msgid "Unknown action."
 msgstr "Невідома дія."
 
-#: app.py:660
+#: app.py:671
 #, python-format
 msgid "Trainer · %(elo)s Elo"
 msgstr "Тренер · %(elo)s Elo"
 
-#: app.py:662 i18n.py:74 templates/game.html:41
+#: app.py:673 i18n.py:74 templates/game.html:41
 msgid "Duel"
 msgstr "Дуель"
 
-#: app.py:664 i18n.py:73 templates/game.html:41
+#: app.py:675 i18n.py:73 templates/game.html:41
 msgid "Assistant"
 msgstr "Асистент"
 
-#: app.py:679 app.py:681 app.py:921 templates/duels.html:86
+#: app.py:690 app.py:692 app.py:943 templates/duels.html:86
 msgid "Opponent"
 msgstr "Суперник"
 
-#: app.py:685
+#: app.py:696
 msgid "1–0"
 msgstr "1–0"
 
-#: app.py:688
+#: app.py:699
 msgid "0–1"
 msgstr "0–1"
 
-#: app.py:691
+#: app.py:702
 msgid "½–½"
 msgstr "½–½"
 
-#: app.py:694
+#: app.py:705
 msgid "In progress"
 msgstr "В процесі"
 
-#: app.py:760 app.py:870
+#: app.py:779 app.py:892
 msgid "Enter a game name."
 msgstr "Вкажіть назву партії."
 
-#: app.py:762
+#: app.py:781
 msgid "Choose an opponent."
 msgstr "Оберіть суперника."
 
-#: app.py:766
+#: app.py:785
 msgid "You cannot challenge yourself."
 msgstr "Не можна кинути виклик собі."
 
-#: app.py:770
+#: app.py:789
 msgid "Opponent not found."
 msgstr "Суперника не знайдено."
 
-#: app.py:876
+#: app.py:898
 #, python-format
 msgid "Could not parse history: %(exc)s"
 msgstr "Не вдалося розібрати історію: %(exc)s"
 
-#: app.py:907
+#: app.py:929
 #, python-format
 msgid "Trainer game \"%(name)s\" · you are %(side)s · %(elo)s Elo"
 msgstr "Тренування «%(name)s» · ви %(side)s · %(elo)s Elo"
 
-#: app.py:913
+#: app.py:935
 #, python-format
 msgid "Trainer opened with %(san)s."
 msgstr "Тренер відкрив %(san)s."
 
-#: app.py:918
+#: app.py:940
 #, python-format
 msgid "Duel \"%(name)s\" · you are %(side)s vs %(opponent)s"
 msgstr "Дуель «%(name)s» · ви %(side)s проти %(opponent)s"
 
-#: app.py:924
+#: app.py:946
 msgid ""
 "Press Analyze to review engine lines. Click a move in the history to "
 "inspect that position."
 msgstr ""
 
-#: app.py:928
+#: app.py:950
 #, python-format
 msgid "Playing \"%(name)s\" as %(side)s."
 msgstr "Партія «%(name)s» за %(side)s."
 
-#: app.py:962 app.py:1078 app.py:1141 app.py:1189 app.py:1254
+#: app.py:984 app.py:1100 app.py:1163 app.py:1211 app.py:1276
 msgid "game_id required."
 msgstr "Потрібен game_id."
 
-#: app.py:975 app.py:1011 app.py:1057 i18n.py:62
+#: app.py:997 app.py:1033 app.py:1079 i18n.py:62
 msgid "Enter a move in SAN, e.g. e4 or Nf6."
 msgstr "Введіть хід у SAN, напр. e4 або Nf6."
 
-#: app.py:979 app.py:1015 app.py:1061
+#: app.py:1001 app.py:1037 app.py:1083
 #, python-format
 msgid "Invalid move: %(san)s"
 msgstr "Невірний хід: %(san)s"
 
-#: app.py:999 app.py:1066
+#: app.py:1021 app.py:1088
 #, python-format
 msgid "Played %(san)s."
 msgstr "Зіграно %(san)s."
 
-#: app.py:1007
+#: app.py:1029
 msgid "Wait for the trainer to move."
 msgstr "Зачекайте на хід тренера."
 
-#: app.py:1044
+#: app.py:1066
 #, python-format
 msgid "Trainer played %(san)s."
 msgstr "Тренер зіграв %(san)s."
 
-#: app.py:1050 app.py:1149
+#: app.py:1072 app.py:1171
 msgid "This duel is already finished."
 msgstr "Ця дуель уже завершена."
 
-#: app.py:1053
+#: app.py:1075
 msgid "Wait for your opponent to move."
 msgstr "Зачекайте ходу суперника."
 
-#: app.py:1073 app.py:1136 app.py:1184 app.py:1249
+#: app.py:1095 app.py:1158 app.py:1206 app.py:1271
 msgid "Invalid CSRF token."
 msgstr "Невірний CSRF-токен."
 
-#: app.py:1145
+#: app.py:1167
 msgid "Only duels can be resigned."
 msgstr "Здатися можна лише в дуелі."
 
-#: app.py:1172
+#: app.py:1194
 msgid "You resigned."
 msgstr "Ви здалися."
 
-#: app.py:1195
+#: app.py:1217
 msgid "Undo is not available in duels."
 msgstr "Скасування ходу недоступне в дуелях."
 
-#: app.py:1201
+#: app.py:1223
 msgid "No moves to undo."
 msgstr "Немає ходів для скасування."
 
-#: app.py:1237
+#: app.py:1259
 msgid "Undid last move."
 msgstr "Останній хід скасовано."
 
-#: app.py:1260
+#: app.py:1282
 msgid "Hints are not available in trainer mode."
 msgstr "Підказки недоступні в режимі тренера."
 
-#: app.py:1270
+#: app.py:1292
 msgid "Analyze is available after the duel ends."
 msgstr "Аналіз доступний після завершення дуелі."
 
-#: app.py:1295
+#: app.py:1317
 #, python-format
 msgid "Analysis after %(ply)s half-moves (before the final position)."
 msgstr ""
 
-#: app.py:1299 app.py:1303
+#: app.py:1321 app.py:1325
 msgid "Suggestions updated."
 msgstr "Підказки оновлено."
 
-#: app.py:1301 app.py:1303
+#: app.py:1323 app.py:1325
 msgid "No suggestions for this position."
 msgstr "Немає підказок для цієї позиції."
 
-#: app.py:1330 auth.py:140
+#: app.py:1352 auth.py:152
 msgid "Authentication required."
 msgstr "Потрібна автентифікація."
 
-#: app.py:1331 templates/errors/403.html:11
+#: app.py:1353 templates/errors/403.html:11
 msgid "You do not have permission to do that."
 msgstr "У вас немає прав для цієї дії."
 
-#: app.py:1332
+#: app.py:1354
 msgid "Not found."
 msgstr "Не знайдено."
 
-#: app.py:1333
+#: app.py:1355
 msgid "Something went wrong on our side."
 msgstr "Щось пішло не так на нашому боці."
 
-#: app.py:1335
+#: app.py:1357
 msgid "Something went wrong."
 msgstr "Щось пішло не так."
 
@@ -374,7 +374,7 @@ msgstr "Імʼя має містити щонайменше 2 символи."
 msgid "Name must be at most 40 characters."
 msgstr "Імʼя має бути до 40 символів."
 
-#: i18n.py:52 templates/base.html:78
+#: i18n.py:52 templates/base.html:86
 msgid "Open menu"
 msgstr "Відкрити меню"
 
@@ -471,33 +471,37 @@ msgstr "Мова"
 msgid "Main menu"
 msgstr "Головне меню"
 
-#: templates/base.html:40 templates/base.html:90 templates/errors/401.html:14
+#: templates/base.html:40 templates/base.html:98 templates/errors/401.html:13
 #: templates/errors/403.html:13 templates/errors/404.html:13
 #: templates/errors/500.html:13 templates/home.html:3 templates/profile.html:10
 msgid "Home"
 msgstr "Головна"
 
-#: templates/base.html:46 templates/base.html:95 templates/duels.html:3
+#: templates/base.html:46 templates/base.html:103 templates/duels.html:3
 #: templates/duels.html:9 templates/game.html:34 templates/home.html:17
 msgid "Duels"
 msgstr "Дуелі"
 
-#: templates/base.html:52 templates/base.html:100 templates/errors/404.html:15
-#: templates/game.html:36 templates/games.html:3 templates/games.html:9
-#: templates/home.html:22
+#: templates/base.html:53 templates/base.html:109 templates/users.html:3
+#: templates/users.html:9
+msgid "Users"
+msgstr "Користувачі"
+
+#: templates/base.html:59 templates/base.html:114 templates/game.html:36
+#: templates/games.html:3 templates/games.html:9 templates/home.html:23
 msgid "Games"
 msgstr "Ігри"
 
-#: templates/base.html:58 templates/base.html:105 templates/game.html:32
-#: templates/home.html:27 templates/training.html:3 templates/training.html:9
+#: templates/base.html:66 templates/base.html:120 templates/game.html:32
+#: templates/home.html:29 templates/training.html:3 templates/training.html:9
 msgid "Training"
 msgstr "Навчання"
 
-#: templates/base.html:68 templates/base.html:114
+#: templates/base.html:76 templates/base.html:129
 msgid "Log out"
 msgstr "Вийти"
 
-#: templates/base.html:85
+#: templates/base.html:93
 msgid "Mobile menu"
 msgstr "Мобільне меню"
 
@@ -514,6 +518,7 @@ msgid "Your Elo"
 msgstr "Ваш Elo"
 
 #: templates/duels.html:13 templates/game.html:50 templates/profile.html:16
+#: templates/users.html:27
 msgid "Elo"
 msgstr "Elo"
 
@@ -728,24 +733,23 @@ msgstr "Грайте з іншим користувачем онлайн. Вип
 msgid "Duel →"
 msgstr "Дуель →"
 
-#: templates/home.html:23
+#: templates/home.html:24
 msgid "Move assistant: record a game and get the best lines."
 msgstr "Асистент ходів: записуйте партію, отримуйте найкращі лінії."
 
-#: templates/home.html:24
+#: templates/home.html:25
 msgid "Open →"
 msgstr "Відкрити →"
 
-#: templates/home.html:28
+#: templates/home.html:30
 msgid "Stockfish trainer (~800 / 1200 / 1600 Elo) with move evaluation."
 msgstr "Тренер Stockfish (~800 / 1200 / 1600 Elo) з оцінкою ваших ходів."
 
-#: templates/home.html:29
+#: templates/home.html:31
 msgid "Train →"
 msgstr "Тренуватись →"
 
-#: templates/errors/401.html:13 templates/login.html:3 templates/login.html:31
-#: templates/register.html:46
+#: templates/login.html:3 templates/login.html:31 templates/register.html:46
 msgid "Log in"
 msgstr "Увійти"
 
@@ -769,7 +773,7 @@ msgstr "Зареєструватись"
 msgid "Profile"
 msgstr "Профіль"
 
-#: templates/profile.html:14
+#: templates/profile.html:14 templates/users.html:33
 msgid "Player"
 msgstr "Гравець"
 
@@ -782,7 +786,7 @@ msgid "Save language"
 msgstr "Зберегти мову"
 
 #: templates/profile.html:49 templates/profile.html:57
-#: templates/register.html:18
+#: templates/register.html:18 templates/users.html:25
 msgid "Name"
 msgstr "Імʼя"
 
@@ -862,6 +866,22 @@ msgstr "наприклад, Тренування 1200"
 #: templates/training.html:83
 msgid "Trainer strength"
 msgstr "Сила тренера"
+
+#: templates/users.html:10
+msgid "Registered players and their internal Elo."
+msgstr "Зареєстровані гравці та їхній внутрішній Elo."
+
+#: templates/users.html:17
+msgid "All users"
+msgstr "Усі користувачі"
+
+#: templates/users.html:26
+msgid "Email"
+msgstr ""
+
+#: templates/users.html:43
+msgid "No users yet"
+msgstr "Ще немає користувачів"
 
 #: templates/errors/401.html:3 templates/errors/401.html:10
 msgid "Unauthorized"

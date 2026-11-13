@@ -41,6 +41,7 @@ from auth import (
     current_user_initials,
     current_user_name,
     get_csrf_token,
+    is_admin,
     is_authenticated,
     login_required,
     login_user,
@@ -65,6 +66,7 @@ from db import (
     init_db,
     list_duels_for_user,
     list_games,
+    list_users_for_admin,
     pop_quality_score,
     scores_from_game,
     search_users,
@@ -145,12 +147,18 @@ def inject_auth():
         'current_user_name': current_user_name(),
         'current_user_initials': current_user_initials(),
         'is_authenticated': is_authenticated(),
+        'is_admin': is_admin(),
         'get_locale': get_locale,
         'current_locale': str(get_locale()),
         'supported_locales': SUPPORTED_LOCALES,
         'locale_labels': LOCALE_LABELS,
         'i18n_js': js_messages(),
     }
+
+
+def require_admin():
+    if not is_admin():
+        abort(404)
 
 
 def side_label(color):
@@ -450,6 +458,9 @@ def require_owned_game(game_id):
             abort(404)
     elif game.get('user_id') != user_id:
         abort(404)
+    # Assistant games are admin-only (menu + /games).
+    if not is_trainer_game(game) and not is_duel_game(game):
+        require_admin()
     board, start_fen = board_from_game(game)
     return game, board, start_fen
 
@@ -728,6 +739,14 @@ def index():
     return render_template('home.html')
 
 
+@app.route('/users', methods=['GET'])
+@login_required
+def users_list():
+    require_admin()
+    users = list_users_for_admin()
+    return render_template('users.html', users=users)
+
+
 @app.route('/duels', methods=['GET'])
 @login_required
 def duels_list():
@@ -794,11 +813,13 @@ def create_duel():
 @login_required
 def api_users_search():
     q = request.args.get('q', '')
-    limit = 5 if len((q or '').strip()) < 2 else 10
+    stripped = (q or '').strip()
+    limit = 5 if not stripped else 10
     users = search_users(q, exclude_id=current_user_id(), limit=limit)
     return jsonify(
         {
             'ok': True,
+            'query': stripped,
             'users': [
                 {
                     'id': u['id'],
@@ -817,6 +838,7 @@ def api_users_search():
 @app.route('/games', methods=['GET'])
 @login_required
 def games_list():
+    require_admin()
     games = list_games(current_user_id(), modes=('assistant',))
     annotate_games(games)
     return render_template(
@@ -847,6 +869,8 @@ def create():
     mode = (request.form.get('mode') or 'assistant').strip().lower()
     if mode not in ('assistant', 'trainer'):
         mode = 'assistant'
+    if mode == 'assistant':
+        require_admin()
     list_endpoint = list_endpoint_for_mode(mode)
 
     if not validate_csrf():
@@ -947,6 +971,7 @@ def remove_game(game_id):
     elif return_to == 'duels':
         list_endpoint = 'duels_list'
     else:
+        require_admin()
         list_endpoint = 'games_list'
     if not validate_csrf():
         return redirect(url_for(list_endpoint, error=_('Invalid session token.')))

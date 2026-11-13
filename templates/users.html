@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Users') }} · Chess Move Advisor{% endblock %}
+{% block body_class %}page-list{% endblock %}
+
+{% block content %}
+<header class="list-header">
+  <div class="list-header-text">
+    <h1>{{ _('Users') }}</h1>
+    <p class="tagline">{{ _('Registered players and their internal Elo.') }}</p>
+  </div>
+  <span class="list-count muted">{{ users|length }}</span>
+</header>
+
+<section class="list-panel" aria-labelledby="users-heading">
+  <div class="list-panel-head">
+    <h2 id="users-heading">{{ _('All users') }}</h2>
+  </div>
+
+  {% if users %}
+  <div class="users-table-wrap">
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th scope="col">{{ _('Name') }}</th>
+          <th scope="col">{{ _('Email') }}</th>
+          <th scope="col">{{ _('Elo') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in users %}
+        <tr>
+          <td>{{ user.display_name or _('Player') }}</td>
+          <td class="muted">{{ user.email }}</td>
+          <td class="users-elo">{{ user.elo_rating if user.elo_rating is not none else 1200 }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <p class="empty-title">{{ _('No users yet') }}</p>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

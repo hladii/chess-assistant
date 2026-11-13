@@ -44,12 +44,20 @@
           data-size="sm"
           data-variant="{% if request.endpoint == 'duels_list' or (request.endpoint == 'play_game' and mode is defined and mode == 'duel') %}secondary{% else %}ghost{% endif %}"
         >{{ _('Duels') }}</a>
+        {% if is_admin %}
+        <a
+          href="{{ url_for('users_list') }}"
+          class="btn"
+          data-size="sm"
+          data-variant="{% if request.endpoint == 'users_list' %}secondary{% else %}ghost{% endif %}"
+        >{{ _('Users') }}</a>
         <a
           href="{{ url_for('games_list') }}"
           class="btn"
           data-size="sm"
           data-variant="{% if request.endpoint == 'games_list' or (request.endpoint == 'play_game' and mode is defined and mode not in ('trainer', 'duel')) %}secondary{% else %}ghost{% endif %}"
         >{{ _('Games') }}</a>
+        {% endif %}
         <a
           href="{{ url_for('training_list') }}"
           class="btn"
@@ -93,11 +101,18 @@
           class="btn mobile-nav-link"
           data-variant="{% if request.endpoint == 'duels_list' or (request.endpoint == 'play_game' and mode is defined and mode == 'duel') %}secondary{% else %}ghost{% endif %}"
         >{{ _('Duels') }}</a>
+        {% if is_admin %}
+        <a
+          href="{{ url_for('users_list') }}"
+          class="btn mobile-nav-link"
+          data-variant="{% if request.endpoint == 'users_list' %}secondary{% else %}ghost{% endif %}"
+        >{{ _('Users') }}</a>
         <a
           href="{{ url_for('games_list') }}"
           class="btn mobile-nav-link"
           data-variant="{% if request.endpoint == 'games_list' or (request.endpoint == 'play_game' and mode is defined and mode not in ('trainer', 'duel')) %}secondary{% else %}ghost{% endif %}"
         >{{ _('Games') }}</a>
+        {% endif %}
         <a
           href="{{ url_for('training_list') }}"
           class="btn mobile-nav-link"

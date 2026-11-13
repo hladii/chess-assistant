@@ -112,6 +112,18 @@ def is_authenticated():
     return current_user_id() is not None
 
 
+def admin_email():
+    email, _, _ = seed_credentials()
+    return email
+
+
+def is_admin():
+    """True if the logged-in user is the seed/admin account."""
+    if not is_authenticated():
+        return False
+    return normalize_email(current_user_email() or '') == admin_email()
+
+
 def rotate_csrf_token():
     session['csrf_token'] = secrets.token_urlsafe(32)
     return session['csrf_token']

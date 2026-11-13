@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Реєстрація · Chess Move Advisor{% endblock %}
+
+{% block main_class %}page narrow{% endblock %}
+
+{% block content %}
+<header class="header">
+  <p class="home-brand" style="font-size:1.75rem">Chess Move Advisor</p>
+  <p class="tagline">Створіть акаунт, щоб зберігати партії та тренуватись.</p>
+</header>
+
+<section class="card card-section">
+  <form method="post" action="{{ url_for('register') }}" class="form-stack">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+    <div role="group" class="field">
+      <label for="display_name">Імʼя</label>
+      <input id="display_name" class="input" name="display_name" type="text" required maxlength="40" autocomplete="nickname" autofocus placeholder="наприклад, hladii">
+    </div>
+
+    <div role="group" class="field">
+      <label for="email">Email</label>
+      <input id="email" class="input" name="email" type="email" required autocomplete="username">
+    </div>
+
+    <div role="group" class="field">
+      <label for="password">Пароль</label>
+      <input id="password" class="input" name="password" type="password" required minlength="8" autocomplete="new-password">
+    </div>
+
+    <div role="group" class="field">
+      <label for="confirm_password">Підтвердження пароля</label>
+      <input id="confirm_password" class="input" name="confirm_password" type="password" required minlength="8" autocomplete="new-password">
+    </div>
+
+    {% if error %}
+    <p class="alert" data-variant="destructive" role="alert">{{ error }}</p>
+    {% endif %}
+
+    <p class="muted">Мінімум 8 символів у паролі.</p>
+    <button type="submit" class="btn">Зареєструватись</button>
+  </form>
+</section>
+
+<p class="auth-switch muted">Уже є акаунт? <a href="{{ url_for('login') }}">Увійти</a></p>
+{% endblock %}

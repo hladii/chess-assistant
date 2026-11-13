@@ -5,18 +5,44 @@
 {% block main_class %}page narrow{% endblock %}
 
 {% block content %}
-<header class="header">
+<header class="profile-hero">
   <p class="back-link"><a href="{{ url_for('index') }}">← Головна</a></p>
-  <h1>Профіль</h1>
-  <p class="tagline">{{ user.email }}</p>
+  <div class="profile-hero-card">
+    <div class="avatar avatar-lg" aria-hidden="true">{{ user_initials }}</div>
+    <div>
+      <h1>{{ user.display_name or 'Гравець' }}</h1>
+      <p class="muted">{{ user.email }}</p>
+    </div>
+  </div>
 </header>
+
+{% if message %}<p class="message banner-ok">{{ message }}</p>{% endif %}
+{% if error %}<p class="alert" data-variant="destructive" role="alert">{{ error }}</p>{% endif %}
 
 <section class="card card-section">
   <header>
-    <h2>Змінити пароль</h2>
+    <h2>Імʼя</h2>
   </header>
   <form method="post" action="{{ url_for('profile') }}" class="form-stack">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <input type="hidden" name="form" value="profile">
+
+    <div role="group" class="field">
+      <label for="display_name">Як вас називати</label>
+      <input id="display_name" class="input" name="display_name" type="text" required maxlength="40" value="{{ user.display_name or '' }}" autocomplete="nickname">
+    </div>
+
+    <button type="submit" class="btn">Зберегти імʼя</button>
+  </form>
+</section>
+
+<section class="card card-section" style="margin-top:1rem">
+  <header>
+    <h2>Пароль</h2>
+  </header>
+  <form method="post" action="{{ url_for('profile') }}" class="form-stack">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <input type="hidden" name="form" value="password">
 
     <div role="group" class="field">
       <label for="current_password">Поточний пароль</label>
@@ -33,11 +59,8 @@
       <input id="confirm_password" class="input" name="confirm_password" type="password" required minlength="8" autocomplete="new-password">
     </div>
 
-    {% if message %}<p class="message">{{ message }}</p>{% endif %}
-    {% if error %}<p class="alert" data-variant="destructive" role="alert">{{ error }}</p>{% endif %}
-
     <p class="muted">Мінімум 8 символів.</p>
-    <button type="submit" class="btn">Оновити пароль</button>
+    <button type="submit" class="btn" data-variant="secondary">Оновити пароль</button>
   </form>
 </section>
 {% endblock %}

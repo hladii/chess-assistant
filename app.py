@@ -30,18 +30,23 @@ from assistant import (
 from auth import (
     current_user_email,
     current_user_id,
+    current_user_initials,
+    current_user_name,
     get_csrf_token,
     is_authenticated,
     login_required,
     login_user,
     logout_user,
+    user_initials,
     validate_csrf,
+    validate_display_name,
     validate_email,
     validate_new_password,
     verify_password,
 )
 from db import (
     create_game,
+    create_user,
     delete_game,
     get_game_for_user,
     get_user_by_email,
@@ -50,6 +55,7 @@ from db import (
     list_games,
     update_game_history,
     update_user_password,
+    update_user_profile,
 )
 
 app = Flask(__name__)
@@ -93,6 +99,8 @@ def inject_auth():
     return {
         'csrf_token': get_csrf_token(),
         'current_user_email': current_user_email(),
+        'current_user_name': current_user_name(),
+        'current_user_initials': current_user_initials(),
         'is_authenticated': is_authenticated(),
     }
 
@@ -247,7 +255,7 @@ def login():
     error = ''
     if request.method == 'POST':
         if not validate_csrf():
-            error = 'Invalid session token. Refresh and try again.'
+            error = 'Невірний токен сесії. Оновіть сторінку.'
         else:
             email, email_error = validate_email(request.form.get('email', ''))
             password = request.form.get('password') or ''
@@ -256,7 +264,7 @@ def login():
             else:
                 user = get_user_by_email(email)
                 if not user or not verify_password(user['password_hash'], password):
-                    error = 'Invalid email or password.'
+                    error = 'Невірний email або пароль.'
                 else:
                     login_user(user)
                     next_url = request.args.get('next') or url_for('index')
@@ -265,6 +273,39 @@ def login():
                     return redirect(next_url)
 
     return render_template('login.html', error=error, csrf_token=get_csrf_token())
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if is_authenticated():
+        return redirect(url_for('index'))
+
+    error = ''
+    if request.method == 'POST':
+        if not validate_csrf():
+            error = 'Невірний токен сесії. Оновіть сторінку.'
+        else:
+            name, name_error = validate_display_name(request.form.get('display_name', ''))
+            email, email_error = validate_email(request.form.get('email', ''))
+            password = request.form.get('password') or ''
+            confirm = request.form.get('confirm_password') or ''
+            if name_error:
+                error = name_error
+            elif email_error:
+                error = email_error
+            else:
+                pwd_error = validate_new_password(password, confirm)
+                if pwd_error:
+                    error = pwd_error
+                elif get_user_by_email(email):
+                    error = 'Користувач із таким email уже існує.'
+                else:
+                    user_id = create_user(email, password, name)
+                    user = get_user_by_id(user_id)
+                    login_user(user)
+                    return redirect(url_for('index'))
+
+    return render_template('register.html', error=error, csrf_token=get_csrf_token())
 
 
 @app.route('/logout', methods=['POST'])
@@ -283,30 +324,43 @@ def profile():
     user = get_user_by_id(current_user_id())
     message = ''
     error = ''
+    form = (request.form.get('form') or '').strip()
 
     if request.method == 'POST':
         if not validate_csrf():
-            error = 'Invalid session token. Refresh and try again.'
-        else:
+            error = 'Невірний токен сесії. Оновіть сторінку.'
+        elif form == 'profile':
+            name, name_error = validate_display_name(request.form.get('display_name', ''))
+            if name_error:
+                error = name_error
+            else:
+                update_user_profile(user['id'], name)
+                user = get_user_by_id(user['id'])
+                login_user(user)  # refresh session name
+                message = 'Профіль оновлено.'
+        elif form == 'password':
             current_password = request.form.get('current_password') or ''
             new_password = request.form.get('new_password') or ''
             confirm_password = request.form.get('confirm_password') or ''
             if not verify_password(user['password_hash'], current_password):
-                error = 'Current password is incorrect.'
+                error = 'Поточний пароль невірний.'
             else:
                 pwd_error = validate_new_password(new_password, confirm_password)
                 if pwd_error:
                     error = pwd_error
                 elif verify_password(user['password_hash'], new_password):
-                    error = 'New password must be different from the current one.'
+                    error = 'Новий пароль має відрізнятися від поточного.'
                 else:
                     update_user_password(user['id'], new_password)
-                    message = 'Password updated.'
+                    message = 'Пароль оновлено.'
                     user = get_user_by_id(user['id'])
+        else:
+            error = 'Невідома дія.'
 
     return render_template(
         'profile.html',
         user=user,
+        user_initials=user_initials(user.get('display_name'), user.get('email')),
         message=message,
         error=error,
         csrf_token=get_csrf_token(),

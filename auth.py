@@ -39,18 +39,46 @@ def validate_new_password(password: str, confirm: str = None):
     return None
 
 
+def normalize_display_name(name: str) -> str:
+    return ' '.join((name or '').strip().split())
+
+
+def validate_display_name(name: str):
+    name = normalize_display_name(name)
+    if not name:
+        return None, 'Вкажіть імʼя.'
+    if len(name) < 2:
+        return None, 'Імʼя має містити щонайменше 2 символи.'
+    if len(name) > 40:
+        return None, 'Імʼя має бути до 40 символів.'
+    return name, None
+
+
+def user_initials(name: str, email: str = '') -> str:
+    name = normalize_display_name(name)
+    if name:
+        parts = [p for p in name.split(' ') if p]
+        if len(parts) >= 2:
+            return (parts[0][0] + parts[1][0]).upper()
+        return name[:2].upper()
+    email = normalize_email(email)
+    return (email[:1] or '?').upper()
+
+
 def seed_credentials():
     email = normalize_email(
         os.environ.get('SEED_USER_EMAIL', 'hladii.b.v@gmail.com')
     )
     password = os.environ.get('SEED_USER_PASSWORD', 'chess123')
-    return email, password
+    name = normalize_display_name(os.environ.get('SEED_USER_NAME', 'hladii')) or 'hladii'
+    return email, password, name
 
 
 def login_user(user):
     session.clear()
     session['user_id'] = user['id']
     session['user_email'] = user['email']
+    session['user_name'] = user.get('display_name') or ''
     session.permanent = True
     rotate_csrf_token()
 
@@ -65,6 +93,14 @@ def current_user_id():
 
 def current_user_email():
     return session.get('user_email')
+
+
+def current_user_name():
+    return session.get('user_name') or ''
+
+
+def current_user_initials():
+    return user_initials(current_user_name(), current_user_email() or '')
 
 
 def is_authenticated():

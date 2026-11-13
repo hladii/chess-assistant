@@ -30,20 +30,32 @@
     <div class="game-toolbar-top">
       {% if mode == 'trainer' %}
       <a class="btn" data-variant="ghost" data-size="sm" href="{{ url_for('training_list') }}">← {{ _('Training') }}</a>
+      {% elif mode == 'duel' %}
+      <a class="btn" data-variant="ghost" data-size="sm" href="{{ url_for('duels_list') }}">← {{ _('Duels') }}</a>
       {% else %}
       <a class="btn" data-variant="ghost" data-size="sm" href="{{ url_for('games_list') }}">← {{ _('Games') }}</a>
       {% endif %}
       <h1 id="game-name" class="game-title">{{ name }}</h1>
     </div>
     <div class="meta-chips" aria-label="{{ _('Game status') }}">
-      <span class="chip"><span class="chip-label">{{ _('Mode') }}</span> <span id="mode-label">{% if mode == 'trainer' %}{{ _('Trainer') }} · {{ trainer_elo }}{% else %}{{ _('Assistant') }}{% endif %}</span></span>
+      <span class="chip"><span class="chip-label">{{ _('Mode') }}</span> <span id="mode-label">{% if mode == 'trainer' %}{{ _('Trainer') }} · {{ trainer_elo }}{% elif mode == 'duel' %}{{ _('Duel') }}{% else %}{{ _('Assistant') }}{% endif %}</span></span>
       <span class="chip"><span class="chip-label">{{ _('You') }}</span> <span id="user-side">{{ user_side }}</span></span>
+      {% if mode == 'duel' and opponent_name %}
+      <span class="chip"><span class="chip-label">{{ _('vs') }}</span> <span id="opponent-name">{{ opponent_name }}</span></span>
+      {% endif %}
       <span class="chip chip-turn"><span class="chip-label">{{ _('To move') }}</span> <span id="side-to-move">{{ side_to_move }}</span></span>
       <span class="chip"><span class="chip-label">{{ _('Moves') }}</span> <span id="move-count">{{ move_count }}</span></span>
+      {% if mode == 'duel' %}
+      <span class="chip chip-elo" id="elo-chip">
+        <span class="chip-label">{{ _('Elo') }}</span>
+        <span id="elo-value">{% if your_elo is not none %}{{ your_elo }}{% else %}—{% endif %}{% if your_elo_delta is not none %} ({% if your_elo_delta > 0 %}+{% endif %}{{ your_elo_delta }}){% endif %}</span>
+      </span>
+      {% else %}
       <span class="chip chip-accuracy" id="accuracy-chip">
         <span class="chip-label">{{ _('Accuracy') }}</span>
         <span id="accuracy-value">{% if accuracy is none %}—{% else %}{{ accuracy }}%{% endif %}</span>
       </span>
+      {% endif %}
     </div>
   </header>
 
@@ -61,7 +73,7 @@
     </aside>
 
     <div class="panel">
-      <form id="move-form" class="move-composer" {% if game_over or (mode == 'trainer' and not your_turn) %}hidden{% endif %}>
+      <form id="move-form" class="move-composer" {% if game_over or ((mode == 'trainer' or mode == 'duel') and not your_turn) %}hidden{% endif %}>
         <label for="san" id="move-prompt-label" class="move-label">{{ move_prompt }} {{ _('(SAN)') }}</label>
         <div class="move-row">
           <input id="san" class="input" name="san" type="text" autocomplete="off" autofocus placeholder="e4, Nf6, O-O" aria-describedby="move-help">
@@ -69,10 +81,19 @@
         </div>
         <p id="move-help" class="move-help muted">{{ _('Drag a piece on the board, type SAN, or pick a suggestion.') }}</p>
         <div class="move-actions">
-          <button type="button" class="btn" data-variant="secondary" data-size="sm" id="hint-btn" {% if mode == 'trainer' %}hidden{% endif %}>{{ _('Hint') }}</button>
-          <button type="button" class="btn" data-variant="outline" data-size="sm" id="undo-btn">{{ _('Undo') }}</button>
+          <button type="button" class="btn" data-variant="secondary" data-size="sm" id="hint-btn" {% if mode == 'trainer' or mode == 'duel' %}hidden{% endif %}>{{ _('Hint') }}</button>
+          <button type="button" class="btn" data-variant="outline" data-size="sm" id="undo-btn" {% if mode == 'duel' %}hidden{% endif %}>{{ _('Undo') }}</button>
         </div>
       </form>
+
+      <div class="move-actions duel-live-bar" id="duel-live-bar" {% if mode != 'duel' or game_over %}hidden{% endif %}>
+        <p class="muted" id="duel-wait-text" {% if your_turn %}hidden{% endif %}>{{ _('Waiting for opponent…') }}</p>
+        <button type="button" class="btn" data-variant="destructive" data-size="sm" id="resign-btn">{{ _('Resign') }}</button>
+      </div>
+
+      <div class="move-actions duel-analyze-bar" id="duel-analyze-bar" {% if mode != 'duel' or not game_over %}hidden{% endif %}>
+        <button type="button" class="btn" data-variant="secondary" data-size="sm" id="analyze-hint-btn">{{ _('Analyze') }}</button>
+      </div>
 
       <div class="alerts">
         <p class="message" id="message" {% if not message %}hidden{% endif %}>{{ message }}</p>
@@ -96,7 +117,7 @@
         </p>
       </div>
 
-      <div class="suggestions" id="suggestions-wrap" {% if mode == 'trainer' %}hidden{% endif %}>
+      <div class="suggestions" id="suggestions-wrap" {% if mode == 'trainer' or (mode == 'duel' and not game_over) %}hidden{% endif %}>
         <div class="section-head">
           <h2>{{ _('Best moves') }}</h2>
           <p class="plies-legend muted">

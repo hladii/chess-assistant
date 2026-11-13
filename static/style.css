@@ -368,7 +368,7 @@ body.nav-open .nav-burger-lines::after {
 
 .home-cta-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
   animation: rise 0.7s ease 0.08s both;
 }
@@ -459,6 +459,111 @@ body.nav-open .nav-burger-lines::after {
   gap: 1rem;
   margin-bottom: 1.25rem;
   flex-wrap: wrap;
+}
+
+.list-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.chip-elo {
+  font-variant-numeric: tabular-nums;
+}
+
+.profile-elo {
+  margin: 0.5rem 0 0;
+}
+
+.autocomplete-anchor {
+  position: relative;
+  z-index: 2;
+}
+
+.autocomplete-list {
+  position: absolute;
+  z-index: 30;
+  left: 0;
+  right: 0;
+  top: calc(100% + 0.35rem);
+  margin: 0;
+  padding: 0.3rem;
+  list-style: none;
+  max-height: 11rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--popover, var(--card));
+  box-shadow: 0 12px 32px oklch(0 0 0 / 45%);
+}
+
+.autocomplete-list li[role="option"] {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: calc(var(--radius) - 2px);
+  cursor: pointer;
+  line-height: 1.25;
+}
+
+.autocomplete-list li[role="option"]:hover,
+.autocomplete-list li[role="option"]:focus {
+  background: var(--secondary);
+  outline: none;
+}
+
+.autocomplete-name {
+  font-weight: 550;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.autocomplete-elo {
+  flex: 0 0 auto;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.85rem;
+}
+
+.autocomplete-empty {
+  padding: 0.55rem 0.7rem;
+  cursor: default;
+}
+
+.opponent-picked {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0.45rem 0 0;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: color-mix(in oklab, var(--secondary) 55%, transparent);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.opponent-picked[hidden] {
+  display: none;
+}
+
+.duel-live-bar,
+.duel-analyze-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+}
+
+.duel-live-bar .muted {
+  margin: 0;
 }
 
 .list-header .tagline {
@@ -667,6 +772,7 @@ body.nav-open .nav-burger-lines::after {
 
 .create-dialog[open] {
   display: grid;
+  overflow: visible;
 }
 
 .create-dialog::backdrop {
@@ -678,6 +784,7 @@ body.nav-open .nav-burger-lines::after {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
   max-height: min(90vh, 720px);
+  overflow: visible;
 }
 
 .create-dialog-head,
@@ -704,7 +811,7 @@ body.nav-open .nav-burger-lines::after {
 
 .create-dialog-body {
   padding: 1rem;
-  overflow: auto;
+  overflow: visible;
 }
 
 .banner-error,
@@ -1027,6 +1134,28 @@ body.nav-open .nav-burger-lines::after {
 .history-table tr:last-child td {
   color: var(--primary);
   font-weight: 600;
+}
+
+.history-ply {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  padding: 0.1rem 0.25rem;
+  margin: 0;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.history-ply:hover {
+  background: color-mix(in oklab, var(--secondary) 80%, transparent);
+}
+
+.history-ply-active {
+  background: color-mix(in oklab, var(--primary) 22%, transparent);
+  color: var(--primary);
+  font-weight: 650;
 }
 
 .suggestion-list {

@@ -39,10 +39,16 @@
           data-variant="{% if request.endpoint == 'index' %}secondary{% else %}ghost{% endif %}"
         >{{ _('Home') }}</a>
         <a
+          href="{{ url_for('duels_list') }}"
+          class="btn"
+          data-size="sm"
+          data-variant="{% if request.endpoint == 'duels_list' or (request.endpoint == 'play_game' and mode is defined and mode == 'duel') %}secondary{% else %}ghost{% endif %}"
+        >{{ _('Duels') }}</a>
+        <a
           href="{{ url_for('games_list') }}"
           class="btn"
           data-size="sm"
-          data-variant="{% if request.endpoint == 'games_list' or (request.endpoint == 'play_game' and mode is defined and mode != 'trainer') %}secondary{% else %}ghost{% endif %}"
+          data-variant="{% if request.endpoint == 'games_list' or (request.endpoint == 'play_game' and mode is defined and mode not in ('trainer', 'duel')) %}secondary{% else %}ghost{% endif %}"
         >{{ _('Games') }}</a>
         <a
           href="{{ url_for('training_list') }}"
@@ -83,9 +89,14 @@
           data-variant="{% if request.endpoint == 'index' %}secondary{% else %}ghost{% endif %}"
         >{{ _('Home') }}</a>
         <a
+          href="{{ url_for('duels_list') }}"
+          class="btn mobile-nav-link"
+          data-variant="{% if request.endpoint == 'duels_list' or (request.endpoint == 'play_game' and mode is defined and mode == 'duel') %}secondary{% else %}ghost{% endif %}"
+        >{{ _('Duels') }}</a>
+        <a
           href="{{ url_for('games_list') }}"
           class="btn mobile-nav-link"
-          data-variant="{% if request.endpoint == 'games_list' or (request.endpoint == 'play_game' and mode is defined and mode != 'trainer') %}secondary{% else %}ghost{% endif %}"
+          data-variant="{% if request.endpoint == 'games_list' or (request.endpoint == 'play_game' and mode is defined and mode not in ('trainer', 'duel')) %}secondary{% else %}ghost{% endif %}"
         >{{ _('Games') }}</a>
         <a
           href="{{ url_for('training_list') }}"

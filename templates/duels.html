@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Duels') }} · Chess Move Advisor{% endblock %}
+{% block body_class %}page-list{% endblock %}
+
+{% block content %}
+<header class="list-header">
+  <div class="list-header-text">
+    <h1>{{ _('Duels') }}</h1>
+    <p class="tagline">{{ _('Challenge another player. Colors are random; Elo updates when the game ends.') }}</p>
+  </div>
+  <div class="list-header-actions">
+    <span class="chip chip-elo" title="{{ _('Your Elo') }}">{{ _('Elo') }} · {{ elo_rating if elo_rating is not none else 1200 }}</span>
+    <button type="button" class="btn" id="open-create" data-size="lg">+ {{ _('New duel') }}</button>
+  </div>
+</header>
+
+{% if error %}
+<p class="alert" data-variant="destructive" role="alert">{{ error }}</p>
+{% endif %}
+
+<section class="list-panel" aria-labelledby="duels-heading">
+  <div class="list-panel-head">
+    <h2 id="duels-heading">{{ _('Your duels') }}</h2>
+    <div class="list-panel-meta">
+      <span class="list-count muted">{{ games|length }}</span>
+    </div>
+  </div>
+
+  {% if games %}
+  <ul class="games-list">
+    {% for game in games %}
+    <li class="game-row">
+      <a class="game-row-main" href="{{ url_for('play_game', game_id=game.id) }}">
+        <div class="game-row-title">
+          <h3>{{ game.name }}</h3>
+          <div class="game-row-chips">
+            <span class="chip">{{ game.side_label }}</span>
+            <span class="chip">{{ _('vs') }} {{ game.opponent_name }}{% if game.opponent_elo is not none %} · {{ game.opponent_elo }}{% endif %}</span>
+            <span class="chip {% if game.status_open %}chip-muted{% endif %}">{{ game.result_label }}</span>
+            {% if game.your_elo_delta is not none %}
+            <span class="chip chip-accuracy">{% if game.your_elo_delta > 0 %}+{% endif %}{{ game.your_elo_delta }} Elo</span>
+            {% endif %}
+            <span class="chip chip-muted">{{ game.updated_label }}</span>
+          </div>
+        </div>
+        <p class="history-preview">{{ game.history_preview }}</p>
+      </a>
+      <div class="game-row-actions">
+        <a class="btn" data-size="sm" href="{{ url_for('play_game', game_id=game.id) }}">{% if game.status_open %}{{ _('Play') }}{% else %}{{ _('Analyze') }}{% endif %}</a>
+        <form method="post" action="{{ url_for('remove_game', game_id=game.id) }}" onsubmit="return confirm({{ _('Delete “%(name)s”?', name=game.name)|tojson }});">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <input type="hidden" name="return_to" value="duels">
+          <button type="submit" class="btn" data-variant="ghost" data-size="sm" aria-label="{{ _('Delete %(name)s', name=game.name) }}">{{ _('Delete') }}</button>
+        </form>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div class="empty-state">
+    <p class="empty-title">{{ _('No duels yet') }}</p>
+    <p class="muted">{{ _('Pick an opponent and start a rated game.') }}</p>
+    <button type="button" class="btn" data-open-create>+ {{ _('New duel') }}</button>
+  </div>
+  {% endif %}
+</section>
+
+<dialog class="create-dialog" id="create-dialog" aria-labelledby="create-dialog-title">
+  <form method="post" action="{{ url_for('create_duel') }}" class="create-dialog-form" id="create-form">
+    <header class="create-dialog-head">
+      <h2 id="create-dialog-title">{{ _('New duel') }}</h2>
+      <button type="button" class="btn" data-variant="ghost" data-size="sm" data-close-dialog aria-label="{{ _('Close') }}">✕</button>
+    </header>
+
+    <div class="form-stack create-dialog-body">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="opponent_id" id="opponent_id" value="">
+
+      <div role="group" class="field">
+        <label for="name">{{ _('Title') }}</label>
+        <input id="name" class="input" name="name" type="text" required maxlength="80" placeholder="{{ _('e.g. Friday blitz') }}" autofocus>
+      </div>
+
+      <div role="group" class="field">
+        <label for="opponent_query">{{ _('Opponent') }}</label>
+        <div class="autocomplete-anchor">
+          <input
+            id="opponent_query"
+            class="input"
+            type="text"
+            autocomplete="off"
+            placeholder="{{ _('Search by name or email') }}"
+            aria-autocomplete="list"
+            aria-controls="opponent-suggestions"
+            aria-expanded="false"
+          >
+          <ul id="opponent-suggestions" class="autocomplete-list" role="listbox" hidden></ul>
+        </div>
+        <p class="opponent-picked" id="opponent-picked" hidden></p>
+        <p class="muted field-hint">{{ _('Your color is chosen at random.') }}</p>
+      </div>
+    </div>
+
+    <footer class="create-dialog-foot">
+      <button type="button" class="btn" data-variant="outline" data-close-dialog>{{ _('Cancel') }}</button>
+      <button type="submit" class="btn" id="create-duel-submit" disabled>{{ _('Challenge') }}</button>
+    </footer>
+  </form>
+</dialog>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='lists.js') }}"></script>
+<script src="{{ url_for('static', filename='duels.js') }}"></script>
+{% if error %}
+<script>document.getElementById('create-dialog')?.showModal();</script>
+{% endif %}
+{% endblock %}

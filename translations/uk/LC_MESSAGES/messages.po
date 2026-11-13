@@ -1,501 +1,839 @@
 # Ukrainian translations for Chess Move Advisor.
 # Copyright (C) 2026 ORGANIZATION
-# This file is distributed under the same license as the Chess Move Advisor project.
+# This file is distributed under the same license as the Chess Move Advisor
+# project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: Chess Move Advisor 1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-13 21:15+0200\n"
+"POT-Creation-Date: 2026-11-13 21:40+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: uk\n"
 "Language-Team: uk <LL@li.org>\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || "
-"n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-msgid "Main menu"
-msgstr "Головне меню"
-
-msgid "Home"
-msgstr "Головна"
-
-msgid "Games"
-msgstr "Ігри"
-
-msgid "Training"
-msgstr "Навчання"
-
-msgid "Log out"
-msgstr "Вийти"
-
-msgid "Open menu"
-msgstr "Відкрити меню"
-
-msgid "Close menu"
-msgstr "Закрити меню"
-
-msgid "Mobile menu"
-msgstr "Мобільне меню"
-
-msgid "Play. Analyze. Learn."
-msgstr "Грайте. Аналізуйте. Вчіться."
-
-msgid ""
-"Save games with Stockfish hints or train against the engine with instant feedback after every "
-"move."
-msgstr ""
-"Зберігайте партії з підказками Stockfish або тренуйтесь проти двигуна з миттєвим фідбеком після "
-"кожного ходу."
-
-msgid "Move assistant: record a game and get the best lines."
-msgstr "Асистент ходів: записуйте партію, отримуйте найкращі лінії."
-
-msgid "Stockfish trainer (~800 / 1200 / 1600 Elo) with move evaluation."
-msgstr "Тренер Stockfish (~800 / 1200 / 1600 Elo) з оцінкою ваших ходів."
-
-msgid "Open →"
-msgstr "Відкрити →"
-
-msgid "Train →"
-msgstr "Тренуватись →"
-
-msgid "Log in"
-msgstr "Увійти"
-
-msgid "Sign in to continue your games."
-msgstr "Увійдіть, щоб продовжити партії."
-
-msgid "Password"
-msgstr "Пароль"
-
-msgid "No account?"
-msgstr "Немає акаунта?"
-
-msgid "Sign up"
-msgstr "Зареєструватись"
-
-msgid "Create an account to save games and training."
-msgstr "Створіть акаунт, щоб зберігати партії та тренуватись."
-
-msgid "Name"
-msgstr "Імʼя"
-
-msgid "e.g. hladii"
-msgstr "наприклад, hladii"
-
-msgid "Confirm password"
-msgstr "Підтвердження пароля"
-
-msgid "At least 8 characters in the password."
-msgstr "Мінімум 8 символів у паролі."
-
-msgid "Already have an account?"
-msgstr "Уже є акаунт?"
-
-msgid "Profile"
-msgstr "Профіль"
-
-msgid "Player"
-msgstr "Гравець"
-
-msgid "Language"
-msgstr "Мова"
-
-msgid "Interface language"
-msgstr "Мова інтерфейсу"
-
-msgid "Save language"
-msgstr "Зберегти мову"
-
-msgid "What should we call you"
-msgstr "Як вас називати"
-
-msgid "Save name"
-msgstr "Зберегти імʼя"
-
-msgid "Current password"
-msgstr "Поточний пароль"
-
-msgid "New password"
-msgstr "Новий пароль"
-
-msgid "Confirmation"
-msgstr "Підтвердження"
-
-msgid "At least 8 characters."
-msgstr "Мінімум 8 символів."
-
-msgid "Update password"
-msgstr "Оновити пароль"
-
-msgid "Games with the move assistant. Continue where you left off."
-msgstr "Партії з асистентом ходів. Продовжуйте з того місця, де зупинились."
-
-msgid "New game"
-msgstr "Нова партія"
-
-msgid "Your games"
-msgstr "Ваші партії"
-
-msgid "Accuracy"
-msgstr "Точність"
-
-msgid "Continue"
-msgstr "Продовжити"
-
-msgid "Delete"
-msgstr "Видалити"
-
-#, python-format
-msgid "Delete “%(name)s”?"
-msgstr "Видалити «%(name)s»?"
-
-#, python-format
-msgid "Delete %(name)s"
-msgstr "Видалити %(name)s"
-
-msgid "No games yet"
-msgstr "Ще немає партій"
-
-msgid "Create the first one — from an empty board or from PGN."
-msgstr "Створіть першу — можна з порожньої дошки або з PGN."
-
-msgid "Close"
-msgstr "Закрити"
-
-msgid "Title"
-msgstr "Назва"
-
-msgid "e.g. Blitz with a friend"
-msgstr "наприклад, Бліц з другом"
-
-msgid "Your color"
-msgstr "Ваш колір"
-
+#: app.py:155 app.py:646 assistant.py:273 i18n.py:56 templates/games.html:86
+#: templates/training.html:99
 msgid "White"
 msgstr "Білі"
 
+#: app.py:155 app.py:646 assistant.py:273 i18n.py:57 templates/games.html:90
+#: templates/training.html:103
 msgid "Black"
 msgstr "Чорні"
 
-msgid "History (optional)"
-msgstr "Історія (необовʼязково)"
-
-msgid "Paste PGN / SAN to continue an already played game."
-msgstr "Вставте PGN / SAN, щоб продовжити вже зіграну партію."
-
-msgid "Cancel"
-msgstr "Скасувати"
-
-msgid "Create and start"
-msgstr "Створити і почати"
-
-msgid "Play against Stockfish with feedback after every move of yours."
-msgstr "Гра проти Stockfish з фідбеком після кожного вашого ходу."
-
-msgid "New training"
-msgstr "Нове тренування"
-
-msgid "Training games"
-msgstr "Тренувальні партії"
-
-msgid "No training games yet"
-msgstr "Ще немає тренувань"
-
-msgid "Pick a Stockfish strength and play a game with instant feedback."
-msgstr "Оберіть силу Stockfish і зіграйте партію з миттєвим фідбеком."
-
-msgid "e.g. Training 1200"
-msgstr "наприклад, Тренування 1200"
-
-msgid "Trainer strength"
-msgstr "Сила тренера"
-
-msgid "Game status"
-msgstr "Статус партії"
-
-msgid "Mode"
-msgstr "Режим"
-
-msgid "Trainer"
-msgstr "Тренер"
-
-msgid "Assistant"
-msgstr "Асистент"
-
-msgid "You"
-msgstr "Ви"
-
-msgid "To move"
-msgstr "Хід"
-
-msgid "Moves"
-msgstr "Ходи"
-
-msgid "Queen"
-msgstr "Ферзь"
-
-msgid "Rook"
-msgstr "Тура"
-
-msgid "Bishop"
-msgstr "Слон"
-
-msgid "Knight"
-msgstr "Кінь"
-
-msgid "(SAN)"
-msgstr "(SAN)"
-
-msgid "Play"
-msgstr "Зіграти"
-
-msgid "Drag a piece on the board, type SAN, or pick a suggestion."
-msgstr "Перетягніть фігуру на дошці, введіть SAN або оберіть підказку."
-
-msgid "Hint"
-msgstr "Підказка"
-
-msgid "Undo"
-msgstr "Скасувати"
-
-msgid "Coach"
-msgstr "Тренер"
-
-msgid "Best"
-msgstr "Найкращий"
-
-msgid "Inaccuracy"
-msgstr "Неточність"
-
-msgid "Mistake"
-msgstr "Помилка"
-
-msgid "Blunder"
-msgstr "Груба помилка"
-
-#, python-format
-msgid "Better was %(move)s"
-msgstr "Краще було %(move)s"
-
-msgid "Best moves"
-msgstr "Найкращі ходи"
-
-msgid "you"
-msgstr "ви"
-
-msgid "opp"
-msgstr "опп"
-
-msgid "Press Hint for engine lines."
-msgstr "Натисніть «Підказка» для ліній двигуна."
-
-msgid "Enter the opponent move, then your turn suggestions appear."
-msgstr "Введіть хід суперника — тоді зʼявляться підказки на ваш хід."
-
-msgid "Move history"
-msgstr "Історія ходів"
-
-msgid "No moves yet."
-msgstr "Ще немає ходів."
-
-msgid "Working…"
-msgstr "Працюємо…"
-
-msgid "Enter a valid email address."
-msgstr "Вкажіть коректний email."
-
-#, python-format
-msgid "Password must be at least %(n)s characters."
-msgstr "Пароль має містити щонайменше %(n)s символів."
-
-msgid "New password and confirmation do not match."
-msgstr "Новий пароль і підтвердження не збігаються."
-
-msgid "Enter a name."
-msgstr "Вкажіть імʼя."
-
-msgid "Name must be at least 2 characters."
-msgstr "Імʼя має містити щонайменше 2 символи."
-
-msgid "Name must be at most 40 characters."
-msgstr "Імʼя має бути до 40 символів."
-
-msgid "Authentication required."
-msgstr "Потрібна автентифікація."
-
-msgid "Invalid session token. Refresh the page."
-msgstr "Невірний токен сесії. Оновіть сторінку."
-
-msgid "Invalid email or password."
-msgstr "Невірний email або пароль."
-
-msgid "A user with this email already exists."
-msgstr "Користувач із таким email уже існує."
-
-msgid "Invalid session token."
-msgstr "Невірний токен сесії."
-
-msgid "Profile updated."
-msgstr "Профіль оновлено."
-
-msgid "Current password is incorrect."
-msgstr "Поточний пароль невірний."
-
-msgid "New password must be different from the current one."
-msgstr "Новий пароль має відрізнятися від поточного."
-
-msgid "Password updated."
-msgstr "Пароль оновлено."
-
-msgid "Language updated."
-msgstr "Мову оновлено."
-
-msgid "Unknown action."
-msgstr "Невідома дія."
-
+#: app.py:187
 msgid "No moves yet"
 msgstr "Ще немає ходів"
 
+#: app.py:337
+msgid "White wins by resignation."
+msgstr "Білі виграли через здачу."
+
+#: app.py:339
+msgid "Black wins by resignation."
+msgstr "Чорні виграли через здачу."
+
+#: app.py:341
+msgid "Draw."
+msgstr "Нічия."
+
+#: app.py:346
 msgid "Trainer thinking…"
 msgstr "Тренер думає…"
 
+#: app.py:348 templates/game.html:90
+msgid "Waiting for opponent…"
+msgstr "Очікування суперника…"
+
+#: app.py:350
 msgid "Your move"
 msgstr "Ваш хід"
 
+#: app.py:350
 msgid "Opponent move"
 msgstr "Хід суперника"
 
+#: app.py:436 app.py:471 app.py:553
+msgid "Invalid session token. Refresh the page."
+msgstr "Невірний токен сесії. Оновіть сторінку."
+
+#: app.py:445
+msgid "Invalid email or password."
+msgstr "Невірний email або пароль."
+
+#: app.py:486
+msgid "A user with this email already exists."
+msgstr "Користувач із таким email уже існує."
+
+#: app.py:507 app.py:721 app.py:829 app.py:928
+msgid "Invalid session token."
+msgstr "Невірний токен сесії."
+
+#: app.py:562
+msgid "Profile updated."
+msgstr "Профіль оновлено."
+
+#: app.py:568
+msgid "Current password is incorrect."
+msgstr "Поточний пароль невірний."
+
+#: app.py:574
+msgid "New password must be different from the current one."
+msgstr "Новий пароль має відрізнятися від поточного."
+
+#: app.py:577
+msgid "Password updated."
+msgstr "Пароль оновлено."
+
+#: app.py:585
+msgid "Language updated."
+msgstr "Мову оновлено."
+
+#: app.py:587
+msgid "Unknown action."
+msgstr "Невідома дія."
+
+#: app.py:631
 #, python-format
 msgid "Trainer · %(elo)s Elo"
 msgstr "Тренер · %(elo)s Elo"
 
+#: app.py:633 i18n.py:74 templates/game.html:41
+msgid "Duel"
+msgstr "Дуель"
+
+#: app.py:635 i18n.py:73 templates/game.html:41
+msgid "Assistant"
+msgstr "Асистент"
+
+#: app.py:650 app.py:652 app.py:899 templates/duels.html:86
+msgid "Opponent"
+msgstr "Суперник"
+
+#: app.py:656
+msgid "1–0"
+msgstr "1–0"
+
+#: app.py:659
+msgid "0–1"
+msgstr "0–1"
+
+#: app.py:662
+msgid "½–½"
+msgstr "½–½"
+
+#: app.py:665
+msgid "In progress"
+msgstr "В процесі"
+
+#: app.py:731 app.py:846
 msgid "Enter a game name."
 msgstr "Вкажіть назву партії."
 
+#: app.py:733
+msgid "Choose an opponent."
+msgstr "Оберіть суперника."
+
+#: app.py:737
+msgid "You cannot challenge yourself."
+msgstr "Не можна кинути виклик собі."
+
+#: app.py:741
+msgid "Opponent not found."
+msgstr "Суперника не знайдено."
+
+#: app.py:852
 #, python-format
 msgid "Could not parse history: %(exc)s"
 msgstr "Не вдалося розібрати історію: %(exc)s"
 
+#: app.py:873 app.py:941 app.py:1061 app.py:1126 app.py:1176 app.py:1243
 msgid "Game not found."
 msgstr "Партію не знайдено."
 
-msgid "game_id required."
-msgstr "Потрібен game_id."
-
-msgid "Invalid CSRF token."
-msgstr "Невірний CSRF-токен."
-
-msgid "Enter a move in SAN, e.g. e4 or Nf6."
-msgstr "Введіть хід у SAN, напр. e4 або Nf6."
-
-#, python-format
-msgid "Invalid move: %(san)s"
-msgstr "Невірний хід: %(san)s"
-
-#, python-format
-msgid "Played %(san)s."
-msgstr "Зіграно %(san)s."
-
-msgid "Wait for the trainer to move."
-msgstr "Зачекайте на хід тренера."
-
-#, python-format
-msgid "Trainer played %(san)s."
-msgstr "Тренер зіграв %(san)s."
-
-msgid "No moves to undo."
-msgstr "Немає ходів для скасування."
-
-msgid "Undid last move."
-msgstr "Останній хід скасовано."
-
-msgid "Suggestions updated."
-msgstr "Підказки оновлено."
-
-msgid "No suggestions for this position."
-msgstr "Немає підказок для цієї позиції."
-
+#: app.py:885
 #, python-format
 msgid "Trainer game \"%(name)s\" · you are %(side)s · %(elo)s Elo"
 msgstr "Тренування «%(name)s» · ви %(side)s · %(elo)s Elo"
 
+#: app.py:891
 #, python-format
 msgid "Trainer opened with %(san)s."
 msgstr "Тренер відкрив %(san)s."
 
+#: app.py:896
+#, python-format
+msgid "Duel \"%(name)s\" · you are %(side)s vs %(opponent)s"
+msgstr "Дуель «%(name)s» · ви %(side)s проти %(opponent)s"
+
+#: app.py:904
 #, python-format
 msgid "Playing \"%(name)s\" as %(side)s."
 msgstr "Партія «%(name)s» за %(side)s."
 
+#: app.py:938 app.py:1057 app.py:1122 app.py:1172 app.py:1239
+msgid "game_id required."
+msgstr "Потрібен game_id."
+
+#: app.py:954 app.py:990 app.py:1036 i18n.py:62
+msgid "Enter a move in SAN, e.g. e4 or Nf6."
+msgstr "Введіть хід у SAN, напр. e4 або Nf6."
+
+#: app.py:958 app.py:994 app.py:1040
+#, python-format
+msgid "Invalid move: %(san)s"
+msgstr "Невірний хід: %(san)s"
+
+#: app.py:978 app.py:1045
+#, python-format
+msgid "Played %(san)s."
+msgstr "Зіграно %(san)s."
+
+#: app.py:986
+msgid "Wait for the trainer to move."
+msgstr "Зачекайте на хід тренера."
+
+#: app.py:1023
+#, python-format
+msgid "Trainer played %(san)s."
+msgstr "Тренер зіграв %(san)s."
+
+#: app.py:1029 app.py:1132
+msgid "This duel is already finished."
+msgstr "Ця дуель уже завершена."
+
+#: app.py:1032
+msgid "Wait for your opponent to move."
+msgstr "Зачекайте ходу суперника."
+
+#: app.py:1052 app.py:1117 app.py:1167 app.py:1234
+msgid "Invalid CSRF token."
+msgstr "Невірний CSRF-токен."
+
+#: app.py:1128
+msgid "Only duels can be resigned."
+msgstr "Здатися можна лише в дуелі."
+
+#: app.py:1155
+msgid "You resigned."
+msgstr "Ви здалися."
+
+#: app.py:1180
+msgid "Undo is not available in duels."
+msgstr "Скасування ходу недоступне в дуелях."
+
+#: app.py:1186
+msgid "No moves to undo."
+msgstr "Немає ходів для скасування."
+
+#: app.py:1222
+msgid "Undid last move."
+msgstr "Останній хід скасовано."
+
+#: app.py:1247
+msgid "Hints are not available in trainer mode."
+msgstr "Підказки недоступні в режимі тренера."
+
+#: app.py:1257
+msgid "Analyze is available after the duel ends."
+msgstr "Аналіз доступний після завершення дуелі."
+
+#: app.py:1275
+msgid "Analysis ready."
+msgstr "Аналіз готовий."
+
+#: app.py:1277 app.py:1279
+msgid "Suggestions updated."
+msgstr "Підказки оновлено."
+
+#: app.py:1279
+msgid "No suggestions for this position."
+msgstr "Немає підказок для цієї позиції."
+
+#: assistant.py:82
 #, python-format
 msgid "mate in %(n)s"
 msgstr "мат за %(n)s"
 
+#: assistant.py:83
 #, python-format
 msgid "mated in %(n)s"
 msgstr "мат через %(n)s"
 
+#: assistant.py:186 i18n.py:80 templates/game.html:107
+msgid "Best"
+msgstr "Найкращий"
+
+#: assistant.py:187 i18n.py:81 templates/game.html:108
+msgid "Inaccuracy"
+msgstr "Неточність"
+
+#: assistant.py:188 i18n.py:82 templates/game.html:109
+msgid "Mistake"
+msgstr "Помилка"
+
+#: assistant.py:189 i18n.py:83 templates/game.html:110
+msgid "Blunder"
+msgstr "Груба помилка"
+
+#: assistant.py:193
 #, python-format
 msgid "Good move (%(san)s). Eval %(before)s → %(after)s."
 msgstr "Хороший хід (%(san)s). Оцінка %(before)s → %(after)s."
 
+#: assistant.py:196
 #, python-format
-msgid "%(label)s: %(san)s (eval %(before)s → %(after)s, loss %(loss)s). Better was %(best)s."
-msgstr "%(label)s: %(san)s (оцінка %(before)s → %(after)s, втрата %(loss)s). Краще було %(best)s."
+msgid ""
+"%(label)s: %(san)s (eval %(before)s → %(after)s, loss %(loss)s). Better "
+"was %(best)s."
+msgstr ""
+"%(label)s: %(san)s (оцінка %(before)s → %(after)s, втрата %(loss)s). "
+"Краще було %(best)s."
 
+#: assistant.py:205
 #, python-format
 msgid "%(label)s: %(san)s (eval %(before)s → %(after)s, loss %(loss)s)."
 msgstr "%(label)s: %(san)s (оцінка %(before)s → %(after)s, втрата %(loss)s)."
 
+#: assistant.py:274
 #, python-format
 msgid "Checkmate. %(winner)s wins."
 msgstr "Мат. Перемагають %(winner)s."
 
+#: assistant.py:276
 msgid "Stalemate. Draw."
 msgstr "Пат. Нічия."
 
+#: assistant.py:278
 msgid "Draw by insufficient material."
 msgstr "Нічия через недостатній матеріал."
 
+#: assistant.py:279
 #, python-format
 msgid "Game over: %(result)s"
 msgstr "Партію завершено: %(result)s"
 
+#: auth.py:31
+msgid "Enter a valid email address."
+msgstr "Вкажіть коректний email."
+
+#: auth.py:37
+#, python-format
+msgid "Password must be at least %(n)s characters."
+msgstr "Пароль має містити щонайменше %(n)s символів."
+
+#: auth.py:39
+msgid "New password and confirmation do not match."
+msgstr "Новий пароль і підтвердження не збігаються."
+
+#: auth.py:50
+msgid "Enter a name."
+msgstr "Вкажіть імʼя."
+
+#: auth.py:52
+msgid "Name must be at least 2 characters."
+msgstr "Імʼя має містити щонайменше 2 символи."
+
+#: auth.py:54
+msgid "Name must be at most 40 characters."
+msgstr "Імʼя має бути до 40 символів."
+
+#: auth.py:140
+msgid "Authentication required."
+msgstr "Потрібна автентифікація."
+
+#: i18n.py:52 templates/base.html:78
+msgid "Open menu"
+msgstr "Відкрити меню"
+
+#: i18n.py:53
+msgid "Close menu"
+msgstr "Закрити меню"
+
+#: i18n.py:54 templates/game.html:157
+msgid "No moves yet."
+msgstr "Ще немає ходів."
+
+#: i18n.py:58 templates/game.html:116
+#, python-format
+msgid "Better was %(move)s"
+msgstr "Краще було %(move)s"
+
+#: i18n.py:59 templates/game.html:145
+msgid "Press Hint for engine lines."
+msgstr "Натисніть «Підказка» для ліній двигуна."
+
+#: i18n.py:60 templates/game.html:147
+msgid "Enter the opponent move, then your turn suggestions appear."
+msgstr "Введіть хід суперника — тоді зʼявляться підказки на ваш хід."
+
+#: i18n.py:61
 msgid "Illegal move."
 msgstr "Нелегальний хід."
 
+#: i18n.py:63
 msgid "Request failed. Try again."
 msgstr "Запит не вдався. Спробуйте ще."
 
+#: i18n.py:64 templates/game.html:167
+msgid "Working…"
+msgstr "Працюємо…"
+
+#: i18n.py:65
 msgid "Checking your move…"
 msgstr "Перевіряємо ваш хід…"
 
+#: i18n.py:66
 msgid "Analyzing position…"
 msgstr "Аналізуємо позицію…"
 
+#: i18n.py:67
 msgid "Submitting opponent move…"
 msgstr "Надсилаємо хід суперника…"
 
+#: i18n.py:68
 msgid "Playing move…"
 msgstr "Робимо хід…"
 
+#: i18n.py:69
 msgid "Playing selected move…"
 msgstr "Робимо обраний хід…"
 
+#: i18n.py:70
 msgid "Analyzing…"
 msgstr "Аналіз…"
 
+#: i18n.py:71
 msgid "Undoing…"
 msgstr "Скасування…"
 
+#: i18n.py:72 templates/game.html:41
+msgid "Trainer"
+msgstr "Тренер"
+
+#: i18n.py:75
 msgid "Move"
 msgstr "Хід"
+
+#: i18n.py:76 templates/game.html:77
+msgid "(SAN)"
+msgstr "(SAN)"
+
+#: i18n.py:77
+msgid "Press Analyze for engine lines."
+msgstr "Натисніть «Аналіз» для ліній двигуна."
+
+#: i18n.py:78
+msgid "Resign this duel?"
+msgstr "Здати цю дуель?"
+
+#: i18n.py:79
+msgid "Resigning…"
+msgstr "Здача…"
+
+#: templates/base.html:19 templates/profile.html:27 templates/profile.html:35
+msgid "Language"
+msgstr "Мова"
+
+#: templates/base.html:34
+msgid "Main menu"
+msgstr "Головне меню"
+
+#: templates/base.html:40 templates/base.html:90 templates/home.html:3
+#: templates/profile.html:10
+msgid "Home"
+msgstr "Головна"
+
+#: templates/base.html:46 templates/base.html:95 templates/duels.html:3
+#: templates/duels.html:9 templates/game.html:34 templates/home.html:17
+msgid "Duels"
+msgstr "Дуелі"
+
+#: templates/base.html:52 templates/base.html:100 templates/game.html:36
+#: templates/games.html:3 templates/games.html:9 templates/home.html:22
+msgid "Games"
+msgstr "Ігри"
+
+#: templates/base.html:58 templates/base.html:105 templates/game.html:32
+#: templates/home.html:27 templates/training.html:3 templates/training.html:9
+msgid "Training"
+msgstr "Навчання"
+
+#: templates/base.html:68 templates/base.html:114
+msgid "Log out"
+msgstr "Вийти"
+
+#: templates/base.html:85
+msgid "Mobile menu"
+msgstr "Мобільне меню"
+
+#: templates/duels.html:10
+msgid ""
+"Challenge another player. Colors are random; Elo updates when the game "
+"ends."
+msgstr ""
+"Киньте виклик іншому гравцю. Колір випадковий; Elo оновлюється після "
+"партії."
+
+#: templates/duels.html:13
+msgid "Your Elo"
+msgstr "Ваш Elo"
+
+#: templates/duels.html:13 templates/game.html:50 templates/profile.html:16
+msgid "Elo"
+msgstr "Elo"
+
+#: templates/duels.html:14 templates/duels.html:64 templates/duels.html:72
+msgid "New duel"
+msgstr "Нова дуель"
+
+#: templates/duels.html:24
+msgid "Your duels"
+msgstr "Ваші дуелі"
+
+#: templates/duels.html:39 templates/game.html:44
+msgid "vs"
+msgstr "проти"
+
+#: templates/duels.html:50 templates/game.html:80
+msgid "Play"
+msgstr "Зіграти"
+
+#: templates/duels.html:50 templates/game.html:95
+msgid "Analyze"
+msgstr "Аналіз"
+
+#: templates/duels.html:51 templates/games.html:47 templates/training.html:48
+#, python-format
+msgid "Delete “%(name)s”?"
+msgstr "Видалити «%(name)s»?"
+
+#: templates/duels.html:54 templates/games.html:50 templates/training.html:51
+#, python-format
+msgid "Delete %(name)s"
+msgstr "Видалити %(name)s"
+
+#: templates/duels.html:54 templates/games.html:50 templates/training.html:51
+msgid "Delete"
+msgstr "Видалити"
+
+#: templates/duels.html:62
+msgid "No duels yet"
+msgstr "Ще немає дуелей"
+
+#: templates/duels.html:63
+msgid "Pick an opponent and start a rated game."
+msgstr "Оберіть суперника і почніть рейтингову партію."
+
+#: templates/duels.html:73 templates/games.html:69 templates/training.html:70
+msgid "Close"
+msgstr "Закрити"
+
+#: templates/duels.html:81 templates/games.html:77 templates/training.html:78
+msgid "Title"
+msgstr "Назва"
+
+#: templates/duels.html:82
+msgid "e.g. Friday blitz"
+msgstr "напр. П’ятничний бліц"
+
+#: templates/duels.html:92
+msgid "Search by name or email"
+msgstr "Пошук за іменем або email"
+
+#: templates/duels.html:99
+msgid "Your color is chosen at random."
+msgstr "Ваш колір обирається випадково."
+
+#: templates/duels.html:104 templates/games.html:103
+#: templates/training.html:110
+msgid "Cancel"
+msgstr "Скасувати"
+
+#: templates/duels.html:105
+msgid "Challenge"
+msgstr "Викликати"
+
+#: templates/game.html:40
+msgid "Game status"
+msgstr "Статус партії"
+
+#: templates/game.html:41
+msgid "Mode"
+msgstr "Режим"
+
+#: templates/game.html:42
+msgid "You"
+msgstr "Ви"
+
+#: templates/game.html:46
+msgid "To move"
+msgstr "Хід"
+
+#: templates/game.html:47
+msgid "Moves"
+msgstr "Ходи"
+
+#: templates/game.html:55 templates/games.html:24 templates/training.html:24
+msgid "Accuracy"
+msgstr "Точність"
+
+#: templates/game.html:67
+msgid "Queen"
+msgstr "Ферзь"
+
+#: templates/game.html:68
+msgid "Rook"
+msgstr "Тура"
+
+#: templates/game.html:69
+msgid "Bishop"
+msgstr "Слон"
+
+#: templates/game.html:70
+msgid "Knight"
+msgstr "Кінь"
+
+#: templates/game.html:82
+msgid "Drag a piece on the board, type SAN, or pick a suggestion."
+msgstr "Перетягніть фігуру на дошці, введіть SAN або оберіть підказку."
+
+#: templates/game.html:84
+msgid "Hint"
+msgstr "Підказка"
+
+#: templates/game.html:85
+msgid "Undo"
+msgstr "Скасувати"
+
+#: templates/game.html:91
+msgid "Resign"
+msgstr "Здатися"
+
+#: templates/game.html:105
+msgid "Coach"
+msgstr "Тренер"
+
+#: templates/game.html:122
+msgid "Best moves"
+msgstr "Найкращі ходи"
+
+#: templates/game.html:124
+msgid "you"
+msgstr "ви"
+
+#: templates/game.html:125
+msgid "opp"
+msgstr "опп"
+
+#: templates/game.html:154 templates/game.html:156
+msgid "Move history"
+msgstr "Історія ходів"
+
+#: templates/games.html:10
+msgid "Games with the move assistant. Continue where you left off."
+msgstr "Партії з асистентом ходів. Продовжуйте з того місця, де зупинились."
+
+#: templates/games.html:12 templates/games.html:60 templates/games.html:68
+msgid "New game"
+msgstr "Нова партія"
+
+#: templates/games.html:21
+msgid "Your games"
+msgstr "Ваші партії"
+
+#: templates/games.html:46 templates/training.html:47
+msgid "Continue"
+msgstr "Продовжити"
+
+#: templates/games.html:58
+msgid "No games yet"
+msgstr "Ще немає партій"
+
+#: templates/games.html:59
+msgid "Create the first one — from an empty board or from PGN."
+msgstr "Створіть першу — можна з порожньої дошки або з PGN."
+
+#: templates/games.html:78
+msgid "e.g. Blitz with a friend"
+msgstr "наприклад, Бліц з другом"
+
+#: templates/games.html:82 templates/training.html:95
+msgid "Your color"
+msgstr "Ваш колір"
+
+#: templates/games.html:96
+msgid "History (optional)"
+msgstr "Історія (необовʼязково)"
+
+#: templates/games.html:98
+msgid "Paste PGN / SAN to continue an already played game."
+msgstr "Вставте PGN / SAN, щоб продовжити вже зіграну партію."
+
+#: templates/games.html:104 templates/training.html:111
+msgid "Create and start"
+msgstr "Створити і почати"
+
+#: templates/home.html:10
+msgid "Play. Analyze. Learn."
+msgstr "Грайте. Аналізуйте. Вчіться."
+
+#: templates/home.html:12
+msgid ""
+"Save games with Stockfish hints or train against the engine with instant "
+"feedback after every move."
+msgstr ""
+"Зберігайте партії з підказками Stockfish або тренуйтесь проти двигуна з "
+"миттєвим фідбеком після кожного ходу."
+
+#: templates/home.html:18
+msgid "Play another user online. Random colors, Elo after the game."
+msgstr "Грайте з іншим користувачем онлайн. Випадковий колір, Elo після партії."
+
+#: templates/home.html:19
+msgid "Duel →"
+msgstr "Дуель →"
+
+#: templates/home.html:23
+msgid "Move assistant: record a game and get the best lines."
+msgstr "Асистент ходів: записуйте партію, отримуйте найкращі лінії."
+
+#: templates/home.html:24
+msgid "Open →"
+msgstr "Відкрити →"
+
+#: templates/home.html:28
+msgid "Stockfish trainer (~800 / 1200 / 1600 Elo) with move evaluation."
+msgstr "Тренер Stockfish (~800 / 1200 / 1600 Elo) з оцінкою ваших ходів."
+
+#: templates/home.html:29
+msgid "Train →"
+msgstr "Тренуватись →"
+
+#: templates/login.html:3 templates/login.html:31 templates/register.html:46
+msgid "Log in"
+msgstr "Увійти"
+
+#: templates/login.html:10
+msgid "Sign in to continue your games."
+msgstr "Увійдіть, щоб продовжити партії."
+
+#: templates/login.html:23 templates/profile.html:67 templates/register.html:28
+msgid "Password"
+msgstr "Пароль"
+
+#: templates/login.html:35
+msgid "No account?"
+msgstr "Немає акаунта?"
+
+#: templates/login.html:35 templates/register.html:3 templates/register.html:42
+msgid "Sign up"
+msgstr "Зареєструватись"
+
+#: templates/profile.html:3
+msgid "Profile"
+msgstr "Профіль"
+
+#: templates/profile.html:14
+msgid "Player"
+msgstr "Гравець"
+
+#: templates/profile.html:28
+msgid "Interface language"
+msgstr "Мова інтерфейсу"
+
+#: templates/profile.html:43
+msgid "Save language"
+msgstr "Зберегти мову"
+
+#: templates/profile.html:49 templates/profile.html:57
+#: templates/register.html:18
+msgid "Name"
+msgstr "Імʼя"
+
+#: templates/profile.html:50
+msgid "What should we call you"
+msgstr "Як вас називати"
+
+#: templates/profile.html:61
+msgid "Save name"
+msgstr "Зберегти імʼя"
+
+#: templates/profile.html:68
+msgid "At least 8 characters."
+msgstr "Мінімум 8 символів."
+
+#: templates/profile.html:75
+msgid "Current password"
+msgstr "Поточний пароль"
+
+#: templates/profile.html:80
+msgid "New password"
+msgstr "Новий пароль"
+
+#: templates/profile.html:85
+msgid "Confirmation"
+msgstr "Підтвердження"
+
+#: templates/profile.html:89
+msgid "Update password"
+msgstr "Оновити пароль"
+
+#: templates/register.html:10
+msgid "Create an account to save games and training."
+msgstr "Створіть акаунт, щоб зберігати партії та тренуватись."
+
+#: templates/register.html:19
+msgid "e.g. hladii"
+msgstr "наприклад, hladii"
+
+#: templates/register.html:33
+msgid "Confirm password"
+msgstr "Підтвердження пароля"
+
+#: templates/register.html:41
+msgid "At least 8 characters in the password."
+msgstr "Мінімум 8 символів у паролі."
+
+#: templates/register.html:46
+msgid "Already have an account?"
+msgstr "Уже є акаунт?"
+
+#: templates/training.html:10
+msgid "Play against Stockfish with feedback after every move of yours."
+msgstr "Гра проти Stockfish з фідбеком після кожного вашого ходу."
+
+#: templates/training.html:12 templates/training.html:61
+#: templates/training.html:69
+msgid "New training"
+msgstr "Нове тренування"
+
+#: templates/training.html:21
+msgid "Training games"
+msgstr "Тренувальні партії"
+
+#: templates/training.html:59
+msgid "No training games yet"
+msgstr "Ще немає тренувань"
+
+#: templates/training.html:60
+msgid "Pick a Stockfish strength and play a game with instant feedback."
+msgstr "Оберіть силу Stockfish і зіграйте партію з миттєвим фідбеком."
+
+#: templates/training.html:79
+msgid "e.g. Training 1200"
+msgstr "наприклад, Тренування 1200"
+
+#: templates/training.html:83
+msgid "Trainer strength"
+msgstr "Сила тренера"
 

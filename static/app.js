@@ -19,6 +19,7 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
   }
 
   const isTrainer = gameEl.dataset.mode === 'trainer';
+  const isDuel = gameEl.dataset.mode === 'duel';
   const csrfToken = (
     gameEl.dataset.csrf ||
     (document.querySelector('meta[name="csrf-token"]') || {}).content ||
@@ -31,6 +32,7 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
   const moveCountEl = document.getElementById('move-count');
   const accuracyChip = document.getElementById('accuracy-chip');
   const accuracyValueEl = document.getElementById('accuracy-value');
+  const eloValueEl = document.getElementById('elo-value');
   const modeLabelEl = document.getElementById('mode-label');
   const messageEl = document.getElementById('message');
   const errorEl = document.getElementById('error');
@@ -42,6 +44,11 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
   const suggestionsWrap = document.getElementById('suggestions-wrap');
   const hintBtn = document.getElementById('hint-btn');
   const undoBtn = document.getElementById('undo-btn');
+  const resignBtn = document.getElementById('resign-btn');
+  const analyzeHintBtn = document.getElementById('analyze-hint-btn');
+  const duelLiveBar = document.getElementById('duel-live-bar');
+  const duelAnalyzeBar = document.getElementById('duel-analyze-bar');
+  const duelWaitText = document.getElementById('duel-wait-text');
   const loader = document.getElementById('loader');
   const loaderText = document.getElementById('loader-text');
   const coachBox = document.getElementById('coach-box');
@@ -53,6 +60,7 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
   let chess = new Chess(gameEl.dataset.fen || undefined);
   let ground = null;
   let pendingPromo = null;
+  let pollTimer = null;
 
   function setLoader(visible, text) {
     if (!loader) return;
@@ -102,7 +110,7 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
     return rows;
   }
 
-  function renderHistory(historyText) {
+  function renderHistory(historyText, reviewPly) {
     if (!historyEl) return;
     const rows = parseHistoryRows(historyText);
     if (!rows.length) {
@@ -110,12 +118,30 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
       historyEl.dataset.history = '';
       return;
     }
+    const reviewable = isDuel && gameEl.dataset.gameOver === '1';
+    const activePly = reviewPly == null ? null : Number(reviewPly);
     const body = rows.map(function (row) {
+      const whitePly = (Number(row.n) - 1) * 2 + 1;
+      const blackPly = whitePly + 1;
+      function cell(san, ply) {
+        if (!san) return '<td></td>';
+        const active = activePly === ply ? ' history-ply-active' : '';
+        if (!reviewable) {
+          return '<td>' + escapeHtml(san) + '</td>';
+        }
+        return (
+          '<td><button type="button" class="history-ply' + active + '" data-ply="' +
+          ply +
+          '">' +
+          escapeHtml(san) +
+          '</button></td>'
+        );
+      }
       return (
         '<tr>' +
         '<th scope="row">' + escapeHtml(row.n) + '.</th>' +
-        '<td>' + escapeHtml(row.white || '') + '</td>' +
-        '<td>' + escapeHtml(row.black || '') + '</td>' +
+        cell(row.white, whitePly) +
+        cell(row.black, blackPly) +
         '</tr>'
       );
     }).join('');
@@ -155,17 +181,26 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
       if (suggestionsWrap) suggestionsWrap.hidden = true;
       return;
     }
+    const duelMode = isDuel || state.mode === 'duel';
+    if (duelMode && !state.game_over) {
+      if (suggestionsWrap) suggestionsWrap.hidden = true;
+      return;
+    }
     if (suggestionsWrap) suggestionsWrap.hidden = false;
 
     const list = state.suggestions || [];
     if (!list.length) {
-      suggestionsEl.innerHTML = state.your_turn
-        ? '<p class="muted">' + t('pressHint') + '</p>'
-        : '<p class="muted">' + t('enterOpponent') + '</p>';
+      if (duelMode && state.game_over) {
+        suggestionsEl.innerHTML = '<p class="muted">' + t('pressAnalyze') + '</p>';
+      } else {
+        suggestionsEl.innerHTML = state.your_turn
+          ? '<p class="muted">' + t('pressHint') + '</p>'
+          : '<p class="muted">' + t('enterOpponent') + '</p>';
+      }
       return;
     }
 
-    const canSelect = state.your_turn && !state.game_over;
+    const canSelect = state.your_turn && !state.game_over && !duelMode;
     const items = list.map(function (option) {
       const san = option.first_move || '';
       const disabled = !canSelect || !san ? ' disabled' : '';
@@ -213,8 +248,48 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
     if (busy || pendingPromo) return false;
     if (state.game_over) return false;
     const trainerMode = isTrainer || state.mode === 'trainer';
-    if (trainerMode) return !!state.your_turn;
+    const duelMode = isDuel || state.mode === 'duel';
+    if (trainerMode || duelMode) return !!state.your_turn;
     return true;
+  }
+
+  function stopPolling() {
+    if (pollTimer) {
+      clearInterval(pollTimer);
+      pollTimer = null;
+    }
+  }
+
+  function startPolling() {
+    if (!isDuel || pollTimer) return;
+    pollTimer = setInterval(function () {
+      if (busy) return;
+      if (gameEl.dataset.gameOver === '1') {
+        stopPolling();
+        return;
+      }
+      if (gameEl.dataset.yourTurn === '1') return;
+      pollState();
+    }, 2000);
+  }
+
+  async function pollState() {
+    try {
+      const response = await fetch('/api/state?game_id=' + encodeURIComponent(gameId), {
+        headers: { Accept: 'application/json' },
+        credentials: 'same-origin',
+      });
+      if (response.status === 401) {
+        window.location.href = '/login';
+        return;
+      }
+      if (!response.ok) return;
+      const data = await response.json();
+      if (!data || !data.ok) return;
+      applyState(data);
+    } catch (err) {
+      /* ignore transient poll errors */
+    }
   }
 
   function hidePromo() {
@@ -260,12 +335,15 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
     syncBoardFromChess();
     if (sanInput) sanInput.value = san;
     const trainerMode = isTrainer;
-    const analyzing = trainerMode ? false : (gameEl.dataset.yourTurn === '1');
+    const duelMode = isDuel;
+    const analyzing = trainerMode || duelMode ? false : (gameEl.dataset.yourTurn === '1');
     playSan(
       san,
       trainerMode
         ? t('checkingMove')
-        : (analyzing ? t('analyzingPosition') : t('submittingOpponent'))
+        : duelMode
+          ? t('playingMove')
+          : (analyzing ? t('analyzingPosition') : t('submittingOpponent'))
     );
   }
 
@@ -377,27 +455,58 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
         state.accuracy == null ? '—' : String(state.accuracy) + '%';
     }
     if (modeLabelEl && state.mode) {
-      modeLabelEl.textContent = state.mode === 'trainer'
-        ? (t('trainer') + ' · ' + (state.trainer_elo || ''))
-        : t('assistant');
+      if (state.mode === 'trainer') {
+        modeLabelEl.textContent = t('trainer') + ' · ' + (state.trainer_elo || '');
+      } else if (state.mode === 'duel') {
+        modeLabelEl.textContent = t('duel');
+      } else {
+        modeLabelEl.textContent = t('assistant');
+      }
+    }
+    if (eloValueEl) {
+      let eloText = state.your_elo != null ? String(state.your_elo) : '—';
+      if (state.your_elo_delta != null) {
+        const d = state.your_elo_delta;
+        eloText += ' (' + (d > 0 ? '+' : '') + d + ')';
+      }
+      eloValueEl.textContent = eloText;
     }
     setText(messageEl, state.message || '');
     setText(errorEl, state.error || '');
     renderCoach(state.coach);
-    renderHistory(state.history || '');
+    renderHistory(state.history || '', state.review_ply);
 
     const trainerMode = isTrainer || state.mode === 'trainer';
+    const duelMode = isDuel || state.mode === 'duel';
     if (movePromptLabel) {
       movePromptLabel.textContent = (state.move_prompt || t('move')) + ' ' + t('sanSuffix');
     }
-    if (trainerMode) {
+    if (trainerMode || duelMode) {
       moveForm.hidden = !!state.game_over || !state.your_turn;
       if (hintBtn) hintBtn.hidden = true;
+      if (undoBtn) undoBtn.hidden = duelMode;
     } else {
       moveForm.hidden = !!state.game_over;
       if (hintBtn) hintBtn.hidden = false;
+      if (undoBtn) undoBtn.hidden = false;
+    }
+    if (duelLiveBar) {
+      duelLiveBar.hidden = !duelMode || !!state.game_over;
+    }
+    if (duelWaitText) {
+      duelWaitText.hidden = !duelMode || !!state.game_over || !!state.your_turn;
+    }
+    if (resignBtn) {
+      resignBtn.hidden = !duelMode || !!state.game_over || state.can_resign === false;
+    }
+    if (duelAnalyzeBar) {
+      duelAnalyzeBar.hidden = !duelMode || !state.game_over;
     }
     renderSuggestions(state);
+    if (duelMode) {
+      if (state.game_over) stopPolling();
+      else startPolling();
+    }
     if (!moveForm.hidden && sanInput) {
       sanInput.focus();
     }
@@ -487,14 +596,29 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
   }
 
   // Initial history from server-rendered data attribute.
-  renderHistory(historyEl ? historyEl.dataset.history : '');
+  renderHistory(historyEl ? historyEl.dataset.history : '', null);
   initBoard();
+
+  if (historyEl) {
+    historyEl.addEventListener('click', function (event) {
+      const plyBtn = event.target.closest('[data-ply]');
+      if (!plyBtn) return;
+      if (!isDuel || gameEl.dataset.gameOver !== '1') return;
+      const ply = Number(plyBtn.getAttribute('data-ply'));
+      if (!Number.isFinite(ply) || ply < 0) return;
+      apiPost('/api/hint', { ply: ply }, t('analyzing'));
+    });
+  }
 
   if (moveForm) {
     moveForm.addEventListener('submit', function (event) {
       event.preventDefault();
       if (isTrainer) {
         playSan(sanInput.value, t('checkingMove'));
+        return;
+      }
+      if (isDuel) {
+        playSan(sanInput.value, t('playingMove'));
         return;
       }
       const analyzing = gameEl.dataset.yourTurn === '1';
@@ -522,9 +646,26 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
     });
   }
 
+  if (analyzeHintBtn) {
+    analyzeHintBtn.addEventListener('click', function () {
+      apiPost('/api/hint', null, t('analyzing'));
+    });
+  }
+
   if (undoBtn) {
     undoBtn.addEventListener('click', function () {
       apiPost('/api/undo', null, t('undoing'));
     });
+  }
+
+  if (resignBtn) {
+    resignBtn.addEventListener('click', function () {
+      if (!window.confirm(t('confirmResign'))) return;
+      apiPost('/api/resign', null, t('resigning'));
+    });
+  }
+
+  if (isDuel) {
+    startPolling();
   }
 })();

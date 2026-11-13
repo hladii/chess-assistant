@@ -1,5 +1,6 @@
 import atexit
 import os
+import random
 import secrets
 import threading
 import webbrowser
@@ -24,6 +25,7 @@ from flask_babel import gettext as _
 from assistant import (
     TRAINER_ELO_LEVELS,
     analyze_position,
+    board_at_ply,
     board_from_saved_history,
     classification_to_points,
     engine_reply,
@@ -52,21 +54,25 @@ from auth import (
 from db import (
     accuracy_from_scores,
     append_quality_score,
+    apply_elo_result,
     create_game,
     create_user,
     delete_game,
-    get_game_for_user,
+    get_accessible_game,
     get_user_by_email,
     get_user_by_id,
     init_db,
+    list_duels_for_user,
     list_games,
     pop_quality_score,
     scores_from_game,
+    search_users,
     update_game_history,
     update_user_locale,
     update_user_password,
     update_user_profile,
 )
+from elo import result_from_board, result_from_resign
 from i18n import (
     DEFAULT_LOCALE,
     LOCALE_COOKIE,
@@ -190,8 +196,10 @@ def board_from_game(game):
     return board_from_saved_history(start_fen, game.get('history') or ''), start_fen
 
 
-def build_suggestions(board, user_color):
-    if board.is_game_over() or board.turn != user_color:
+def build_suggestions(board, user_color, *, ignore_turn=False):
+    if board.is_game_over():
+        return []
+    if not ignore_turn and board.turn != user_color:
         return []
     engine = get_engine()
     with _engine_lock:
@@ -203,6 +211,28 @@ def build_suggestions(board, user_color):
         }
         for option in raw
     ]
+
+
+def analysis_board_for_game(game, board, start_fen, ply=None):
+    """
+    Board to run Stockfish on. For a terminal position with no ply given,
+    step back one half-move so MultiPV has legal moves.
+    """
+    full_ply = len(board.move_stack)
+    if ply is None:
+        if board.is_game_over() and full_ply > 0:
+            ply = full_ply - 1
+        else:
+            ply = full_ply
+    else:
+        try:
+            ply = int(ply)
+        except (TypeError, ValueError):
+            ply = full_ply
+        ply = max(0, min(ply, full_ply))
+
+    analysis_board = board_at_ply(start_fen, game.get('history') or '', ply)
+    return analysis_board, ply, full_ply
 
 
 def board_svg(board, user_color):
@@ -221,28 +251,143 @@ def is_trainer_game(game):
     return (game.get('mode') or 'assistant') == 'trainer'
 
 
-def game_payload(game, board, start_fen, suggestions=None, message='', error='', analyze=False, coach=None):
-    user_color = parse_color(game['user_color'])
-    ended = game_over_message(board)
-    if ended:
-        message = ended
+def is_duel_game(game):
+    return (game.get('mode') or 'assistant') == 'duel'
+
+
+def duel_user_color(game, user_id):
+    if game.get('white_user_id') == user_id:
+        return chess.WHITE
+    if game.get('black_user_id') == user_id:
+        return chess.BLACK
+    return parse_color(game.get('user_color') or 'w')
+
+
+def viewer_color(game, user_id=None):
+    uid = user_id if user_id is not None else current_user_id()
+    if is_duel_game(game):
+        return duel_user_color(game, uid)
+    return parse_color(game['user_color'])
+
+
+def maybe_finalize_duel(game, board):
+    """If a duel just ended on the board, persist result and apply Elo once."""
+    if not is_duel_game(game):
+        return None
+    if game.get('elo_applied') and game.get('result'):
+        return {
+            'already_applied': True,
+            'result': game.get('result'),
+            'white_elo_before': game.get('white_elo_before'),
+            'black_elo_before': game.get('black_elo_before'),
+            'white_elo_after': game.get('white_elo_after'),
+            'black_elo_after': game.get('black_elo_after'),
+            'white_elo_delta': (
+                (game.get('white_elo_after') or 0) - (game.get('white_elo_before') or 0)
+                if game.get('white_elo_after') is not None
+                else None
+            ),
+            'black_elo_delta': (
+                (game.get('black_elo_after') or 0) - (game.get('black_elo_before') or 0)
+                if game.get('black_elo_after') is not None
+                else None
+            ),
+        }
+    result = result_from_board(board)
+    if not result:
+        return None
+    applied = apply_elo_result(game['id'], result)
+    if applied:
+        game.update(
+            {
+                'result': applied.get('result'),
+                'elo_applied': True,
+                'white_elo_before': applied.get('white_elo_before'),
+                'black_elo_before': applied.get('black_elo_before'),
+                'white_elo_after': applied.get('white_elo_after'),
+                'black_elo_after': applied.get('black_elo_after'),
+            }
+        )
+    return applied
+
+
+def elo_payload_for_viewer(game, elo_info=None, user_id=None):
+    uid = user_id if user_id is not None else current_user_id()
+    if not is_duel_game(game):
+        return {}
+    info = elo_info or {}
+    is_white = game.get('white_user_id') == uid
+    before_key = 'white_elo_before' if is_white else 'black_elo_before'
+    after_key = 'white_elo_after' if is_white else 'black_elo_after'
+    delta_key = 'white_elo_delta' if is_white else 'black_elo_delta'
+    your_before = info.get(before_key, game.get(before_key))
+    your_after = info.get(after_key, game.get(after_key))
+    your_delta = info.get(delta_key)
+    if your_delta is None and your_before is not None and your_after is not None:
+        your_delta = your_after - your_before
+    opp_id = game.get('black_user_id') if is_white else game.get('white_user_id')
+    opponent = get_user_by_id(opp_id) if opp_id else None
+    return {
+        'result': info.get('result') or game.get('result'),
+        'elo_applied': bool(game.get('elo_applied') or bool(info.get('result'))),
+        'your_elo': your_after if your_after is not None else (
+            (get_user_by_id(uid) or {}).get('elo_rating')
+        ),
+        'your_elo_before': your_before,
+        'your_elo_delta': your_delta,
+        'opponent_name': (
+            (opponent.get('display_name') or opponent.get('email') or '') if opponent else ''
+        ),
+        'opponent_elo': (
+            info.get('black_elo_after' if is_white else 'white_elo_after')
+            or game.get('black_elo_after' if is_white else 'white_elo_after')
+            or (opponent.get('elo_rating') if opponent else None)
+        ),
+    }
+
+
+def game_payload(game, board, start_fen, suggestions=None, message='', error='', analyze=False, coach=None, elo_info=None):
+    user_id = current_user_id()
+    user_color = viewer_color(game, user_id)
+    duel = is_duel_game(game)
+    ended_msg = game_over_message(board)
+    resigned = duel and game.get('result') and not board.is_game_over()
+    ended = bool(ended_msg) or bool(game.get('result')) or resigned
+    if ended_msg:
+        message = ended_msg
+    elif resigned and game.get('result'):
+        if game['result'] == '1-0':
+            message = _('White wins by resignation.')
+        elif game['result'] == '0-1':
+            message = _('Black wins by resignation.')
+        else:
+            message = _('Draw.')
     your_turn = board.turn == user_color and not ended
     trainer = is_trainer_game(game)
     # In trainer mode the engine replies automatically — never ask for opponent SAN.
     if trainer and not your_turn and not ended:
         move_prompt = _('Trainer thinking…')
+    elif duel and ended:
+        move_prompt = _('Review position')
+    elif duel and not your_turn and not ended:
+        move_prompt = _('Waiting for opponent…')
     else:
         move_prompt = _('Your move') if your_turn else _('Opponent move')
     if suggestions is None:
-        # Skip heavy multipv suggestions in trainer to save CPU on small VMs.
+        # Skip heavy multipv in trainer; duel only after game over.
         if trainer:
+            suggestions = []
+        elif duel:
+            # Engine lines only on explicit Analyze (/api/hint), not every page render.
             suggestions = []
         else:
             suggestions = build_suggestions(board, user_color) if analyze and your_turn else []
     last_move = board.peek().uci() if board.move_stack else None
     orientation = 'white' if user_color == chess.WHITE else 'black'
     accuracy = accuracy_from_scores(scores_from_game(game))
-    return {
+    history_text = (game.get('history') or '').strip() or format_move_history(board, start_fen)
+    full_move_count = len(board_from_game(game)[0].move_stack) if duel else len(board.move_stack)
+    payload = {
         'started': True,
         'game_id': game['id'],
         'name': game['name'],
@@ -261,11 +406,18 @@ def game_payload(game, board, start_fen, suggestions=None, message='', error='',
         'orientation': orientation,
         'last_move': last_move,
         'game_over': bool(ended),
-        'move_count': len(board.move_stack),
+        'move_count': full_move_count,
+        'review_ply': len(board.move_stack),
         'accuracy': accuracy,
-        'history': format_move_history(board, start_fen),
+        'history': history_text,
         'csrf_token': get_csrf_token(),
+        'can_resign': duel and not ended,
+        'can_analyze': (not trainer and not duel) or (duel and ended),
+        'can_undo': not duel and not ended,
     }
+    if duel:
+        payload.update(elo_payload_for_viewer(game, elo_info=elo_info, user_id=user_id))
+    return payload
 
 
 def maybe_play_trainer_opening(game, board, start_fen):
@@ -288,8 +440,11 @@ def maybe_play_trainer_opening(game, board, start_fen):
 
 def require_owned_game(game_id):
     user_id = current_user_id()
-    game = get_game_for_user(game_id, user_id)
+    game = get_accessible_game(game_id, user_id)
     if not game:
+        return None, None, None
+    # Non-duel games still require ownership.
+    if not is_duel_game(game) and game.get('user_id') != user_id:
         return None, None, None
     board, start_fen = board_from_game(game)
     return game, board, start_fen
@@ -499,11 +654,45 @@ def annotate_games(games):
         mode = game.get('mode') or 'assistant'
         if mode == 'trainer':
             game['mode_label'] = _('Trainer · %(elo)s Elo', elo=game.get('trainer_elo') or '?')
+        elif mode == 'duel':
+            game['mode_label'] = _('Duel')
         else:
             game['mode_label'] = _('Assistant')
         scores = scores_from_game(game)
         game['accuracy'] = accuracy_from_scores(scores)
         game['quality_move_count'] = len(scores)
+    return games
+
+
+def annotate_duels(games, user_id):
+    annotate_games(games)
+    for game in games:
+        is_white = game.get('white_user_id') == user_id
+        game['side_label'] = _('White') if is_white else _('Black')
+        opp_id = game.get('black_user_id') if is_white else game.get('white_user_id')
+        opponent = get_user_by_id(opp_id) if opp_id else None
+        game['opponent_name'] = (
+            (opponent.get('display_name') or opponent.get('email') or _('Opponent'))
+            if opponent
+            else _('Opponent')
+        )
+        game['opponent_elo'] = opponent.get('elo_rating') if opponent else None
+        if game.get('result') == '1-0':
+            game['result_label'] = _('1–0')
+            game['you_won'] = is_white
+        elif game.get('result') == '0-1':
+            game['result_label'] = _('0–1')
+            game['you_won'] = not is_white
+        elif game.get('result') == '1/2-1/2':
+            game['result_label'] = _('½–½')
+            game['you_won'] = None
+        else:
+            game['result_label'] = _('In progress')
+            game['you_won'] = None
+        before = game.get('white_elo_before' if is_white else 'black_elo_before')
+        after = game.get('white_elo_after' if is_white else 'black_elo_after')
+        game['your_elo_delta'] = (after - before) if before is not None and after is not None else None
+        game['status_open'] = not bool(game.get('result'))
     return games
 
 
@@ -524,6 +713,8 @@ def summarize_accuracy(games):
 def list_endpoint_for_mode(mode):
     if mode == 'trainer':
         return 'training_list'
+    if mode == 'duel':
+        return 'duels_list'
     return 'games_list'
 
 
@@ -533,12 +724,97 @@ def index():
     return render_template('home.html')
 
 
+@app.route('/duels', methods=['GET'])
+@login_required
+def duels_list():
+    user_id = current_user_id()
+    user = get_user_by_id(user_id)
+    games = list_duels_for_user(user_id)
+    annotate_duels(games, user_id)
+    return render_template(
+        'duels.html',
+        games=games,
+        elo_rating=(user or {}).get('elo_rating'),
+        error=request.args.get('error', ''),
+    )
+
+
+@app.route('/duels', methods=['POST'])
+@login_required
+def create_duel():
+    if not validate_csrf():
+        return redirect(url_for('duels_list', error=_('Invalid session token.')))
+
+    name = (request.form.get('name') or '').strip()
+    opponent_raw = (request.form.get('opponent_id') or '').strip()
+    try:
+        opponent_id = int(opponent_raw)
+    except (TypeError, ValueError):
+        opponent_id = None
+
+    if not name:
+        return redirect(url_for('duels_list', error=_('Enter a game name.')))
+    if not opponent_id:
+        return redirect(url_for('duels_list', error=_('Choose an opponent.')))
+
+    me = current_user_id()
+    if opponent_id == me:
+        return redirect(url_for('duels_list', error=_('You cannot challenge yourself.')))
+
+    opponent = get_user_by_id(opponent_id)
+    if not opponent:
+        return redirect(url_for('duels_list', error=_('Opponent not found.')))
+
+    if random.choice((True, False)):
+        white_id, black_id = me, opponent_id
+        user_color = 'w'
+    else:
+        white_id, black_id = opponent_id, me
+        user_color = 'b'
+
+    start_fen = chess.STARTING_FEN
+    game_id = create_game(
+        user_id=me,
+        name=name,
+        history='',
+        user_color=user_color,
+        start_fen=start_fen,
+        mode='duel',
+        white_user_id=white_id,
+        black_user_id=black_id,
+    )
+    return redirect(url_for('play_game', game_id=game_id))
+
+
+@app.route('/api/users/search', methods=['GET'])
+@login_required
+def api_users_search():
+    q = request.args.get('q', '')
+    users = search_users(q, exclude_id=current_user_id(), limit=10)
+    return jsonify(
+        {
+            'ok': True,
+            'users': [
+                {
+                    'id': u['id'],
+                    'display_name': u.get('display_name') or '',
+                    'email': u.get('email') or '',
+                    'elo_rating': u.get('elo_rating'),
+                    'label': (u.get('display_name') or u.get('email') or str(u['id']))
+                    + f" · {u.get('elo_rating') or 1200}",
+                }
+                for u in users
+            ],
+        }
+    )
+
+
 @app.route('/games', methods=['GET'])
 @login_required
 def games_list():
     games = [
         g for g in list_games(current_user_id())
-        if (g.get('mode') or 'assistant') != 'trainer'
+        if (g.get('mode') or 'assistant') not in ('trainer', 'duel')
     ]
     annotate_games(games)
     return render_template(
@@ -626,25 +902,41 @@ def play_game(game_id):
     # Reload game row after possible opening move history update.
     game, board, start_fen = require_owned_game(game_id)
 
+    elo_info = maybe_finalize_duel(game, board)
+    user_color = viewer_color(game)
+
     if is_trainer_game(game):
         msg = _(
             'Trainer game "%(name)s" · you are %(side)s · %(elo)s Elo',
             name=game['name'],
-            side=side_label(parse_color(game['user_color'])),
+            side=side_label(user_color),
             elo=game.get('trainer_elo') or '?',
         )
         if opening_san:
             msg += ' ' + _('Trainer opened with %(san)s.', san=opening_san)
         analyze = False
+    elif is_duel_game(game):
+        opp = elo_payload_for_viewer(game, elo_info=elo_info)
+        msg = _(
+            'Duel "%(name)s" · you are %(side)s vs %(opponent)s',
+            name=game['name'],
+            side=side_label(user_color),
+            opponent=opp.get('opponent_name') or _('Opponent'),
+        )
+        if game.get('result') or board.is_game_over():
+            msg += ' ' + _('Press Analyze to review engine lines. Click a move in the history to inspect that position.')
+        analyze = False
     else:
         msg = _(
             'Playing "%(name)s" as %(side)s.',
             name=game['name'],
-            side=side_label(parse_color(game['user_color'])),
+            side=side_label(user_color),
         )
         analyze = True
 
-    payload = game_payload(game, board, start_fen, message=msg, analyze=analyze)
+    payload = game_payload(
+        game, board, start_fen, message=msg, analyze=analyze, elo_info=elo_info
+    )
     payload['list_endpoint'] = list_endpoint_for_mode(game.get('mode') or 'assistant')
     return render_template('game.html', **payload)
 
@@ -653,7 +945,12 @@ def play_game(game_id):
 @login_required
 def remove_game(game_id):
     return_to = (request.form.get('return_to') or 'games').strip().lower()
-    list_endpoint = 'training_list' if return_to == 'training' else 'games_list'
+    if return_to == 'training':
+        list_endpoint = 'training_list'
+    elif return_to == 'duels':
+        list_endpoint = 'duels_list'
+    else:
+        list_endpoint = 'games_list'
     if not validate_csrf():
         return redirect(url_for(list_endpoint, error=_('Invalid session token.')))
     delete_game(game_id, current_user_id())
@@ -669,7 +966,10 @@ def api_state():
     game, board, start_fen = require_owned_game(game_id)
     if not game:
         return jsonify({'ok': False, 'error': _('Game not found.')}), 404
-    payload = game_payload(game, board, start_fen, analyze=False)
+    elo_info = maybe_finalize_duel(game, board)
+    payload = game_payload(
+        game, board, start_fen, analyze=False, elo_info=elo_info
+    )
     payload['ok'] = True
     return jsonify(payload)
 
@@ -750,6 +1050,27 @@ def apply_trainer_user_move(game, board, start_fen, san):
     return True, message, board, coach, engine_san
 
 
+def apply_duel_move(game, board, start_fen, san):
+    if game.get('result'):
+        return False, _('This duel is already finished.'), board, None
+    user_color = viewer_color(game)
+    if board.turn != user_color:
+        return False, _('Wait for your opponent to move.'), board, None
+
+    san = (san or '').strip()
+    if not san:
+        return False, _('Enter a move in SAN, e.g. e4 or Nf6.'), board, None
+    try:
+        parsed = board.parse_san(san)
+    except ValueError:
+        return False, _('Invalid move: %(san)s', san=san), board, None
+
+    played = board.san(parsed)
+    board.push(parsed)
+    update_game_history(game['id'], current_user_id(), format_move_history(board, start_fen))
+    return True, _('Played %(san)s.', san=played), board, parsed
+
+
 @app.route('/api/move', methods=['POST'])
 @login_required
 def play_move():
@@ -779,6 +1100,27 @@ def play_move():
         body['ok'] = True
         return jsonify(body)
 
+    if is_duel_game(game):
+        ok, message, board, _parsed = apply_duel_move(
+            game, board, start_fen, payload.get('san', '')
+        )
+        if not ok:
+            body = game_payload(game, board, start_fen, message='', error=message, analyze=False)
+            body['ok'] = False
+            return jsonify(body), 400
+        elo_info = maybe_finalize_duel(game, board)
+        analyze = bool(game.get('result') or board.is_game_over())
+        body = game_payload(
+            game,
+            board,
+            start_fen,
+            message=message,
+            analyze=analyze,
+            elo_info=elo_info,
+        )
+        body['ok'] = True
+        return jsonify(body)
+
     ok, message, board, _parsed, coach = apply_san_move(
         game, board, start_fen, payload.get('san', '')
     )
@@ -789,6 +1131,56 @@ def play_move():
 
     body = game_payload(
         game, board, start_fen, message=message, analyze=True, coach=coach
+    )
+    body['ok'] = True
+    return jsonify(body)
+
+
+@app.route('/api/resign', methods=['POST'])
+@login_required
+def resign_duel():
+    if not validate_csrf():
+        return jsonify({'ok': False, 'error': _('Invalid CSRF token.')}), 403
+
+    payload = request.get_json(silent=True) or {}
+    game_id = payload.get('game_id')
+    if game_id is None:
+        return jsonify({'ok': False, 'error': _('game_id required.')}), 400
+
+    game, board, start_fen = require_owned_game(int(game_id))
+    if not game:
+        return jsonify({'ok': False, 'error': _('Game not found.')}), 404
+    if not is_duel_game(game):
+        return jsonify({'ok': False, 'error': _('Only duels can be resigned.')}), 400
+    if game.get('result') or board.is_game_over():
+        elo_info = maybe_finalize_duel(game, board)
+        body = game_payload(
+            game, board, start_fen, message=_('This duel is already finished.'),
+            analyze=True, elo_info=elo_info,
+        )
+        body['ok'] = False
+        return jsonify(body), 400
+
+    result = result_from_resign(viewer_color(game))
+    elo_info = apply_elo_result(game['id'], result)
+    if elo_info:
+        game.update(
+            {
+                'result': elo_info.get('result'),
+                'elo_applied': True,
+                'white_elo_before': elo_info.get('white_elo_before'),
+                'black_elo_before': elo_info.get('black_elo_before'),
+                'white_elo_after': elo_info.get('white_elo_after'),
+                'black_elo_after': elo_info.get('black_elo_after'),
+            }
+        )
+    body = game_payload(
+        game,
+        board,
+        start_fen,
+        message=_('You resigned.'),
+        analyze=True,
+        elo_info=elo_info,
     )
     body['ok'] = True
     return jsonify(body)
@@ -808,6 +1200,13 @@ def undo():
     game, board, start_fen = require_owned_game(int(game_id))
     if not game:
         return jsonify({'ok': False, 'error': _('Game not found.')}), 404
+
+    if is_duel_game(game):
+        body = game_payload(
+            game, board, start_fen, error=_('Undo is not available in duels.'), analyze=False
+        )
+        body['ok'] = False
+        return jsonify(body), 400
 
     if not board.move_stack:
         body = game_payload(game, board, start_fen, error=_('No moves to undo.'), analyze=False)
@@ -869,31 +1268,63 @@ def hint():
     if not game:
         return jsonify({'ok': False, 'error': _('Game not found.')}), 404
 
-    user_color = parse_color(game['user_color'])
-    if board.is_game_over():
-        suggestions = []
-        message = game_over_message(board)
+    if is_trainer_game(game):
+        body = game_payload(
+            game, board, start_fen, error=_('Hints are not available in trainer mode.'), analyze=False
+        )
+        body['ok'] = False
+        return jsonify(body), 400
+
+    if is_duel_game(game) and not (game.get('result') or board.is_game_over()):
+        body = game_payload(
+            game,
+            board,
+            start_fen,
+            error=_('Analyze is available after the duel ends.'),
+            analyze=False,
+        )
+        body['ok'] = False
+        return jsonify(body), 400
+
+    user_color = viewer_color(game)
+    analysis_board, review_ply, full_ply = analysis_board_for_game(
+        game, board, start_fen, ply=payload.get('ply')
+    )
+    engine = get_engine()
+    with _engine_lock:
+        raw = analyze_position(engine, analysis_board, user_color)
+    suggestions = [
+        {
+            **option,
+            'first_move': option['moves'][0] if option['moves'] else '',
+        }
+        for option in raw
+    ]
+
+    if is_duel_game(game) or board.is_game_over() or game.get('result'):
+        if suggestions:
+            if review_ply < full_ply:
+                message = _(
+                    'Analysis after %(ply)s half-moves (before the final position).',
+                    ply=review_ply,
+                )
+            else:
+                message = _('Suggestions updated.')
+        else:
+            message = game_over_message(board) or _('No suggestions for this position.')
     else:
-        engine = get_engine()
-        with _engine_lock:
-            raw = analyze_position(engine, board, user_color)
-        suggestions = [
-            {
-                **option,
-                'first_move': option['moves'][0] if option['moves'] else '',
-            }
-            for option in raw
-        ]
         message = _('Suggestions updated.') if suggestions else _('No suggestions for this position.')
 
+    # Show the reviewed position on the board; keep game.result so UI stays in analyze mode.
     body = game_payload(
         game,
-        board,
+        analysis_board,
         start_fen,
         suggestions=suggestions,
-        message=message,
+        message=message.strip(),
         analyze=False,
     )
+    body['review_ply'] = review_ply
     body['ok'] = True
     return jsonify(body)
 

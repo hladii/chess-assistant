@@ -13,6 +13,7 @@
     <div>
       <h1>{{ user.display_name or _('Player') }}</h1>
       <p class="muted">{{ user.email }}</p>
+      <p class="profile-elo"><span class="chip chip-elo">{{ _('Elo') }} · {{ user.elo_rating if user.elo_rating is not none else 1200 }}</span></p>
     </div>
   </div>
 </header>

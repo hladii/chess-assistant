@@ -1,498 +1,838 @@
-# Translations template for Chess Move Advisor.
+# English translations for Chess Move Advisor.
 # Copyright (C) 2026 ORGANIZATION
-# This file is distributed under the same license as the Chess Move Advisor project.
+# This file is distributed under the same license as the Chess Move Advisor
+# project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: Chess Move Advisor 1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-13 21:15+0200\n"
+"POT-Creation-Date: 2026-11-13 21:40+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-msgid "Main menu"
-msgstr "Main menu"
-
-msgid "Home"
-msgstr "Home"
-
-msgid "Games"
-msgstr "Games"
-
-msgid "Training"
-msgstr "Training"
-
-msgid "Log out"
-msgstr "Log out"
-
-msgid "Open menu"
-msgstr "Open menu"
-
-msgid "Close menu"
-msgstr "Close menu"
-
-msgid "Mobile menu"
-msgstr "Mobile menu"
-
-msgid "Play. Analyze. Learn."
-msgstr "Play. Analyze. Learn."
-
-msgid ""
-"Save games with Stockfish hints or train against the engine with instant feedback after every "
-"move."
-msgstr ""
-"Save games with Stockfish hints or train against the engine with instant feedback after every "
-"move."
-
-msgid "Move assistant: record a game and get the best lines."
-msgstr "Move assistant: record a game and get the best lines."
-
-msgid "Stockfish trainer (~800 / 1200 / 1600 Elo) with move evaluation."
-msgstr "Stockfish trainer (~800 / 1200 / 1600 Elo) with move evaluation."
-
-msgid "Open →"
-msgstr "Open →"
-
-msgid "Train →"
-msgstr "Train →"
-
-msgid "Log in"
-msgstr "Log in"
-
-msgid "Sign in to continue your games."
-msgstr "Sign in to continue your games."
-
-msgid "Password"
-msgstr "Password"
-
-msgid "No account?"
-msgstr "No account?"
-
-msgid "Sign up"
-msgstr "Sign up"
-
-msgid "Create an account to save games and training."
-msgstr "Create an account to save games and training."
-
-msgid "Name"
-msgstr "Name"
-
-msgid "e.g. hladii"
-msgstr "e.g. hladii"
-
-msgid "Confirm password"
-msgstr "Confirm password"
-
-msgid "At least 8 characters in the password."
-msgstr "At least 8 characters in the password."
-
-msgid "Already have an account?"
-msgstr "Already have an account?"
-
-msgid "Profile"
-msgstr "Profile"
-
-msgid "Player"
-msgstr "Player"
-
-msgid "Language"
-msgstr "Language"
-
-msgid "Interface language"
-msgstr "Interface language"
-
-msgid "Save language"
-msgstr "Save language"
-
-msgid "What should we call you"
-msgstr "What should we call you"
-
-msgid "Save name"
-msgstr "Save name"
-
-msgid "Current password"
-msgstr "Current password"
-
-msgid "New password"
-msgstr "New password"
-
-msgid "Confirmation"
-msgstr "Confirmation"
-
-msgid "At least 8 characters."
-msgstr "At least 8 characters."
-
-msgid "Update password"
-msgstr "Update password"
-
-msgid "Games with the move assistant. Continue where you left off."
-msgstr "Games with the move assistant. Continue where you left off."
-
-msgid "New game"
-msgstr "New game"
-
-msgid "Your games"
-msgstr "Your games"
-
-msgid "Accuracy"
-msgstr "Accuracy"
-
-msgid "Continue"
-msgstr "Continue"
-
-msgid "Delete"
-msgstr "Delete"
-
-#, python-format
-msgid "Delete “%(name)s”?"
-msgstr "Delete “%(name)s”?"
-
-#, python-format
-msgid "Delete %(name)s"
-msgstr "Delete %(name)s"
-
-msgid "No games yet"
-msgstr "No games yet"
-
-msgid "Create the first one — from an empty board or from PGN."
-msgstr "Create the first one — from an empty board or from PGN."
-
-msgid "Close"
-msgstr "Close"
-
-msgid "Title"
-msgstr "Title"
-
-msgid "e.g. Blitz with a friend"
-msgstr "e.g. Blitz with a friend"
-
-msgid "Your color"
-msgstr "Your color"
-
+#: app.py:155 app.py:646 assistant.py:273 i18n.py:56 templates/games.html:86
+#: templates/training.html:99
 msgid "White"
 msgstr "White"
 
+#: app.py:155 app.py:646 assistant.py:273 i18n.py:57 templates/games.html:90
+#: templates/training.html:103
 msgid "Black"
 msgstr "Black"
 
-msgid "History (optional)"
-msgstr "History (optional)"
-
-msgid "Paste PGN / SAN to continue an already played game."
-msgstr "Paste PGN / SAN to continue an already played game."
-
-msgid "Cancel"
-msgstr "Cancel"
-
-msgid "Create and start"
-msgstr "Create and start"
-
-msgid "Play against Stockfish with feedback after every move of yours."
-msgstr "Play against Stockfish with feedback after every move of yours."
-
-msgid "New training"
-msgstr "New training"
-
-msgid "Training games"
-msgstr "Training games"
-
-msgid "No training games yet"
-msgstr "No training games yet"
-
-msgid "Pick a Stockfish strength and play a game with instant feedback."
-msgstr "Pick a Stockfish strength and play a game with instant feedback."
-
-msgid "e.g. Training 1200"
-msgstr "e.g. Training 1200"
-
-msgid "Trainer strength"
-msgstr "Trainer strength"
-
-msgid "Game status"
-msgstr "Game status"
-
-msgid "Mode"
-msgstr "Mode"
-
-msgid "Trainer"
-msgstr "Trainer"
-
-msgid "Assistant"
-msgstr "Assistant"
-
-msgid "You"
-msgstr "You"
-
-msgid "To move"
-msgstr "To move"
-
-msgid "Moves"
-msgstr "Moves"
-
-msgid "Queen"
-msgstr "Queen"
-
-msgid "Rook"
-msgstr "Rook"
-
-msgid "Bishop"
-msgstr "Bishop"
-
-msgid "Knight"
-msgstr "Knight"
-
-msgid "(SAN)"
-msgstr "(SAN)"
-
-msgid "Play"
-msgstr "Play"
-
-msgid "Drag a piece on the board, type SAN, or pick a suggestion."
-msgstr "Drag a piece on the board, type SAN, or pick a suggestion."
-
-msgid "Hint"
-msgstr "Hint"
-
-msgid "Undo"
-msgstr "Undo"
-
-msgid "Coach"
-msgstr "Coach"
-
-msgid "Best"
-msgstr "Best"
-
-msgid "Inaccuracy"
-msgstr "Inaccuracy"
-
-msgid "Mistake"
-msgstr "Mistake"
-
-msgid "Blunder"
-msgstr "Blunder"
-
-#, python-format
-msgid "Better was %(move)s"
-msgstr "Better was %(move)s"
-
-msgid "Best moves"
-msgstr "Best moves"
-
-msgid "you"
-msgstr "you"
-
-msgid "opp"
-msgstr "opp"
-
-msgid "Press Hint for engine lines."
-msgstr "Press Hint for engine lines."
-
-msgid "Enter the opponent move, then your turn suggestions appear."
-msgstr "Enter the opponent move, then your turn suggestions appear."
-
-msgid "Move history"
-msgstr "Move history"
-
-msgid "No moves yet."
-msgstr "No moves yet."
-
-msgid "Working…"
-msgstr "Working…"
-
-msgid "Enter a valid email address."
-msgstr "Enter a valid email address."
-
-#, python-format
-msgid "Password must be at least %(n)s characters."
-msgstr "Password must be at least %(n)s characters."
-
-msgid "New password and confirmation do not match."
-msgstr "New password and confirmation do not match."
-
-msgid "Enter a name."
-msgstr "Enter a name."
-
-msgid "Name must be at least 2 characters."
-msgstr "Name must be at least 2 characters."
-
-msgid "Name must be at most 40 characters."
-msgstr "Name must be at most 40 characters."
-
-msgid "Authentication required."
-msgstr "Authentication required."
-
-msgid "Invalid session token. Refresh the page."
-msgstr "Invalid session token. Refresh the page."
-
-msgid "Invalid email or password."
-msgstr "Invalid email or password."
-
-msgid "A user with this email already exists."
-msgstr "A user with this email already exists."
-
-msgid "Invalid session token."
-msgstr "Invalid session token."
-
-msgid "Profile updated."
-msgstr "Profile updated."
-
-msgid "Current password is incorrect."
-msgstr "Current password is incorrect."
-
-msgid "New password must be different from the current one."
-msgstr "New password must be different from the current one."
-
-msgid "Password updated."
-msgstr "Password updated."
-
-msgid "Language updated."
-msgstr "Language updated."
-
-msgid "Unknown action."
-msgstr "Unknown action."
-
+#: app.py:187
 msgid "No moves yet"
 msgstr "No moves yet"
 
+#: app.py:337
+msgid "White wins by resignation."
+msgstr "White wins by resignation."
+
+#: app.py:339
+msgid "Black wins by resignation."
+msgstr "Black wins by resignation."
+
+#: app.py:341
+msgid "Draw."
+msgstr "Draw."
+
+#: app.py:346
 msgid "Trainer thinking…"
 msgstr "Trainer thinking…"
 
+#: app.py:348 templates/game.html:90
+msgid "Waiting for opponent…"
+msgstr "Submitting opponent move…"
+
+#: app.py:350
 msgid "Your move"
 msgstr "Your move"
 
+#: app.py:350
 msgid "Opponent move"
 msgstr "Opponent move"
 
+#: app.py:436 app.py:471 app.py:553
+msgid "Invalid session token. Refresh the page."
+msgstr "Invalid session token. Refresh the page."
+
+#: app.py:445
+msgid "Invalid email or password."
+msgstr "Invalid email or password."
+
+#: app.py:486
+msgid "A user with this email already exists."
+msgstr "A user with this email already exists."
+
+#: app.py:507 app.py:721 app.py:829 app.py:928
+msgid "Invalid session token."
+msgstr "Invalid session token."
+
+#: app.py:562
+msgid "Profile updated."
+msgstr "Profile updated."
+
+#: app.py:568
+msgid "Current password is incorrect."
+msgstr "Current password is incorrect."
+
+#: app.py:574
+msgid "New password must be different from the current one."
+msgstr "New password must be different from the current one."
+
+#: app.py:577
+msgid "Password updated."
+msgstr "Password updated."
+
+#: app.py:585
+msgid "Language updated."
+msgstr "Language updated."
+
+#: app.py:587
+msgid "Unknown action."
+msgstr "Unknown action."
+
+#: app.py:631
 #, python-format
 msgid "Trainer · %(elo)s Elo"
 msgstr "Trainer · %(elo)s Elo"
 
+#: app.py:633 i18n.py:74 templates/game.html:41
+msgid "Duel"
+msgstr "Delete"
+
+#: app.py:635 i18n.py:73 templates/game.html:41
+msgid "Assistant"
+msgstr "Assistant"
+
+#: app.py:650 app.py:652 app.py:899 templates/duels.html:86
+msgid "Opponent"
+msgstr "Opponent move"
+
+#: app.py:656
+msgid "1–0"
+msgstr "1–0"
+
+#: app.py:659
+msgid "0–1"
+msgstr "0–1"
+
+#: app.py:662
+msgid "½–½"
+msgstr "½–½"
+
+#: app.py:665
+msgid "In progress"
+msgstr "In progress"
+
+#: app.py:731 app.py:846
 msgid "Enter a game name."
 msgstr "Enter a game name."
 
+#: app.py:733
+msgid "Choose an opponent."
+msgstr "Choose an opponent."
+
+#: app.py:737
+msgid "You cannot challenge yourself."
+msgstr "You cannot challenge yourself."
+
+#: app.py:741
+msgid "Opponent not found."
+msgstr "Game not found."
+
+#: app.py:852
 #, python-format
 msgid "Could not parse history: %(exc)s"
 msgstr "Could not parse history: %(exc)s"
 
+#: app.py:873 app.py:941 app.py:1061 app.py:1126 app.py:1176 app.py:1243
 msgid "Game not found."
 msgstr "Game not found."
 
-msgid "game_id required."
-msgstr "game_id required."
-
-msgid "Invalid CSRF token."
-msgstr "Invalid CSRF token."
-
-msgid "Enter a move in SAN, e.g. e4 or Nf6."
-msgstr "Enter a move in SAN, e.g. e4 or Nf6."
-
-#, python-format
-msgid "Invalid move: %(san)s"
-msgstr "Invalid move: %(san)s"
-
-#, python-format
-msgid "Played %(san)s."
-msgstr "Played %(san)s."
-
-msgid "Wait for the trainer to move."
-msgstr "Wait for the trainer to move."
-
-#, python-format
-msgid "Trainer played %(san)s."
-msgstr "Trainer played %(san)s."
-
-msgid "No moves to undo."
-msgstr "No moves to undo."
-
-msgid "Undid last move."
-msgstr "Undid last move."
-
-msgid "Suggestions updated."
-msgstr "Suggestions updated."
-
-msgid "No suggestions for this position."
-msgstr "No suggestions for this position."
-
+#: app.py:885
 #, python-format
 msgid "Trainer game \"%(name)s\" · you are %(side)s · %(elo)s Elo"
 msgstr "Trainer game \"%(name)s\" · you are %(side)s · %(elo)s Elo"
 
+#: app.py:891
 #, python-format
 msgid "Trainer opened with %(san)s."
 msgstr "Trainer opened with %(san)s."
 
+#: app.py:896
+#, python-format
+msgid "Duel \"%(name)s\" · you are %(side)s vs %(opponent)s"
+msgstr "Duel \"%(name)s\" · you are %(side)s vs %(opponent)s"
+
+#: app.py:904
 #, python-format
 msgid "Playing \"%(name)s\" as %(side)s."
 msgstr "Playing \"%(name)s\" as %(side)s."
 
+#: app.py:938 app.py:1057 app.py:1122 app.py:1172 app.py:1239
+msgid "game_id required."
+msgstr "game_id required."
+
+#: app.py:954 app.py:990 app.py:1036 i18n.py:62
+msgid "Enter a move in SAN, e.g. e4 or Nf6."
+msgstr "Enter a move in SAN, e.g. e4 or Nf6."
+
+#: app.py:958 app.py:994 app.py:1040
+#, python-format
+msgid "Invalid move: %(san)s"
+msgstr "Invalid move: %(san)s"
+
+#: app.py:978 app.py:1045
+#, python-format
+msgid "Played %(san)s."
+msgstr "Played %(san)s."
+
+#: app.py:986
+msgid "Wait for the trainer to move."
+msgstr "Wait for the trainer to move."
+
+#: app.py:1023
+#, python-format
+msgid "Trainer played %(san)s."
+msgstr "Trainer played %(san)s."
+
+#: app.py:1029 app.py:1132
+msgid "This duel is already finished."
+msgstr "This duel is already finished."
+
+#: app.py:1032
+msgid "Wait for your opponent to move."
+msgstr "Wait for the trainer to move."
+
+#: app.py:1052 app.py:1117 app.py:1167 app.py:1234
+msgid "Invalid CSRF token."
+msgstr "Invalid CSRF token."
+
+#: app.py:1128
+msgid "Only duels can be resigned."
+msgstr "Only duels can be resigned."
+
+#: app.py:1155
+msgid "You resigned."
+msgstr "You resigned."
+
+#: app.py:1180
+msgid "Undo is not available in duels."
+msgstr "Undo is not available in duels."
+
+#: app.py:1186
+msgid "No moves to undo."
+msgstr "No moves to undo."
+
+#: app.py:1222
+msgid "Undid last move."
+msgstr "Undid last move."
+
+#: app.py:1247
+msgid "Hints are not available in trainer mode."
+msgstr "Hints are not available in trainer mode."
+
+#: app.py:1257
+msgid "Analyze is available after the duel ends."
+msgstr "Analyze is available after the duel ends."
+
+#: app.py:1275
+msgid "Analysis ready."
+msgstr "Analysis ready."
+
+#: app.py:1277 app.py:1279
+msgid "Suggestions updated."
+msgstr "Suggestions updated."
+
+#: app.py:1279
+msgid "No suggestions for this position."
+msgstr "No suggestions for this position."
+
+#: assistant.py:82
 #, python-format
 msgid "mate in %(n)s"
 msgstr "mate in %(n)s"
 
+#: assistant.py:83
 #, python-format
 msgid "mated in %(n)s"
 msgstr "mated in %(n)s"
 
+#: assistant.py:186 i18n.py:80 templates/game.html:107
+msgid "Best"
+msgstr "Best"
+
+#: assistant.py:187 i18n.py:81 templates/game.html:108
+msgid "Inaccuracy"
+msgstr "Inaccuracy"
+
+#: assistant.py:188 i18n.py:82 templates/game.html:109
+msgid "Mistake"
+msgstr "Mistake"
+
+#: assistant.py:189 i18n.py:83 templates/game.html:110
+msgid "Blunder"
+msgstr "Blunder"
+
+#: assistant.py:193
 #, python-format
 msgid "Good move (%(san)s). Eval %(before)s → %(after)s."
 msgstr "Good move (%(san)s). Eval %(before)s → %(after)s."
 
+#: assistant.py:196
 #, python-format
-msgid "%(label)s: %(san)s (eval %(before)s → %(after)s, loss %(loss)s). Better was %(best)s."
-msgstr "%(label)s: %(san)s (eval %(before)s → %(after)s, loss %(loss)s). Better was %(best)s."
+msgid ""
+"%(label)s: %(san)s (eval %(before)s → %(after)s, loss %(loss)s). Better "
+"was %(best)s."
+msgstr ""
+"%(label)s: %(san)s (eval %(before)s → %(after)s, loss %(loss)s). Better "
+"was %(best)s."
 
+#: assistant.py:205
 #, python-format
 msgid "%(label)s: %(san)s (eval %(before)s → %(after)s, loss %(loss)s)."
 msgstr "%(label)s: %(san)s (eval %(before)s → %(after)s, loss %(loss)s)."
 
+#: assistant.py:274
 #, python-format
 msgid "Checkmate. %(winner)s wins."
 msgstr "Checkmate. %(winner)s wins."
 
+#: assistant.py:276
 msgid "Stalemate. Draw."
 msgstr "Stalemate. Draw."
 
+#: assistant.py:278
 msgid "Draw by insufficient material."
 msgstr "Draw by insufficient material."
 
+#: assistant.py:279
 #, python-format
 msgid "Game over: %(result)s"
 msgstr "Game over: %(result)s"
 
+#: auth.py:31
+msgid "Enter a valid email address."
+msgstr "Enter a valid email address."
+
+#: auth.py:37
+#, python-format
+msgid "Password must be at least %(n)s characters."
+msgstr "Password must be at least %(n)s characters."
+
+#: auth.py:39
+msgid "New password and confirmation do not match."
+msgstr "New password and confirmation do not match."
+
+#: auth.py:50
+msgid "Enter a name."
+msgstr "Enter a name."
+
+#: auth.py:52
+msgid "Name must be at least 2 characters."
+msgstr "Name must be at least 2 characters."
+
+#: auth.py:54
+msgid "Name must be at most 40 characters."
+msgstr "Name must be at most 40 characters."
+
+#: auth.py:140
+msgid "Authentication required."
+msgstr "Authentication required."
+
+#: i18n.py:52 templates/base.html:78
+msgid "Open menu"
+msgstr "Open menu"
+
+#: i18n.py:53
+msgid "Close menu"
+msgstr "Close menu"
+
+#: i18n.py:54 templates/game.html:157
+msgid "No moves yet."
+msgstr "No moves yet."
+
+#: i18n.py:58 templates/game.html:116
+#, python-format
+msgid "Better was %(move)s"
+msgstr "Better was %(move)s"
+
+#: i18n.py:59 templates/game.html:145
+msgid "Press Hint for engine lines."
+msgstr "Press Hint for engine lines."
+
+#: i18n.py:60 templates/game.html:147
+msgid "Enter the opponent move, then your turn suggestions appear."
+msgstr "Enter the opponent move, then your turn suggestions appear."
+
+#: i18n.py:61
 msgid "Illegal move."
 msgstr "Illegal move."
 
+#: i18n.py:63
 msgid "Request failed. Try again."
 msgstr "Request failed. Try again."
 
+#: i18n.py:64 templates/game.html:167
+msgid "Working…"
+msgstr "Working…"
+
+#: i18n.py:65
 msgid "Checking your move…"
 msgstr "Checking your move…"
 
+#: i18n.py:66
 msgid "Analyzing position…"
 msgstr "Analyzing position…"
 
+#: i18n.py:67
 msgid "Submitting opponent move…"
 msgstr "Submitting opponent move…"
 
+#: i18n.py:68
 msgid "Playing move…"
 msgstr "Playing move…"
 
+#: i18n.py:69
 msgid "Playing selected move…"
 msgstr "Playing selected move…"
 
+#: i18n.py:70
 msgid "Analyzing…"
 msgstr "Analyzing…"
 
+#: i18n.py:71
 msgid "Undoing…"
 msgstr "Undoing…"
 
+#: i18n.py:72 templates/game.html:41
+msgid "Trainer"
+msgstr "Trainer"
+
+#: i18n.py:75
 msgid "Move"
 msgstr "Move"
+
+#: i18n.py:76 templates/game.html:77
+msgid "(SAN)"
+msgstr "(SAN)"
+
+#: i18n.py:77
+msgid "Press Analyze for engine lines."
+msgstr "Press Hint for engine lines."
+
+#: i18n.py:78
+msgid "Resign this duel?"
+msgstr "Resign this duel?"
+
+#: i18n.py:79
+msgid "Resigning…"
+msgstr "Training"
+
+#: templates/base.html:19 templates/profile.html:27 templates/profile.html:35
+msgid "Language"
+msgstr "Language"
+
+#: templates/base.html:34
+msgid "Main menu"
+msgstr "Main menu"
+
+#: templates/base.html:40 templates/base.html:90 templates/home.html:3
+#: templates/profile.html:10
+msgid "Home"
+msgstr "Home"
+
+#: templates/base.html:46 templates/base.html:95 templates/duels.html:3
+#: templates/duels.html:9 templates/game.html:34 templates/home.html:17
+msgid "Duels"
+msgstr "Duels"
+
+#: templates/base.html:52 templates/base.html:100 templates/game.html:36
+#: templates/games.html:3 templates/games.html:9 templates/home.html:22
+msgid "Games"
+msgstr "Games"
+
+#: templates/base.html:58 templates/base.html:105 templates/game.html:32
+#: templates/home.html:27 templates/training.html:3 templates/training.html:9
+msgid "Training"
+msgstr "Training"
+
+#: templates/base.html:68 templates/base.html:114
+msgid "Log out"
+msgstr "Log out"
+
+#: templates/base.html:85
+msgid "Mobile menu"
+msgstr "Mobile menu"
+
+#: templates/duels.html:10
+msgid ""
+"Challenge another player. Colors are random; Elo updates when the game "
+"ends."
+msgstr ""
+"Challenge another player. Colors are random; Elo updates when the game "
+"ends."
+
+#: templates/duels.html:13
+msgid "Your Elo"
+msgstr "Your color"
+
+#: templates/duels.html:13 templates/game.html:50 templates/profile.html:16
+msgid "Elo"
+msgstr "Elo"
+
+#: templates/duels.html:14 templates/duels.html:64 templates/duels.html:72
+msgid "New duel"
+msgstr "New game"
+
+#: templates/duels.html:24
+msgid "Your duels"
+msgstr "Your games"
+
+#: templates/duels.html:39 templates/game.html:44
+msgid "vs"
+msgstr "vs"
+
+#: templates/duels.html:50 templates/game.html:80
+msgid "Play"
+msgstr "Play"
+
+#: templates/duels.html:50 templates/game.html:95
+msgid "Analyze"
+msgstr "Analyzing…"
+
+#: templates/duels.html:51 templates/games.html:47 templates/training.html:48
+#, python-format
+msgid "Delete “%(name)s”?"
+msgstr "Delete “%(name)s”?"
+
+#: templates/duels.html:54 templates/games.html:50 templates/training.html:51
+#, python-format
+msgid "Delete %(name)s"
+msgstr "Delete %(name)s"
+
+#: templates/duels.html:54 templates/games.html:50 templates/training.html:51
+msgid "Delete"
+msgstr "Delete"
+
+#: templates/duels.html:62
+msgid "No duels yet"
+msgstr "No moves yet"
+
+#: templates/duels.html:63
+msgid "Pick an opponent and start a rated game."
+msgstr "Pick an opponent and start a rated game."
+
+#: templates/duels.html:73 templates/games.html:69 templates/training.html:70
+msgid "Close"
+msgstr "Close"
+
+#: templates/duels.html:81 templates/games.html:77 templates/training.html:78
+msgid "Title"
+msgstr "Title"
+
+#: templates/duels.html:82
+msgid "e.g. Friday blitz"
+msgstr "e.g. Friday blitz"
+
+#: templates/duels.html:92
+msgid "Search by name or email"
+msgstr "Search by name or email"
+
+#: templates/duels.html:99
+msgid "Your color is chosen at random."
+msgstr "Your color is chosen at random."
+
+#: templates/duels.html:104 templates/games.html:103
+#: templates/training.html:110
+msgid "Cancel"
+msgstr "Cancel"
+
+#: templates/duels.html:105
+msgid "Challenge"
+msgstr "Challenge"
+
+#: templates/game.html:40
+msgid "Game status"
+msgstr "Game status"
+
+#: templates/game.html:41
+msgid "Mode"
+msgstr "Mode"
+
+#: templates/game.html:42
+msgid "You"
+msgstr "You"
+
+#: templates/game.html:46
+msgid "To move"
+msgstr "To move"
+
+#: templates/game.html:47
+msgid "Moves"
+msgstr "Moves"
+
+#: templates/game.html:55 templates/games.html:24 templates/training.html:24
+msgid "Accuracy"
+msgstr "Accuracy"
+
+#: templates/game.html:67
+msgid "Queen"
+msgstr "Queen"
+
+#: templates/game.html:68
+msgid "Rook"
+msgstr "Rook"
+
+#: templates/game.html:69
+msgid "Bishop"
+msgstr "Bishop"
+
+#: templates/game.html:70
+msgid "Knight"
+msgstr "Knight"
+
+#: templates/game.html:82
+msgid "Drag a piece on the board, type SAN, or pick a suggestion."
+msgstr "Drag a piece on the board, type SAN, or pick a suggestion."
+
+#: templates/game.html:84
+msgid "Hint"
+msgstr "Hint"
+
+#: templates/game.html:85
+msgid "Undo"
+msgstr "Undo"
+
+#: templates/game.html:91
+msgid "Resign"
+msgstr "Sign up"
+
+#: templates/game.html:105
+msgid "Coach"
+msgstr "Coach"
+
+#: templates/game.html:122
+msgid "Best moves"
+msgstr "Best moves"
+
+#: templates/game.html:124
+msgid "you"
+msgstr "you"
+
+#: templates/game.html:125
+msgid "opp"
+msgstr "opp"
+
+#: templates/game.html:154 templates/game.html:156
+msgid "Move history"
+msgstr "Move history"
+
+#: templates/games.html:10
+msgid "Games with the move assistant. Continue where you left off."
+msgstr "Games with the move assistant. Continue where you left off."
+
+#: templates/games.html:12 templates/games.html:60 templates/games.html:68
+msgid "New game"
+msgstr "New game"
+
+#: templates/games.html:21
+msgid "Your games"
+msgstr "Your games"
+
+#: templates/games.html:46 templates/training.html:47
+msgid "Continue"
+msgstr "Continue"
+
+#: templates/games.html:58
+msgid "No games yet"
+msgstr "No games yet"
+
+#: templates/games.html:59
+msgid "Create the first one — from an empty board or from PGN."
+msgstr "Create the first one — from an empty board or from PGN."
+
+#: templates/games.html:78
+msgid "e.g. Blitz with a friend"
+msgstr "e.g. Blitz with a friend"
+
+#: templates/games.html:82 templates/training.html:95
+msgid "Your color"
+msgstr "Your color"
+
+#: templates/games.html:96
+msgid "History (optional)"
+msgstr "History (optional)"
+
+#: templates/games.html:98
+msgid "Paste PGN / SAN to continue an already played game."
+msgstr "Paste PGN / SAN to continue an already played game."
+
+#: templates/games.html:104 templates/training.html:111
+msgid "Create and start"
+msgstr "Create and start"
+
+#: templates/home.html:10
+msgid "Play. Analyze. Learn."
+msgstr "Play. Analyze. Learn."
+
+#: templates/home.html:12
+msgid ""
+"Save games with Stockfish hints or train against the engine with instant "
+"feedback after every move."
+msgstr ""
+"Save games with Stockfish hints or train against the engine with instant "
+"feedback after every move."
+
+#: templates/home.html:18
+msgid "Play another user online. Random colors, Elo after the game."
+msgstr "Play another user online. Random colors, Elo after the game."
+
+#: templates/home.html:19
+msgid "Duel →"
+msgstr "Duel →"
+
+#: templates/home.html:23
+msgid "Move assistant: record a game and get the best lines."
+msgstr "Move assistant: record a game and get the best lines."
+
+#: templates/home.html:24
+msgid "Open →"
+msgstr "Open →"
+
+#: templates/home.html:28
+msgid "Stockfish trainer (~800 / 1200 / 1600 Elo) with move evaluation."
+msgstr "Stockfish trainer (~800 / 1200 / 1600 Elo) with move evaluation."
+
+#: templates/home.html:29
+msgid "Train →"
+msgstr "Train →"
+
+#: templates/login.html:3 templates/login.html:31 templates/register.html:46
+msgid "Log in"
+msgstr "Log in"
+
+#: templates/login.html:10
+msgid "Sign in to continue your games."
+msgstr "Sign in to continue your games."
+
+#: templates/login.html:23 templates/profile.html:67 templates/register.html:28
+msgid "Password"
+msgstr "Password"
+
+#: templates/login.html:35
+msgid "No account?"
+msgstr "No account?"
+
+#: templates/login.html:35 templates/register.html:3 templates/register.html:42
+msgid "Sign up"
+msgstr "Sign up"
+
+#: templates/profile.html:3
+msgid "Profile"
+msgstr "Profile"
+
+#: templates/profile.html:14
+msgid "Player"
+msgstr "Player"
+
+#: templates/profile.html:28
+msgid "Interface language"
+msgstr "Interface language"
+
+#: templates/profile.html:43
+msgid "Save language"
+msgstr "Save language"
+
+#: templates/profile.html:49 templates/profile.html:57
+#: templates/register.html:18
+msgid "Name"
+msgstr "Name"
+
+#: templates/profile.html:50
+msgid "What should we call you"
+msgstr "What should we call you"
+
+#: templates/profile.html:61
+msgid "Save name"
+msgstr "Save name"
+
+#: templates/profile.html:68
+msgid "At least 8 characters."
+msgstr "At least 8 characters."
+
+#: templates/profile.html:75
+msgid "Current password"
+msgstr "Current password"
+
+#: templates/profile.html:80
+msgid "New password"
+msgstr "New password"
+
+#: templates/profile.html:85
+msgid "Confirmation"
+msgstr "Confirmation"
+
+#: templates/profile.html:89
+msgid "Update password"
+msgstr "Update password"
+
+#: templates/register.html:10
+msgid "Create an account to save games and training."
+msgstr "Create an account to save games and training."
+
+#: templates/register.html:19
+msgid "e.g. hladii"
+msgstr "e.g. hladii"
+
+#: templates/register.html:33
+msgid "Confirm password"
+msgstr "Confirm password"
+
+#: templates/register.html:41
+msgid "At least 8 characters in the password."
+msgstr "At least 8 characters in the password."
+
+#: templates/register.html:46
+msgid "Already have an account?"
+msgstr "Already have an account?"
+
+#: templates/training.html:10
+msgid "Play against Stockfish with feedback after every move of yours."
+msgstr "Play against Stockfish with feedback after every move of yours."
+
+#: templates/training.html:12 templates/training.html:61
+#: templates/training.html:69
+msgid "New training"
+msgstr "New training"
+
+#: templates/training.html:21
+msgid "Training games"
+msgstr "Training games"
+
+#: templates/training.html:59
+msgid "No training games yet"
+msgstr "No training games yet"
+
+#: templates/training.html:60
+msgid "Pick a Stockfish strength and play a game with instant feedback."
+msgstr "Pick a Stockfish strength and play a game with instant feedback."
+
+#: templates/training.html:79
+msgid "e.g. Training 1200"
+msgstr "e.g. Training 1200"
+
+#: templates/training.html:83
+msgid "Trainer strength"
+msgstr "Trainer strength"
 

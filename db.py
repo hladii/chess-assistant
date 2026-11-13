@@ -12,6 +12,14 @@ from auth import (
     normalize_email,
     seed_credentials,
 )
+from elo import DEFAULT_ELO, pair_updates
+
+GAME_COLUMNS = (
+    'id, user_id, name, history, user_color, start_fen, mode, trainer_elo, '
+    'quality_scores, white_user_id, black_user_id, result, elo_applied, '
+    'white_elo_before, black_elo_before, white_elo_after, black_elo_after, '
+    'created_at, updated_at'
+)
 
 
 def database_url():
@@ -53,6 +61,7 @@ def init_db():
                 password_hash TEXT NOT NULL,
                 display_name TEXT NOT NULL DEFAULT '',
                 locale TEXT NOT NULL DEFAULT 'en',
+                elo_rating INT NOT NULL DEFAULT 1200,
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL
             )
@@ -70,6 +79,14 @@ def init_db():
                 mode TEXT NOT NULL DEFAULT 'assistant',
                 trainer_elo INT,
                 quality_scores TEXT NOT NULL DEFAULT '[]',
+                white_user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
+                black_user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
+                result TEXT,
+                elo_applied BOOLEAN NOT NULL DEFAULT FALSE,
+                white_elo_before INT,
+                black_elo_before INT,
+                white_elo_after INT,
+                black_elo_after INT,
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL
             )
@@ -116,6 +133,60 @@ def init_db():
                 ) THEN
                     ALTER TABLE users ADD COLUMN locale TEXT NOT NULL DEFAULT 'en';
                 END IF;
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_name = 'users' AND column_name = 'elo_rating'
+                ) THEN
+                    ALTER TABLE users ADD COLUMN elo_rating INT NOT NULL DEFAULT 1200;
+                END IF;
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_name = 'games' AND column_name = 'white_user_id'
+                ) THEN
+                    ALTER TABLE games ADD COLUMN white_user_id BIGINT REFERENCES users(id) ON DELETE SET NULL;
+                END IF;
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_name = 'games' AND column_name = 'black_user_id'
+                ) THEN
+                    ALTER TABLE games ADD COLUMN black_user_id BIGINT REFERENCES users(id) ON DELETE SET NULL;
+                END IF;
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_name = 'games' AND column_name = 'result'
+                ) THEN
+                    ALTER TABLE games ADD COLUMN result TEXT;
+                END IF;
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_name = 'games' AND column_name = 'elo_applied'
+                ) THEN
+                    ALTER TABLE games ADD COLUMN elo_applied BOOLEAN NOT NULL DEFAULT FALSE;
+                END IF;
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_name = 'games' AND column_name = 'white_elo_before'
+                ) THEN
+                    ALTER TABLE games ADD COLUMN white_elo_before INT;
+                END IF;
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_name = 'games' AND column_name = 'black_elo_before'
+                ) THEN
+                    ALTER TABLE games ADD COLUMN black_elo_before INT;
+                END IF;
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_name = 'games' AND column_name = 'white_elo_after'
+                ) THEN
+                    ALTER TABLE games ADD COLUMN white_elo_after INT;
+                END IF;
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_name = 'games' AND column_name = 'black_elo_after'
+                ) THEN
+                    ALTER TABLE games ADD COLUMN black_elo_after INT;
+                END IF;
             END $$;
             '''
         )
@@ -144,11 +215,13 @@ def create_user(email, password, display_name=''):
     with get_connection() as conn:
         row = conn.execute(
             '''
-            INSERT INTO users (email, password_hash, display_name, created_at, updated_at)
-            VALUES (%s, %s, %s, %s, %s)
+            INSERT INTO users (
+                email, password_hash, display_name, elo_rating, created_at, updated_at
+            )
+            VALUES (%s, %s, %s, %s, %s, %s)
             RETURNING id
             ''',
-            (email, hash_password(password), display_name, now, now),
+            (email, hash_password(password), display_name, DEFAULT_ELO, now, now),
         ).fetchone()
     return row['id']
 
@@ -158,7 +231,8 @@ def get_user_by_email(email):
     with get_connection() as conn:
         row = conn.execute(
             '''
-            SELECT id, email, password_hash, display_name, locale, created_at, updated_at
+            SELECT id, email, password_hash, display_name, locale, elo_rating,
+                   created_at, updated_at
             FROM users
             WHERE email = %s
             ''',
@@ -171,13 +245,42 @@ def get_user_by_id(user_id):
     with get_connection() as conn:
         row = conn.execute(
             '''
-            SELECT id, email, password_hash, display_name, locale, created_at, updated_at
+            SELECT id, email, password_hash, display_name, locale, elo_rating,
+                   created_at, updated_at
             FROM users
             WHERE id = %s
             ''',
             (user_id,),
         ).fetchone()
     return dict(row) if row else None
+
+
+def search_users(query, exclude_id, limit=10):
+    q = (query or '').strip()
+    if len(q) < 2:
+        return []
+    pattern = f'%{q}%'
+    with get_connection() as conn:
+        rows = conn.execute(
+            '''
+            SELECT id, email, display_name, elo_rating
+            FROM users
+            WHERE id <> %s
+              AND (
+                display_name ILIKE %s
+                OR email ILIKE %s
+              )
+            ORDER BY
+              CASE WHEN lower(display_name) = lower(%s) THEN 0
+                   WHEN lower(email) = lower(%s) THEN 1
+                   ELSE 2 END,
+              display_name ASC,
+              email ASC
+            LIMIT %s
+            ''',
+            (exclude_id, pattern, pattern, q, q, limit),
+        ).fetchall()
+    return [dict(row) for row in rows]
 
 
 def update_user_password(user_id, new_password):
@@ -299,9 +402,8 @@ def pop_quality_score(game_id, user_id):
 def list_games(user_id):
     with get_connection() as conn:
         rows = conn.execute(
-            '''
-            SELECT id, user_id, name, history, user_color, start_fen, mode, trainer_elo,
-                   quality_scores, created_at, updated_at
+            f'''
+            SELECT {GAME_COLUMNS}
             FROM games
             WHERE user_id = %s
             ORDER BY updated_at DESC, id DESC
@@ -314,9 +416,8 @@ def list_games(user_id):
 def get_game_for_user(game_id, user_id):
     with get_connection() as conn:
         row = conn.execute(
-            '''
-            SELECT id, user_id, name, history, user_color, start_fen, mode, trainer_elo,
-                   quality_scores, created_at, updated_at
+            f'''
+            SELECT {GAME_COLUMNS}
             FROM games
             WHERE id = %s AND user_id = %s
             ''',
@@ -325,19 +426,67 @@ def get_game_for_user(game_id, user_id):
     return dict(row) if row else None
 
 
-def create_game(user_id, name, history, user_color, start_fen, mode='assistant', trainer_elo=None):
+def get_accessible_game(game_id, user_id):
+    """Owner (assistant/trainer) or duel participant."""
+    with get_connection() as conn:
+        row = conn.execute(
+            f'''
+            SELECT {GAME_COLUMNS}
+            FROM games
+            WHERE id = %s
+              AND (
+                user_id = %s
+                OR white_user_id = %s
+                OR black_user_id = %s
+              )
+            ''',
+            (game_id, user_id, user_id, user_id),
+        ).fetchone()
+    return dict(row) if row else None
+
+
+def list_duels_for_user(user_id):
+    with get_connection() as conn:
+        rows = conn.execute(
+            f'''
+            SELECT {GAME_COLUMNS}
+            FROM games
+            WHERE mode = 'duel'
+              AND (white_user_id = %s OR black_user_id = %s)
+            ORDER BY updated_at DESC, id DESC
+            ''',
+            (user_id, user_id),
+        ).fetchall()
+    return [dict(row) for row in rows]
+
+
+def create_game(
+    user_id,
+    name,
+    history,
+    user_color,
+    start_fen,
+    mode='assistant',
+    trainer_elo=None,
+    white_user_id=None,
+    black_user_id=None,
+):
     now = _now()
-    mode = mode if mode in ('assistant', 'trainer') else 'assistant'
+    mode = mode if mode in ('assistant', 'trainer', 'duel') else 'assistant'
     if mode != 'trainer':
         trainer_elo = None
+    if mode != 'duel':
+        white_user_id = None
+        black_user_id = None
     with get_connection() as conn:
         row = conn.execute(
             '''
             INSERT INTO games (
                 user_id, name, history, user_color, start_fen, mode, trainer_elo,
-                quality_scores, created_at, updated_at
+                quality_scores, white_user_id, black_user_id, result, elo_applied,
+                created_at, updated_at
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id
             ''',
             (
@@ -349,6 +498,10 @@ def create_game(user_id, name, history, user_color, start_fen, mode='assistant',
                 mode,
                 trainer_elo,
                 '[]',
+                white_user_id,
+                black_user_id,
+                None,
+                False,
                 now,
                 now,
             ),
@@ -362,9 +515,14 @@ def update_game_history(game_id, user_id, history):
             '''
             UPDATE games
             SET history = %s, updated_at = %s
-            WHERE id = %s AND user_id = %s
+            WHERE id = %s
+              AND (
+                user_id = %s
+                OR white_user_id = %s
+                OR black_user_id = %s
+              )
             ''',
-            (history or '', _now(), game_id, user_id),
+            (history or '', _now(), game_id, user_id, user_id, user_id),
         )
         return cur.rowcount > 0
 
@@ -372,10 +530,124 @@ def update_game_history(game_id, user_id, history):
 def delete_game(game_id, user_id):
     with get_connection() as conn:
         cur = conn.execute(
-            'DELETE FROM games WHERE id = %s AND user_id = %s',
-            (game_id, user_id),
+            '''
+            DELETE FROM games
+            WHERE id = %s
+              AND (
+                user_id = %s
+                OR (mode = 'duel' AND (white_user_id = %s OR black_user_id = %s))
+              )
+            ''',
+            (game_id, user_id, user_id, user_id),
         )
         return cur.rowcount > 0
+
+
+def apply_elo_result(game_id, result):
+    """
+    Persist terminal result and apply Elo once.
+    Returns dict with before/after/deltas, or None if skipped/invalid.
+    """
+    if result not in ('1-0', '0-1', '1/2-1/2'):
+        return None
+    now = _now()
+    with get_connection() as conn:
+        game = conn.execute(
+            f'''
+            SELECT {GAME_COLUMNS}
+            FROM games
+            WHERE id = %s
+            FOR UPDATE
+            ''',
+            (game_id,),
+        ).fetchone()
+        if not game:
+            return None
+        game = dict(game)
+        if (game.get('mode') or '') != 'duel':
+            return None
+        if game.get('elo_applied'):
+            return {
+                'already_applied': True,
+                'result': game.get('result'),
+                'white_elo_before': game.get('white_elo_before'),
+                'black_elo_before': game.get('black_elo_before'),
+                'white_elo_after': game.get('white_elo_after'),
+                'black_elo_after': game.get('black_elo_after'),
+                'white_elo_delta': (
+                    (game.get('white_elo_after') or 0) - (game.get('white_elo_before') or 0)
+                    if game.get('white_elo_after') is not None
+                    else None
+                ),
+                'black_elo_delta': (
+                    (game.get('black_elo_after') or 0) - (game.get('black_elo_before') or 0)
+                    if game.get('black_elo_after') is not None
+                    else None
+                ),
+            }
+
+        white_id = game.get('white_user_id')
+        black_id = game.get('black_user_id')
+        if not white_id or not black_id:
+            return None
+
+        # Lock users in id order to avoid deadlocks.
+        first_id, second_id = sorted((white_id, black_id))
+        users = {}
+        for uid in (first_id, second_id):
+            row = conn.execute(
+                '''
+                SELECT id, elo_rating
+                FROM users
+                WHERE id = %s
+                FOR UPDATE
+                ''',
+                (uid,),
+            ).fetchone()
+            if not row:
+                return None
+            users[uid] = dict(row)
+
+        rw = int(users[white_id].get('elo_rating') or DEFAULT_ELO)
+        rb = int(users[black_id].get('elo_rating') or DEFAULT_ELO)
+        new_w, new_b, dw, db = pair_updates(rw, rb, result)
+
+        conn.execute(
+            '''
+            UPDATE users SET elo_rating = %s, updated_at = %s WHERE id = %s
+            ''',
+            (new_w, now, white_id),
+        )
+        conn.execute(
+            '''
+            UPDATE users SET elo_rating = %s, updated_at = %s WHERE id = %s
+            ''',
+            (new_b, now, black_id),
+        )
+        conn.execute(
+            '''
+            UPDATE games
+            SET result = %s,
+                elo_applied = TRUE,
+                white_elo_before = %s,
+                black_elo_before = %s,
+                white_elo_after = %s,
+                black_elo_after = %s,
+                updated_at = %s
+            WHERE id = %s
+            ''',
+            (result, rw, rb, new_w, new_b, now, game_id),
+        )
+        return {
+            'already_applied': False,
+            'result': result,
+            'white_elo_before': rw,
+            'black_elo_before': rb,
+            'white_elo_after': new_w,
+            'black_elo_after': new_b,
+            'white_elo_delta': dw,
+            'black_elo_delta': db,
+        }
 
 
 def upsert_game(game_id, name, history, user_color, start_fen, created_at, updated_at, user_id=None):

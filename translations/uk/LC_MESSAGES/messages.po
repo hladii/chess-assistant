@@ -923,3 +923,114 @@ msgstr "Не вдалося видалити цю гру."
 
 msgid "Elo will update automatically."
 msgstr "Elo оновиться автоматично."
+
+msgid "Puzzles"
+msgstr "Головоломки"
+
+msgid "Hard tactics: mate or win a key piece in 2–5 moves."
+msgstr "Складні тактики: мат або виграш важливої фігури за 2–5 ходів."
+
+msgid "Your stats"
+msgstr "Ваша статистика"
+
+msgid "Solved"
+msgstr "Розв’язано"
+
+msgid "Success rate"
+msgstr "Успішність"
+
+msgid "Current streak"
+msgstr "Поточна серія"
+
+msgid "Best streak"
+msgstr "Найкраща серія"
+
+msgid "Last activity"
+msgstr "Остання активність"
+
+msgid "Catalog"
+msgstr "Каталог"
+
+msgid "moves"
+msgstr "ходів"
+
+msgid "Retry"
+msgstr "Ще раз"
+
+msgid "Solve"
+msgstr "Розв’язати"
+
+msgid "No puzzles yet"
+msgstr "Ще немає головоломок"
+
+msgid "The catalog will appear here once puzzles are seeded."
+msgstr "Каталог з’явиться тут після завантаження задач."
+
+msgid "Recent attempts"
+msgstr "Останні спроби"
+
+msgid "No attempts yet. Open a puzzle to start."
+msgstr "Ще немає спроб. Відкрийте задачу."
+
+msgid "Win material"
+msgstr "Виграш матеріалу"
+
+msgid "Checkmate"
+msgstr "Мат"
+
+msgid "Failed"
+msgstr "Провал"
+
+msgid "Abandoned"
+msgstr "Покинуто"
+
+msgid "Not tried"
+msgstr "Не пробували"
+
+msgid "Find the winning line."
+msgstr "Знайдіть виграшну лінію."
+
+msgid "Puzzle status"
+msgstr "Статус задачі"
+
+msgid "Goal"
+msgstr "Ціль"
+
+msgid "Difficulty"
+msgstr "Складність"
+
+msgid "Progress"
+msgstr "Прогрес"
+
+msgid "Status"
+msgstr "Статус"
+
+msgid "Only the winning line counts. A wrong move fails the attempt."
+msgstr "Рахується лише виграшна лінія. Помилковий хід провалює спробу."
+
+msgid "Try again"
+msgstr "Спробувати знову"
+
+msgid "Back to puzzles"
+msgstr "До головоломок"
+
+msgid "Puzzle solved!"
+msgstr "Задачу розв’язано!"
+
+msgid "Wrong move. Try again."
+msgstr "Неправильний хід. Спробуйте знову."
+
+msgid "Good. Keep going."
+msgstr "Добре. Продовжуйте."
+
+msgid "This attempt is already finished."
+msgstr "Цю спробу вже завершено."
+
+msgid "attempt_id required."
+msgstr "Потрібен attempt_id."
+
+msgid "puzzle_id required."
+msgstr "Потрібен puzzle_id."
+
+msgid "Solve →"
+msgstr "Розв’язати →"

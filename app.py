@@ -58,20 +58,27 @@ from db import (
     append_quality_score,
     apply_elo_result,
     create_game,
+    create_puzzle_attempt,
     create_user,
     delete_game,
     get_accessible_game,
     get_active_duel_for_user,
+    get_active_puzzle,
+    get_puzzle_attempt_for_user,
     get_user_by_email,
     get_user_by_id,
     init_db,
+    list_active_puzzles_for_user,
     list_duels_for_user,
     list_games,
+    list_puzzle_attempt_history,
     list_users_for_admin,
     pop_quality_score,
+    puzzle_stats_for_user,
     scores_from_game,
     search_users,
     update_game_history,
+    update_puzzle_attempt,
     update_user_locale,
     update_user_password,
     update_user_profile,
@@ -1433,6 +1440,296 @@ def error_404(exc):
 @app.errorhandler(500)
 def error_500(exc):
     return _render_http_error(500)
+
+
+def _puzzle_goal_label(goal):
+    if goal == 'win_material':
+        return _('Win material')
+    return _('Checkmate')
+
+
+def _puzzle_status_label(status):
+    if status == 'solved':
+        return _('Solved')
+    if status == 'failed':
+        return _('Failed')
+    if status == 'abandoned':
+        return _('Abandoned')
+    return _('Not tried')
+
+
+def _board_after_puzzle_plies(puzzle, ply_index):
+    board = chess.Board(puzzle['fen'])
+    solution = puzzle.get('solution_sans') or []
+    applied = []
+    for i in range(min(ply_index, len(solution))):
+        move = board.parse_san(solution[i])
+        san = board.san(move)
+        board.push(move)
+        applied.append(san)
+    return board, applied
+
+
+def _puzzle_last_move_uci(board):
+    if not board.move_stack:
+        return ''
+    move = board.peek()
+    return move.uci()
+
+
+def _puzzle_payload(puzzle, attempt, board, message='', error='', status=None):
+    solution = puzzle.get('solution_sans') or []
+    ply = int(attempt.get('ply_index') or 0)
+    finished = (status or attempt.get('status')) in ('solved', 'failed', 'abandoned')
+    orientation = 'white' if puzzle.get('side_to_move') == 'w' else 'black'
+    user_side = _('White') if puzzle.get('side_to_move') == 'w' else _('Black')
+    return {
+        'ok': not error,
+        'puzzle_id': puzzle['id'],
+        'attempt_id': attempt['id'],
+        'slug': puzzle.get('slug'),
+        'title': puzzle.get('title'),
+        'goal': puzzle.get('goal'),
+        'goal_label': _puzzle_goal_label(puzzle.get('goal')),
+        'difficulty': puzzle.get('difficulty'),
+        'themes': puzzle.get('themes') or [],
+        'fen': board.fen(),
+        'orientation': orientation,
+        'user_side': user_side,
+        'side_to_move': _('White') if board.turn == chess.WHITE else _('Black'),
+        'your_turn': (not finished) and (
+            (board.turn == chess.WHITE and puzzle.get('side_to_move') == 'w')
+            or (board.turn == chess.BLACK and puzzle.get('side_to_move') == 'b')
+        ),
+        'ply_index': ply,
+        'solution_length': len(solution),
+        'moves_played': attempt.get('moves_played') or [],
+        'last_move': _puzzle_last_move_uci(board),
+        'status': status or attempt.get('status') or 'in_progress',
+        'status_label': _puzzle_status_label(status or attempt.get('status')),
+        'solved': (status or attempt.get('status')) == 'solved',
+        'failed': (status or attempt.get('status')) == 'failed',
+        'finished': finished,
+        'message': message,
+        'error': error,
+        'history': ' '.join(attempt.get('moves_played') or []),
+    }
+
+
+def annotate_puzzles_for_list(puzzles):
+    for puzzle in puzzles:
+        status = puzzle.get('user_status')
+        puzzle['status_label'] = _puzzle_status_label(status)
+        puzzle['goal_label'] = _puzzle_goal_label(puzzle.get('goal'))
+        puzzle['solved'] = status == 'solved'
+        puzzle['failed'] = status == 'failed'
+        puzzle['player_moves'] = (len(puzzle.get('solution_sans') or []) + 1) // 2
+    return puzzles
+
+
+@app.route('/puzzles', methods=['GET'])
+@login_required
+def puzzles_list():
+    user_id = current_user_id()
+    puzzles = annotate_puzzles_for_list(list_active_puzzles_for_user(user_id))
+    stats = puzzle_stats_for_user(user_id)
+    history = list_puzzle_attempt_history(user_id, limit=20)
+    for item in history:
+        item['status_label'] = _puzzle_status_label(item.get('status'))
+        item['goal_label'] = _puzzle_goal_label(item.get('goal'))
+        item['when_label'] = format_updated_at(item.get('finished_at') or item.get('created_at'))
+    stats['last_activity_label'] = format_updated_at(stats.get('last_activity'))
+    return render_template(
+        'puzzles.html',
+        puzzles=puzzles,
+        stats=stats,
+        history=history,
+    )
+
+
+@app.route('/puzzles/<int:puzzle_id>', methods=['GET'])
+@login_required
+def play_puzzle(puzzle_id):
+    puzzle = get_active_puzzle(puzzle_id)
+    if not puzzle:
+        abort(404)
+    attempt = create_puzzle_attempt(current_user_id(), puzzle_id)
+    board = chess.Board(puzzle['fen'])
+    payload = _puzzle_payload(
+        puzzle,
+        attempt,
+        board,
+        message=_('Find the winning line.'),
+    )
+    payload['csrf_token'] = get_csrf_token()
+    return render_template('puzzle.html', **payload)
+
+
+@app.route('/api/puzzle/move', methods=['POST'])
+@login_required
+def api_puzzle_move():
+    if not validate_csrf():
+        return jsonify({'ok': False, 'error': _('Invalid CSRF token.')}), 403
+
+    payload = request.get_json(silent=True) or {}
+    attempt_id = payload.get('attempt_id')
+    san = (payload.get('san') or '').strip()
+    if attempt_id is None:
+        return jsonify({'ok': False, 'error': _('attempt_id required.')}), 400
+    if not san:
+        return jsonify({'ok': False, 'error': _('Enter a move in SAN, e.g. e4 or Nf6.')}), 400
+
+    user_id = current_user_id()
+    attempt = get_puzzle_attempt_for_user(int(attempt_id), user_id)
+    if not attempt:
+        return jsonify({'ok': False, 'error': _('Not found.')}), 404
+    if attempt.get('status') != 'in_progress':
+        puzzle = get_active_puzzle(attempt['puzzle_id'])
+        board, _ = _board_after_puzzle_plies(puzzle, attempt.get('ply_index') or 0)
+        body = _puzzle_payload(
+            puzzle, attempt, board, error=_('This attempt is already finished.')
+        )
+        body['ok'] = False
+        return jsonify(body), 400
+
+    puzzle = get_active_puzzle(attempt['puzzle_id'])
+    if not puzzle:
+        return jsonify({'ok': False, 'error': _('Not found.')}), 404
+
+    solution = puzzle.get('solution_sans') or []
+    ply = int(attempt.get('ply_index') or 0)
+    board, applied = _board_after_puzzle_plies(puzzle, ply)
+    moves_played = list(attempt.get('moves_played') or [])
+
+    if ply >= len(solution):
+        update_puzzle_attempt(
+            attempt['id'], user_id, status='solved', finished=True, ply_index=ply,
+            moves_played=moves_played,
+        )
+        attempt['status'] = 'solved'
+        body = _puzzle_payload(puzzle, attempt, board, message=_('Puzzle solved!'), status='solved')
+        return jsonify(body)
+
+    expected_san = solution[ply]
+    try:
+        user_move = board.parse_san(san)
+        expected_move = board.parse_san(expected_san)
+    except (ValueError, chess.IllegalMoveError, chess.AmbiguousMoveError):
+        body = _puzzle_payload(
+            puzzle, attempt, board, error=_('Illegal move.'), status='in_progress'
+        )
+        body['ok'] = False
+        return jsonify(body), 400
+
+    if user_move != expected_move:
+        moves_played.append(board.san(user_move))
+        update_puzzle_attempt(
+            attempt['id'],
+            user_id,
+            status='failed',
+            moves_played=moves_played,
+            ply_index=ply,
+            finished=True,
+        )
+        attempt['moves_played'] = moves_played
+        attempt['status'] = 'failed'
+        # Show the wrong move on the board briefly in response fen
+        board.push(user_move)
+        body = _puzzle_payload(
+            puzzle,
+            attempt,
+            board,
+            error=_('Wrong move. Try again.'),
+            status='failed',
+        )
+        body['ok'] = False
+        return jsonify(body), 400
+
+    played_san = board.san(user_move)
+    board.push(user_move)
+    moves_played.append(played_san)
+    ply += 1
+    auto_sans = []
+
+    if ply < len(solution):
+        reply_san = solution[ply]
+        reply_move = board.parse_san(reply_san)
+        auto_san = board.san(reply_move)
+        board.push(reply_move)
+        moves_played.append(auto_san)
+        auto_sans.append(auto_san)
+        ply += 1
+
+    if ply >= len(solution):
+        update_puzzle_attempt(
+            attempt['id'],
+            user_id,
+            status='solved',
+            moves_played=moves_played,
+            ply_index=ply,
+            finished=True,
+        )
+        attempt['moves_played'] = moves_played
+        attempt['ply_index'] = ply
+        attempt['status'] = 'solved'
+        body = _puzzle_payload(
+            puzzle, attempt, board, message=_('Puzzle solved!'), status='solved'
+        )
+        body['auto_moves'] = auto_sans
+        return jsonify(body)
+
+    update_puzzle_attempt(
+        attempt['id'],
+        user_id,
+        status='in_progress',
+        moves_played=moves_played,
+        ply_index=ply,
+    )
+    attempt['moves_played'] = moves_played
+    attempt['ply_index'] = ply
+    body = _puzzle_payload(
+        puzzle,
+        attempt,
+        board,
+        message=_('Good. Keep going.'),
+        status='in_progress',
+    )
+    body['auto_moves'] = auto_sans
+    return jsonify(body)
+
+
+@app.route('/api/puzzle/retry', methods=['POST'])
+@login_required
+def api_puzzle_retry():
+    if not validate_csrf():
+        return jsonify({'ok': False, 'error': _('Invalid CSRF token.')}), 403
+
+    payload = request.get_json(silent=True) or {}
+    puzzle_id = payload.get('puzzle_id')
+    if puzzle_id is None:
+        return jsonify({'ok': False, 'error': _('puzzle_id required.')}), 400
+
+    puzzle = get_active_puzzle(int(puzzle_id))
+    if not puzzle:
+        return jsonify({'ok': False, 'error': _('Not found.')}), 404
+
+    prev_id = payload.get('attempt_id')
+    if prev_id is not None:
+        prev = get_puzzle_attempt_for_user(int(prev_id), current_user_id())
+        if prev and prev.get('status') == 'in_progress':
+            update_puzzle_attempt(
+                prev['id'],
+                current_user_id(),
+                status='abandoned',
+                finished=True,
+            )
+
+    attempt = create_puzzle_attempt(current_user_id(), puzzle['id'])
+    board = chess.Board(puzzle['fen'])
+    body = _puzzle_payload(
+        puzzle, attempt, board, message=_('Find the winning line.'), status='in_progress'
+    )
+    return jsonify(body)
 
 
 def main():

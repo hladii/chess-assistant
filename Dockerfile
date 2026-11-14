@@ -16,7 +16,7 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY assistant.py app.py auth.py db.py elo.py i18n.py ./
+COPY assistant.py app.py auth.py db.py elo.py i18n.py puzzles_seed.py puzzles_data.json ./
 COPY templates ./templates
 COPY static ./static
 COPY translations ./translations

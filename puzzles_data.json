@@ -1,0 +1,315 @@
+[
+  {
+    "slug": "ladder-mate",
+    "title": "Rook ladder",
+    "fen": "8/4k3/8/8/8/8/8/R3K2R w KQ - 0 1",
+    "solution_sans": [
+      "Rh7+",
+      "Kd8",
+      "Ra8#"
+    ],
+    "side_to_move": "w",
+    "goal": "mate",
+    "themes": [
+      "mate",
+      "ladder"
+    ],
+    "difficulty": 2
+  },
+  {
+    "slug": "queen-seventh",
+    "title": "Mate on the seventh",
+    "fen": "6k1/5ppp/8/8/8/5Q2/5PPP/6K1 w - - 0 1",
+    "solution_sans": [
+      "Qf7+",
+      "Kh8",
+      "Qf8#"
+    ],
+    "side_to_move": "w",
+    "goal": "mate",
+    "themes": [
+      "mate"
+    ],
+    "difficulty": 2
+  },
+  {
+    "slug": "epaulette-style",
+    "title": "Queen clears the back rank",
+    "fen": "3r2k1/5ppp/8/8/8/8/5PPP/3Q2K1 w - - 0 1",
+    "solution_sans": [
+      "Qd5+",
+      "Kh8",
+      "Qxd8#"
+    ],
+    "side_to_move": "w",
+    "goal": "mate",
+    "themes": [
+      "mate"
+    ],
+    "difficulty": 2
+  },
+  {
+    "slug": "legals-mate",
+    "title": "Legal's mate",
+    "fen": "r2qkbnr/ppp2ppp/2np4/4p3/2B1P1b1/2N2N2/PPPP1PPP/R1BQK2R w KQkq - 0 1",
+    "solution_sans": [
+      "Nxe5",
+      "Bxd1",
+      "Bxf7+",
+      "Ke7",
+      "Nd5#"
+    ],
+    "side_to_move": "w",
+    "goal": "mate",
+    "themes": [
+      "mate"
+    ],
+    "difficulty": 4
+  },
+  {
+    "slug": "queen-knight-mate",
+    "title": "Queen and knight mate",
+    "fen": "6k1/5ppp/5N2/8/8/8/5PPP/3Q2K1 w - - 0 1",
+    "solution_sans": [
+      "Qd8#"
+    ],
+    "side_to_move": "w",
+    "goal": "mate",
+    "themes": [
+      "mate"
+    ],
+    "difficulty": 1
+  },
+  {
+    "slug": "anastasia-mate",
+    "title": "Anastasia mate",
+    "fen": "7k/1R5p/5N2/8/8/8/8/4K3 w - - 0 1",
+    "solution_sans": [
+      "Rxh7#"
+    ],
+    "side_to_move": "w",
+    "goal": "mate",
+    "themes": [
+      "mate"
+    ],
+    "difficulty": 1
+  },
+  {
+    "slug": "black-queen-mate",
+    "title": "Black queen mate",
+    "fen": "6k1/5ppp/8/8/8/8/5PPP/2q3K1 b - - 0 1",
+    "solution_sans": [
+      "Qd1#"
+    ],
+    "side_to_move": "b",
+    "goal": "mate",
+    "themes": [
+      "mate",
+      "back_rank"
+    ],
+    "difficulty": 1
+  },
+  {
+    "slug": "skewer-rook",
+    "title": "Rook skewer",
+    "fen": "8/8/8/4q3/4k3/8/8/R3K3 w Q - 0 1",
+    "solution_sans": [
+      "Ra4+",
+      "Kd5",
+      "Rxe4"
+    ],
+    "side_to_move": "w",
+    "goal": "win_material",
+    "themes": [
+      "skewer"
+    ],
+    "difficulty": 2
+  },
+  {
+    "slug": "skewer-rook-h",
+    "title": "Rook skewer on the h-file",
+    "fen": "8/8/8/4q3/4k3/8/8/4K2R w - - 0 1",
+    "solution_sans": [
+      "Rh4+",
+      "Kd5",
+      "Rxe4"
+    ],
+    "side_to_move": "w",
+    "goal": "win_material",
+    "themes": [
+      "skewer"
+    ],
+    "difficulty": 2
+  },
+  {
+    "slug": "family-fork",
+    "title": "Family fork",
+    "fen": "r1bqkb1r/pppp1ppp/2n2n2/4N3/4P3/8/PPPP1PPP/RNBQKB1R w KQkq - 0 1",
+    "solution_sans": [
+      "Nxf7"
+    ],
+    "side_to_move": "w",
+    "goal": "win_material",
+    "themes": [
+      "fork"
+    ],
+    "difficulty": 2
+  },
+  {
+    "slug": "knight-fork-kr",
+    "title": "Knight forks king and rook",
+    "fen": "4k2r/8/8/3N4/8/8/8/4K3 w k - 0 1",
+    "solution_sans": [
+      "Nc7+"
+    ],
+    "side_to_move": "w",
+    "goal": "win_material",
+    "themes": [
+      "fork"
+    ],
+    "difficulty": 2
+  },
+  {
+    "slug": "black-royal-fork",
+    "title": "Black royal fork",
+    "fen": "3QK3/8/4n3/8/8/8/8/4k3 b - - 0 1",
+    "solution_sans": [
+      "Nc7+"
+    ],
+    "side_to_move": "b",
+    "goal": "win_material",
+    "themes": [
+      "fork"
+    ],
+    "difficulty": 2
+  },
+  {
+    "slug": "knight-fork-kq",
+    "title": "Knight forks king and queen",
+    "fen": "3qk3/8/3N4/8/8/8/8/4K3 w - - 0 1",
+    "solution_sans": [
+      "Nc8+"
+    ],
+    "side_to_move": "w",
+    "goal": "win_material",
+    "themes": [
+      "fork"
+    ],
+    "difficulty": 2
+  },
+  {
+    "slug": "win-hanging-knight",
+    "title": "Take the hanging knight",
+    "fen": "4k3/8/8/3n4/2B5/8/8/4K3 w - - 0 1",
+    "solution_sans": [
+      "Bxd5"
+    ],
+    "side_to_move": "w",
+    "goal": "win_material",
+    "themes": [
+      "hanging"
+    ],
+    "difficulty": 1
+  },
+  {
+    "slug": "hanging-queen",
+    "title": "Take the hanging queen",
+    "fen": "4k3/3q4/8/8/8/8/8/3RK3 w - - 0 1",
+    "solution_sans": [
+      "Rxd7"
+    ],
+    "side_to_move": "w",
+    "goal": "win_material",
+    "themes": [
+      "hanging"
+    ],
+    "difficulty": 1
+  },
+  {
+    "slug": "queen-fork-kr",
+    "title": "Queen check forks the rook",
+    "fen": "4k2r/8/8/8/8/8/4Q3/4K3 w k - 0 1",
+    "solution_sans": [
+      "Qe5+"
+    ],
+    "side_to_move": "w",
+    "goal": "win_material",
+    "themes": [
+      "fork"
+    ],
+    "difficulty": 2
+  },
+  {
+    "slug": "rook-mate-back",
+    "title": "Rook back-rank mate",
+    "fen": "6k1/5ppp/8/8/8/8/5PPP/4R1K1 w - - 0 1",
+    "solution_sans": [
+      "Re8#"
+    ],
+    "side_to_move": "w",
+    "goal": "mate",
+    "themes": [
+      "mate",
+      "back_rank"
+    ],
+    "difficulty": 1
+  },
+  {
+    "slug": "fork-two-rooks",
+    "title": "Knight forks two rooks",
+    "fen": "r3k2r/8/3N4/8/8/8/8/4K3 w kq - 0 1",
+    "solution_sans": [
+      "Nc8+"
+    ],
+    "side_to_move": "w",
+    "goal": "win_material",
+    "themes": [
+      "fork"
+    ],
+    "difficulty": 2
+  },
+  {
+    "slug": "pawn-fork",
+    "title": "Pawn forks king and rook",
+    "fen": "4k2r/8/8/3P4/8/8/8/4K3 w k - 0 1",
+    "solution_sans": [
+      "d6"
+    ],
+    "side_to_move": "w",
+    "goal": "win_material",
+    "themes": [
+      "fork"
+    ],
+    "difficulty": 1
+  },
+  {
+    "slug": "rook-skewer-back",
+    "title": "Back-rank skewer",
+    "fen": "3q2k1/5ppp/8/8/8/8/5PPP/3R2K1 w - - 0 1",
+    "solution_sans": [
+      "Rd8+"
+    ],
+    "side_to_move": "w",
+    "goal": "win_material",
+    "themes": [
+      "skewer"
+    ],
+    "difficulty": 2
+  },
+  {
+    "slug": "queen-battery-mate",
+    "title": "Queen battery mate",
+    "fen": "6k1/5ppp/8/8/8/5Q2/5P1P/5RK1 w - - 0 1",
+    "solution_sans": [
+      "Qf7+",
+      "Kh8",
+      "Qf8#"
+    ],
+    "side_to_move": "w",
+    "goal": "mate",
+    "themes": [
+      "mate"
+    ],
+    "difficulty": 2
+  }
+]

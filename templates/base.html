@@ -64,6 +64,12 @@
           data-size="sm"
           data-variant="{% if request.endpoint == 'training_list' or (request.endpoint == 'play_game' and mode is defined and mode == 'trainer') %}secondary{% else %}ghost{% endif %}"
         >{{ _('Training') }}</a>
+        <a
+          href="{{ url_for('puzzles_list') }}"
+          class="btn"
+          data-size="sm"
+          data-variant="{% if request.endpoint in ('puzzles_list', 'play_puzzle') %}secondary{% else %}ghost{% endif %}"
+        >{{ _('Puzzles') }}</a>
       </nav>
 
       <div class="user-nav user-nav-desktop">
@@ -118,6 +124,11 @@
           class="btn mobile-nav-link"
           data-variant="{% if request.endpoint == 'training_list' or (request.endpoint == 'play_game' and mode is defined and mode == 'trainer') %}secondary{% else %}ghost{% endif %}"
         >{{ _('Training') }}</a>
+        <a
+          href="{{ url_for('puzzles_list') }}"
+          class="btn mobile-nav-link"
+          data-variant="{% if request.endpoint in ('puzzles_list', 'play_puzzle') %}secondary{% else %}ghost{% endif %}"
+        >{{ _('Puzzles') }}</a>
       </nav>
       <div class="mobile-nav-user">
         <a href="{{ url_for('profile') }}" class="nav-profile mobile-nav-profile">

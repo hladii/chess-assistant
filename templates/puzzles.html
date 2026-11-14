@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Puzzles') }} · Chess Move Advisor{% endblock %}
+{% block body_class %}page-list{% endblock %}
+
+{% block content %}
+<header class="list-header">
+  <div class="list-header-text">
+    <h1>{{ _('Puzzles') }}</h1>
+    <p class="tagline">{{ _('Hard tactics: mate or win a key piece in 2–5 moves.') }}</p>
+  </div>
+</header>
+
+<section class="list-panel puzzle-stats-panel" aria-labelledby="puzzle-stats-heading">
+  <div class="list-panel-head">
+    <h2 id="puzzle-stats-heading">{{ _('Your stats') }}</h2>
+  </div>
+  <div class="puzzle-stats-grid">
+    <div class="puzzle-stat">
+      <span class="puzzle-stat-value">{{ stats.solved_puzzles }}/{{ stats.catalog_total }}</span>
+      <span class="puzzle-stat-label muted">{{ _('Solved') }}</span>
+    </div>
+    <div class="puzzle-stat">
+      <span class="puzzle-stat-value">{% if stats.success_pct is none %}—{% else %}{{ stats.success_pct }}%{% endif %}</span>
+      <span class="puzzle-stat-label muted">{{ _('Success rate') }}</span>
+    </div>
+    <div class="puzzle-stat">
+      <span class="puzzle-stat-value">{{ stats.current_streak }}</span>
+      <span class="puzzle-stat-label muted">{{ _('Current streak') }}</span>
+    </div>
+    <div class="puzzle-stat">
+      <span class="puzzle-stat-value">{{ stats.best_streak }}</span>
+      <span class="puzzle-stat-label muted">{{ _('Best streak') }}</span>
+    </div>
+    <div class="puzzle-stat">
+      <span class="puzzle-stat-value">{% if stats.last_activity_label %}{{ stats.last_activity_label }}{% else %}—{% endif %}</span>
+      <span class="puzzle-stat-label muted">{{ _('Last activity') }}</span>
+    </div>
+  </div>
+</section>
+
+<section class="list-panel" aria-labelledby="puzzles-heading">
+  <div class="list-panel-head">
+    <h2 id="puzzles-heading">{{ _('Catalog') }}</h2>
+    <div class="list-panel-meta">
+      <span class="list-count muted">{{ puzzles|length }}</span>
+    </div>
+  </div>
+
+  {% if puzzles %}
+  <ul class="games-list">
+    {% for puzzle in puzzles %}
+    <li class="game-row{% if puzzle.solved %} game-row-solved{% elif puzzle.failed %} game-row-failed{% endif %}">
+      <a class="game-row-main" href="{{ url_for('play_puzzle', puzzle_id=puzzle.id) }}">
+        <div class="game-row-title">
+          <h3>{{ puzzle.title }}</h3>
+          <div class="game-row-chips">
+            <span class="chip chip-turn">{{ puzzle.goal_label }}</span>
+            <span class="chip">★ {{ puzzle.difficulty }}</span>
+            <span class="chip chip-muted">{{ puzzle.player_moves }} {{ _('moves') }}</span>
+            <span class="chip {% if puzzle.solved %}chip-accuracy{% elif puzzle.failed %}chip-muted{% else %}chip-muted{% endif %}">{{ puzzle.status_label }}</span>
+          </div>
+        </div>
+        <p class="history-preview">{{ puzzle.themes|join(' · ') }}</p>
+      </a>
+      <div class="game-row-actions">
+        <a class="btn" data-size="sm" href="{{ url_for('play_puzzle', puzzle_id=puzzle.id) }}">
+          {% if puzzle.solved %}{{ _('Retry') }}{% else %}{{ _('Solve') }}{% endif %}
+        </a>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div class="empty-state">
+    <p class="empty-title">{{ _('No puzzles yet') }}</p>
+    <p class="muted">{{ _('The catalog will appear here once puzzles are seeded.') }}</p>
+  </div>
+  {% endif %}
+</section>
+
+<section class="list-panel" aria-labelledby="puzzle-history-heading">
+  <div class="list-panel-head">
+    <h2 id="puzzle-history-heading">{{ _('Recent attempts') }}</h2>
+  </div>
+  {% if history %}
+  <ul class="games-list">
+    {% for item in history %}
+    <li class="game-row">
+      <a class="game-row-main" href="{{ url_for('play_puzzle', puzzle_id=item.puzzle_id) }}">
+        <div class="game-row-title">
+          <h3>{{ item.title }}</h3>
+          <div class="game-row-chips">
+            <span class="chip">{{ item.status_label }}</span>
+            <span class="chip chip-muted">{{ item.goal_label }}</span>
+            <span class="chip chip-muted">★ {{ item.difficulty }}</span>
+            <span class="chip chip-muted">{{ item.when_label }}</span>
+          </div>
+        </div>
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div class="empty-state">
+    <p class="muted">{{ _('No attempts yet. Open a puzzle to start.') }}</p>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

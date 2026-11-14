@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} · {{ _('Puzzles') }}{% endblock %}
+{% block body_class %}page-game{% endblock %}
+{% block main_class %}page page-game-main{% endblock %}
+
+{% block head_meta %}
+<meta name="csrf-token" content="{{ csrf_token }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='vendor/chessground/chessground.base.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='vendor/chessground/chessground.brown.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='vendor/chessground/chessground.cburnett.css') }}">
+{% endblock %}
+
+{% block content %}
+<div
+  class="game-shell"
+  id="puzzle"
+  data-puzzle-id="{{ puzzle_id }}"
+  data-attempt-id="{{ attempt_id }}"
+  data-csrf="{{ csrf_token }}"
+  data-fen="{{ fen }}"
+  data-orientation="{{ orientation }}"
+  data-last-move="{{ last_move or '' }}"
+  data-your-turn="{{ '1' if your_turn else '0' }}"
+  data-finished="{{ '1' if finished else '0' }}"
+  data-status="{{ status }}"
+>
+  <header class="game-toolbar">
+    <div class="game-toolbar-top">
+      <a class="btn" data-variant="ghost" data-size="sm" href="{{ url_for('puzzles_list') }}">← {{ _('Puzzles') }}</a>
+      <h1 id="puzzle-title" class="game-title">{{ title }}</h1>
+    </div>
+    <div class="meta-chips" aria-label="{{ _('Puzzle status') }}">
+      <span class="chip chip-turn"><span class="chip-label">{{ _('Goal') }}</span> <span id="goal-label">{{ goal_label }}</span></span>
+      <span class="chip"><span class="chip-label">{{ _('You') }}</span> <span id="user-side">{{ user_side }}</span></span>
+      <span class="chip"><span class="chip-label">{{ _('Difficulty') }}</span> <span id="difficulty">★ {{ difficulty }}</span></span>
+      <span class="chip"><span class="chip-label">{{ _('Progress') }}</span> <span id="progress">{{ ply_index }}/{{ solution_length }}</span></span>
+      <span class="chip" id="status-chip"><span class="chip-label">{{ _('Status') }}</span> <span id="status-label">{{ status_label }}</span></span>
+    </div>
+  </header>
+
+  <section class="game-layout">
+    <aside class="board-column">
+      <div class="board-wrap">
+        <div class="cg-wrap" id="board"></div>
+        <div class="promo-picker" id="promo-picker" hidden>
+          <button type="button" class="promo-btn" data-piece="q" aria-label="{{ _('Queen') }}">{{ _('Queen') }}</button>
+          <button type="button" class="promo-btn" data-piece="r" aria-label="{{ _('Rook') }}">{{ _('Rook') }}</button>
+          <button type="button" class="promo-btn" data-piece="b" aria-label="{{ _('Bishop') }}">{{ _('Bishop') }}</button>
+          <button type="button" class="promo-btn" data-piece="n" aria-label="{{ _('Knight') }}">{{ _('Knight') }}</button>
+        </div>
+      </div>
+    </aside>
+
+    <div class="panel">
+      <form id="move-form" class="move-composer" {% if finished %}hidden{% endif %}>
+        <label for="san" id="move-prompt-label" class="move-label">{{ _('Your move') }} {{ _('(SAN)') }}</label>
+        <div class="move-row">
+          <input id="san" class="input" name="san" type="text" autocomplete="off" autofocus placeholder="e4, Nf6, O-O">
+          <button type="submit" class="btn" id="play-btn" data-size="lg">{{ _('Play') }}</button>
+        </div>
+        <p class="move-help muted">{{ _('Only the winning line counts. A wrong move fails the attempt.') }}</p>
+      </form>
+
+      <div class="move-actions" id="retry-bar" {% if not finished %}hidden{% endif %}>
+        <button type="button" class="btn" data-variant="secondary" id="retry-btn">{{ _('Try again') }}</button>
+        <a class="btn" data-variant="outline" href="{{ url_for('puzzles_list') }}">{{ _('Back to puzzles') }}</a>
+      </div>
+
+      <div class="alerts">
+        <p class="message" id="message" {% if not message %}hidden{% endif %}>{{ message }}</p>
+        <p class="error" id="error" {% if not error %}hidden{% endif %}>{{ error }}</p>
+      </div>
+
+      <section class="history-panel" aria-labelledby="history-heading">
+        <h2 id="history-heading" class="panel-heading">{{ _('Move history') }}</h2>
+        <div id="move-history" class="move-history" data-history="{{ history }}">
+          {% if history %}{{ history }}{% else %}<span class="muted">{{ _('No moves yet.') }}</span>{% endif %}
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <div class="loader" id="loader" hidden>
+    <span class="loader-spinner" aria-hidden="true"></span>
+    <span id="loader-text">{{ _('Working…') }}</span>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  window.I18N = Object.assign({}, window.I18N || {}, {
+    noMovesYet: {{ _('No moves yet.')|tojson }},
+    working: {{ _('Working…')|tojson }},
+    checkingMove: {{ _('Checking your move…')|tojson }},
+    requestFailed: {{ _('Request failed. Try again.')|tojson }},
+    illegalMove: {{ _('Illegal move.')|tojson }},
+    enterSan: {{ _('Enter a move in SAN, e.g. e4 or Nf6.')|tojson }},
+    yourMove: {{ _('Your move')|tojson }},
+    white: {{ _('White')|tojson }},
+    black: {{ _('Black')|tojson }}
+  });
+</script>
+<script type="module" src="{{ url_for('static', filename='puzzle.js') }}"></script>
+{% endblock %}

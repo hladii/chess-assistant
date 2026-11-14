@@ -922,3 +922,114 @@ msgstr "Impossibile eliminare questa partita."
 
 msgid "Elo will update automatically."
 msgstr "L’Elo si aggiorna automaticamente."
+
+msgid "Puzzles"
+msgstr "Puzzle"
+
+msgid "Hard tactics: mate or win a key piece in 2–5 moves."
+msgstr "Tattiche difficili: matto o guadagno di pezzo in 2–5 mosse."
+
+msgid "Your stats"
+msgstr "Le tue statistiche"
+
+msgid "Solved"
+msgstr "Risolti"
+
+msgid "Success rate"
+msgstr "Tasso di successo"
+
+msgid "Current streak"
+msgstr "Serie attuale"
+
+msgid "Best streak"
+msgstr "Miglior serie"
+
+msgid "Last activity"
+msgstr "Ultima attività"
+
+msgid "Catalog"
+msgstr "Catalogo"
+
+msgid "moves"
+msgstr "mosse"
+
+msgid "Retry"
+msgstr "Riprova"
+
+msgid "Solve"
+msgstr "Risolvi"
+
+msgid "No puzzles yet"
+msgstr "Ancora nessun puzzle"
+
+msgid "The catalog will appear here once puzzles are seeded."
+msgstr "Il catalogo apparirà qui dopo il caricamento."
+
+msgid "Recent attempts"
+msgstr "Tentativi recenti"
+
+msgid "No attempts yet. Open a puzzle to start."
+msgstr "Ancora nessun tentativo. Apri un puzzle."
+
+msgid "Win material"
+msgstr "Guadagno di materiale"
+
+msgid "Checkmate"
+msgstr "Scacco matto"
+
+msgid "Failed"
+msgstr "Fallito"
+
+msgid "Abandoned"
+msgstr "Abbandonato"
+
+msgid "Not tried"
+msgstr "Non provato"
+
+msgid "Find the winning line."
+msgstr "Trova la linea vincente."
+
+msgid "Puzzle status"
+msgstr "Stato del puzzle"
+
+msgid "Goal"
+msgstr "Obiettivo"
+
+msgid "Difficulty"
+msgstr "Difficoltà"
+
+msgid "Progress"
+msgstr "Progresso"
+
+msgid "Status"
+msgstr "Stato"
+
+msgid "Only the winning line counts. A wrong move fails the attempt."
+msgstr "Conta solo la linea vincente. Una mossa sbagliata fallisce il tentativo."
+
+msgid "Try again"
+msgstr "Riprova"
+
+msgid "Back to puzzles"
+msgstr "Torna ai puzzle"
+
+msgid "Puzzle solved!"
+msgstr "Puzzle risolto!"
+
+msgid "Wrong move. Try again."
+msgstr "Mossa sbagliata. Riprova."
+
+msgid "Good. Keep going."
+msgstr "Bene. Continua."
+
+msgid "This attempt is already finished."
+msgstr "Questo tentativo è già finito."
+
+msgid "attempt_id required."
+msgstr "attempt_id obbligatorio."
+
+msgid "puzzle_id required."
+msgstr "puzzle_id obbligatorio."
+
+msgid "Solve →"
+msgstr "Risolvi →"

@@ -924,3 +924,114 @@ msgstr "Could not delete this game."
 
 msgid "Elo will update automatically."
 msgstr "Elo will update automatically."
+
+msgid "Puzzles"
+msgstr "Puzzles"
+
+msgid "Hard tactics: mate or win a key piece in 2–5 moves."
+msgstr "Hard tactics: mate or win a key piece in 2–5 moves."
+
+msgid "Your stats"
+msgstr "Your stats"
+
+msgid "Solved"
+msgstr "Solved"
+
+msgid "Success rate"
+msgstr "Success rate"
+
+msgid "Current streak"
+msgstr "Current streak"
+
+msgid "Best streak"
+msgstr "Best streak"
+
+msgid "Last activity"
+msgstr "Last activity"
+
+msgid "Catalog"
+msgstr "Catalog"
+
+msgid "moves"
+msgstr "moves"
+
+msgid "Retry"
+msgstr "Retry"
+
+msgid "Solve"
+msgstr "Solve"
+
+msgid "No puzzles yet"
+msgstr "No puzzles yet"
+
+msgid "The catalog will appear here once puzzles are seeded."
+msgstr "The catalog will appear here once puzzles are seeded."
+
+msgid "Recent attempts"
+msgstr "Recent attempts"
+
+msgid "No attempts yet. Open a puzzle to start."
+msgstr "No attempts yet. Open a puzzle to start."
+
+msgid "Win material"
+msgstr "Win material"
+
+msgid "Checkmate"
+msgstr "Checkmate"
+
+msgid "Failed"
+msgstr "Failed"
+
+msgid "Abandoned"
+msgstr "Abandoned"
+
+msgid "Not tried"
+msgstr "Not tried"
+
+msgid "Find the winning line."
+msgstr "Find the winning line."
+
+msgid "Puzzle status"
+msgstr "Puzzle status"
+
+msgid "Goal"
+msgstr "Goal"
+
+msgid "Difficulty"
+msgstr "Difficulty"
+
+msgid "Progress"
+msgstr "Progress"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Only the winning line counts. A wrong move fails the attempt."
+msgstr "Only the winning line counts. A wrong move fails the attempt."
+
+msgid "Try again"
+msgstr "Try again"
+
+msgid "Back to puzzles"
+msgstr "Back to puzzles"
+
+msgid "Puzzle solved!"
+msgstr "Puzzle solved!"
+
+msgid "Wrong move. Try again."
+msgstr "Wrong move. Try again."
+
+msgid "Good. Keep going."
+msgstr "Good. Keep going."
+
+msgid "This attempt is already finished."
+msgstr "This attempt is already finished."
+
+msgid "attempt_id required."
+msgstr "attempt_id required."
+
+msgid "puzzle_id required."
+msgstr "puzzle_id required."
+
+msgid "Solve →"
+msgstr "Solve →"

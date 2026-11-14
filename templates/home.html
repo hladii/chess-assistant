@@ -12,7 +12,7 @@
     {{ _('Save games with Stockfish hints or train against the engine with instant feedback after every move.') }}
   </p>
 
-  <div class="home-cta-grid{% if not is_admin %} home-cta-grid-2{% endif %}">
+  <div class="home-cta-grid">
     <a class="home-cta" href="{{ url_for('duels_list') }}">
       <span class="home-cta-label">{{ _('Duels') }}</span>
       <span class="home-cta-desc">{{ _('Play another user online. Random colors, Elo after the game.') }}</span>
@@ -29,6 +29,11 @@
       <span class="home-cta-label">{{ _('Training') }}</span>
       <span class="home-cta-desc">{{ _('Stockfish trainer (~800 / 1200 / 1600 Elo) with move evaluation.') }}</span>
       <span class="home-cta-action">{{ _('Train →') }}</span>
+    </a>
+    <a class="home-cta" href="{{ url_for('puzzles_list') }}">
+      <span class="home-cta-label">{{ _('Puzzles') }}</span>
+      <span class="home-cta-desc">{{ _('Hard tactics: mate or win a key piece in 2–5 moves.') }}</span>
+      <span class="home-cta-action">{{ _('Solve →') }}</span>
     </a>
   </div>
 </section>

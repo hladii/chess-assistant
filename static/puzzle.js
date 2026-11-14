@@ -1,9 +1,15 @@
 import { Chess } from './vendor/chess.bundle.js';
 import { Chessground } from './vendor/chessground/chessground.min.js';
+import { initGameSheet } from './game-sheet.js';
 
 (function () {
   const root = document.getElementById('puzzle');
   if (!root) return;
+
+  window.I18N = Object.assign({}, window.I18N || {}, {
+    sheetMove: (window.I18N && window.I18N.sheetMove) || 'Move',
+    sheetHistory: (window.I18N && window.I18N.sheetHistory) || 'Move history',
+  });
 
   const I18N = window.I18N || {};
   function t(key) {
@@ -89,6 +95,8 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
       progressEl.textContent = (state.ply_index || 0) + '/' + state.solution_length;
     }
     if (statusLabelEl) statusLabelEl.textContent = state.status_label || state.status || '';
+    const statusCompact = document.getElementById('status-label-compact');
+    if (statusCompact) statusCompact.textContent = state.status_label || state.status || '';
     if (historyEl) {
       const hist = state.history || (state.moves_played || []).join(' ');
       historyEl.textContent = hist || t('noMovesYet');
@@ -96,6 +104,8 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
     }
     if (moveForm) moveForm.hidden = finished;
     if (retryBar) retryBar.hidden = !finished;
+    const iconRetry = document.getElementById('icon-retry-btn');
+    if (iconRetry) iconRetry.hidden = !finished;
 
     const color = chess.turn() === 'w' ? 'white' : 'black';
     const movableColor = !finished && state.your_turn ? color : undefined;
@@ -267,4 +277,11 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
       );
     });
   }
+
+  initGameSheet({
+    root: root,
+    getGround: function () {
+      return ground;
+    },
+  });
 })();

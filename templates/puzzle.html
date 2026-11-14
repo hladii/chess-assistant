@@ -29,8 +29,12 @@
     <div class="game-toolbar-top">
       <a class="btn" data-variant="ghost" data-size="sm" href="{{ url_for('puzzles_list') }}">← {{ _('Puzzles') }}</a>
       <h1 id="puzzle-title" class="game-title">{{ title }}</h1>
+      <div class="game-toolbar-status">
+        <span class="chip chip-turn chip-compact"><span id="goal-label-compact">{{ goal_label }}</span></span>
+        <span class="chip chip-compact" id="status-chip-compact"><span id="status-label-compact">{{ status_label }}</span></span>
+      </div>
     </div>
-    <div class="meta-chips" aria-label="{{ _('Puzzle status') }}">
+    <div class="meta-chips meta-chips-full" aria-label="{{ _('Puzzle status') }}">
       <span class="chip chip-turn"><span class="chip-label">{{ _('Goal') }}</span> <span id="goal-label">{{ goal_label }}</span></span>
       <span class="chip"><span class="chip-label">{{ _('You') }}</span> <span id="user-side">{{ user_side }}</span></span>
       <span class="chip"><span class="chip-label">{{ _('Difficulty') }}</span> <span id="difficulty">★ {{ difficulty }}</span></span>
@@ -50,29 +54,35 @@
           <button type="button" class="promo-btn" data-piece="n" aria-label="{{ _('Knight') }}">{{ _('Knight') }}</button>
         </div>
       </div>
-    </aside>
-
-    <div class="panel">
-      <form id="move-form" class="move-composer" {% if finished %}hidden{% endif %}>
-        <label for="san" id="move-prompt-label" class="move-label">{{ _('Your move') }} {{ _('(SAN)') }}</label>
-        <div class="move-row">
-          <input id="san" class="input" name="san" type="text" autocomplete="off" autofocus placeholder="e4, Nf6, O-O">
-          <button type="submit" class="btn" id="play-btn" data-size="lg">{{ _('Play') }}</button>
-        </div>
-        <p class="move-help muted">{{ _('Only the winning line counts. A wrong move fails the attempt.') }}</p>
-      </form>
-
-      <div class="move-actions" id="retry-bar" {% if not finished %}hidden{% endif %}>
-        <button type="button" class="btn" data-variant="secondary" id="retry-btn">{{ _('Try again') }}</button>
-        <a class="btn" data-variant="outline" href="{{ url_for('puzzles_list') }}">{{ _('Back to puzzles') }}</a>
-      </div>
-
-      <div class="alerts">
+      <div class="game-toast alerts" id="game-toast">
         <p class="message" id="message" {% if not message %}hidden{% endif %}>{{ message }}</p>
         <p class="error" id="error" {% if not error %}hidden{% endif %}>{{ error }}</p>
       </div>
+    </aside>
 
-      <section class="history-panel" aria-labelledby="history-heading">
+    <div class="panel game-panel" id="game-panel">
+      <div class="game-sheet-head">
+        <h2 class="game-sheet-title" id="game-sheet-title">{{ _('Move') }}</h2>
+        <button type="button" class="btn" data-variant="ghost" data-size="sm" data-close-sheet aria-label="{{ _('Close') }}">✕</button>
+      </div>
+
+      <div class="game-sheet-section" data-sheet-section="move">
+        <form id="move-form" class="move-composer" {% if finished %}hidden{% endif %}>
+          <label for="san" id="move-prompt-label" class="move-label">{{ _('Your move') }} {{ _('(SAN)') }}</label>
+          <div class="move-row">
+            <input id="san" class="input" name="san" type="text" autocomplete="off" autofocus placeholder="e4, Nf6, O-O">
+            <button type="submit" class="btn" id="play-btn" data-size="lg">{{ _('Play') }}</button>
+          </div>
+          <p class="move-help muted">{{ _('Only the winning line counts. A wrong move fails the attempt.') }}</p>
+        </form>
+
+        <div class="move-actions" id="retry-bar" {% if not finished %}hidden{% endif %}>
+          <button type="button" class="btn" data-variant="secondary" id="retry-btn">{{ _('Try again') }}</button>
+          <a class="btn" data-variant="outline" href="{{ url_for('puzzles_list') }}">{{ _('Back to puzzles') }}</a>
+        </div>
+      </div>
+
+      <section class="history-panel game-sheet-section" data-sheet-section="history" aria-labelledby="history-heading">
         <h2 id="history-heading" class="panel-heading">{{ _('Move history') }}</h2>
         <div id="move-history" class="move-history" data-history="{{ history }}">
           {% if history %}{{ history }}{% else %}<span class="muted">{{ _('No moves yet.') }}</span>{% endif %}
@@ -80,6 +90,23 @@
       </section>
     </div>
   </section>
+
+  <nav class="game-icon-bar" aria-label="{{ _('Puzzle controls') }}">
+    <button type="button" class="game-icon-btn" data-sheet-open="move" title="{{ _('Move') }}">
+      <span class="game-icon-glyph" aria-hidden="true">✎</span>
+      <span class="game-icon-label">{{ _('Move') }}</span>
+    </button>
+    <button type="button" class="game-icon-btn" data-sheet-open="history" title="{{ _('Move history') }}">
+      <span class="game-icon-glyph" aria-hidden="true">⏱</span>
+      <span class="game-icon-label">{{ _('History') }}</span>
+    </button>
+    <button type="button" class="game-icon-btn" data-icon-action="retry" id="icon-retry-btn" title="{{ _('Try again') }}" {% if not finished %}hidden{% endif %}>
+      <span class="game-icon-glyph" aria-hidden="true">↻</span>
+      <span class="game-icon-label">{{ _('Retry') }}</span>
+    </button>
+  </nav>
+
+  <div class="game-sheet-backdrop" id="game-sheet-backdrop" hidden data-close-sheet></div>
 
   <div class="loader" id="loader" hidden>
     <span class="loader-spinner" aria-hidden="true"></span>
@@ -99,7 +126,11 @@
     enterSan: {{ _('Enter a move in SAN, e.g. e4 or Nf6.')|tojson }},
     yourMove: {{ _('Your move')|tojson }},
     white: {{ _('White')|tojson }},
-    black: {{ _('Black')|tojson }}
+    black: {{ _('Black')|tojson }},
+    sheetMove: {{ _('Move')|tojson }},
+    sheetHistory: {{ _('Move history')|tojson }},
+    sheetLines: {{ _('Best moves')|tojson }},
+    sheetCoach: {{ _('Coach')|tojson }}
   });
 </script>
 <script type="module" src="{{ url_for('static', filename='puzzle.js') }}"></script>

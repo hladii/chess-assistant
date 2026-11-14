@@ -1,5 +1,6 @@
 import { Chess } from './vendor/chess.bundle.js';
 import { Chessground } from './vendor/chessground/chessground.min.js';
+import { initGameSheet } from './game-sheet.js';
 
 (function () {
   const gameEl = document.getElementById('game');
@@ -452,9 +453,16 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
 
     if (userSideEl) userSideEl.textContent = state.user_side || '';
     if (sideToMoveEl) sideToMoveEl.textContent = state.side_to_move || '';
+    const sideCompact = document.getElementById('side-to-move-compact');
+    if (sideCompact) sideCompact.textContent = state.side_to_move || '';
     if (moveCountEl) moveCountEl.textContent = String(state.move_count || 0);
     if (accuracyValueEl) {
       accuracyValueEl.textContent =
+        state.accuracy == null ? '—' : String(state.accuracy) + '%';
+    }
+    const accuracyCompact = document.getElementById('accuracy-value-compact');
+    if (accuracyCompact) {
+      accuracyCompact.textContent =
         state.accuracy == null ? '—' : String(state.accuracy) + '%';
     }
     if (modeLabelEl && state.mode) {
@@ -473,6 +481,10 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
         eloText += ' (' + (d > 0 ? '+' : '') + d + ')';
       }
       eloValueEl.textContent = eloText;
+    }
+    const eloCompact = document.getElementById('elo-value-compact');
+    if (eloCompact) {
+      eloCompact.textContent = state.your_elo != null ? String(state.your_elo) : '—';
     }
     setText(messageEl, state.message || '');
     setText(errorEl, state.error || '');
@@ -504,6 +516,14 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
     }
     if (duelAnalyzeBar) {
       duelAnalyzeBar.hidden = !duelMode || !state.game_over;
+    }
+    const iconResign = document.getElementById('icon-resign-btn');
+    if (iconResign) {
+      iconResign.hidden = !duelMode || !!state.game_over || state.can_resign === false;
+    }
+    const iconAnalyze = document.getElementById('icon-analyze-btn');
+    if (iconAnalyze) {
+      iconAnalyze.hidden = !duelMode || !state.game_over;
     }
     renderSuggestions(state);
     if (duelMode) {
@@ -671,4 +691,11 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
   if (isDuel) {
     startPolling();
   }
+
+  initGameSheet({
+    root: gameEl,
+    getGround: function () {
+      return ground;
+    },
+  });
 })();

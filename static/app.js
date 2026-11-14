@@ -111,7 +111,46 @@ import { initGameSheet } from './game-sheet.js';
     return rows;
   }
 
+  function renderMoveTicker(historyText) {
+    const ticker = document.getElementById('move-ticker');
+    if (!ticker) return;
+    const rows = parseHistoryRows(historyText);
+    if (!rows.length) {
+      ticker.innerHTML = '<span class="move-ticker-empty">' + escapeHtml(t('noMovesYet')) + '</span>';
+      ticker.dataset.history = '';
+      return;
+    }
+    let lastSanEl = null;
+    const html = rows
+      .map(function (row) {
+        let pair =
+          '<span class="move-ticker-pair"><span class="move-ticker-num">' +
+          escapeHtml(row.n) +
+          '.</span>';
+        if (row.white) {
+          pair +=
+            '<span class="move-ticker-san" data-role="san">' + escapeHtml(row.white) + '</span>';
+        }
+        if (row.black) {
+          pair +=
+            '<span class="move-ticker-san" data-role="san">' + escapeHtml(row.black) + '</span>';
+        }
+        pair += '</span>';
+        return pair;
+      })
+      .join('');
+    ticker.innerHTML = html;
+    ticker.dataset.history = historyText || '';
+    const sans = ticker.querySelectorAll('.move-ticker-san');
+    if (sans.length) {
+      lastSanEl = sans[sans.length - 1];
+      lastSanEl.classList.add('is-latest');
+      lastSanEl.scrollIntoView({ inline: 'end', block: 'nearest', behavior: 'smooth' });
+    }
+  }
+
   function renderHistory(historyText, reviewPly) {
+    renderMoveTicker(historyText);
     if (!historyEl) return;
     const rows = parseHistoryRows(historyText);
     if (!rows.length) {
@@ -152,6 +191,48 @@ import { initGameSheet } from './game-sheet.js';
       '<tbody>' + body + '</tbody></table>';
     historyEl.dataset.history = historyText || '';
     historyEl.scrollTop = historyEl.scrollHeight;
+  }
+
+  function syncPlayerRails(state) {
+    const yourTurn = !!state.your_turn && !state.game_over;
+    const turnDot = document.getElementById('turn-dot');
+    if (turnDot) turnDot.setAttribute('data-your-turn', yourTurn ? '1' : '0');
+
+    const oppClock = document.getElementById('rail-opp-clock');
+    const youClock = document.getElementById('rail-you-clock');
+    if (oppClock) {
+      oppClock.textContent = state.game_over
+        ? t('done')
+        : yourTurn
+          ? t('waiting')
+          : t('toMove');
+      oppClock.classList.toggle('player-clock-active', !yourTurn && !state.game_over);
+    }
+    if (youClock) {
+      youClock.textContent = state.game_over
+        ? t('done')
+        : yourTurn
+          ? t('yourTurn')
+          : t('waiting');
+      youClock.classList.toggle('player-clock-active', yourTurn);
+    }
+
+    const youRating = document.getElementById('rail-you-rating');
+    if (youRating) {
+      if (isDuel || state.mode === 'duel') {
+        youRating.textContent = state.your_elo != null ? String(state.your_elo) : '—';
+      } else if (state.accuracy != null) {
+        youRating.textContent = String(state.accuracy) + '%';
+      }
+    }
+    const oppRating = document.getElementById('rail-opp-rating');
+    if (oppRating && state.opponent_elo != null) {
+      oppRating.textContent = String(state.opponent_elo);
+    }
+    const oppName = document.getElementById('rail-opp-name');
+    if (oppName && state.opponent_name) {
+      oppName.textContent = state.opponent_name;
+    }
   }
 
   function renderCoach(coach) {
@@ -453,16 +534,9 @@ import { initGameSheet } from './game-sheet.js';
 
     if (userSideEl) userSideEl.textContent = state.user_side || '';
     if (sideToMoveEl) sideToMoveEl.textContent = state.side_to_move || '';
-    const sideCompact = document.getElementById('side-to-move-compact');
-    if (sideCompact) sideCompact.textContent = state.side_to_move || '';
     if (moveCountEl) moveCountEl.textContent = String(state.move_count || 0);
     if (accuracyValueEl) {
       accuracyValueEl.textContent =
-        state.accuracy == null ? '—' : String(state.accuracy) + '%';
-    }
-    const accuracyCompact = document.getElementById('accuracy-value-compact');
-    if (accuracyCompact) {
-      accuracyCompact.textContent =
         state.accuracy == null ? '—' : String(state.accuracy) + '%';
     }
     if (modeLabelEl && state.mode) {
@@ -482,14 +556,11 @@ import { initGameSheet } from './game-sheet.js';
       }
       eloValueEl.textContent = eloText;
     }
-    const eloCompact = document.getElementById('elo-value-compact');
-    if (eloCompact) {
-      eloCompact.textContent = state.your_elo != null ? String(state.your_elo) : '—';
-    }
     setText(messageEl, state.message || '');
     setText(errorEl, state.error || '');
     renderCoach(state.coach);
     renderHistory(state.history || '', state.review_ply);
+    syncPlayerRails(state);
 
     const trainerMode = isTrainer || state.mode === 'trainer';
     const duelMode = isDuel || state.mode === 'duel';

@@ -12,6 +12,8 @@
 {% endblock %}
 
 {% block content %}
+{% set opp_label = _('Black') if orientation == 'white' else _('White') %}
+{% set you_label = _('White') if orientation == 'white' else _('Black') %}
 <div
   class="game-shell"
   id="puzzle"
@@ -25,14 +27,16 @@
   data-finished="{{ '1' if finished else '0' }}"
   data-status="{{ status }}"
 >
-  <header class="game-toolbar">
+  <header class="game-mobile-top" aria-label="{{ _('Puzzles') }}">
+    <a class="game-back-btn" href="{{ url_for('puzzles_list') }}" aria-label="{{ _('Puzzles') }}">‹</a>
+    <div class="game-mobile-brand">Chess Advisor</div>
+    <span class="game-mobile-signal" id="turn-dot" data-your-turn="{{ '1' if your_turn and not finished else '0' }}"></span>
+  </header>
+
+  <header class="game-toolbar game-toolbar-desktop">
     <div class="game-toolbar-top">
       <a class="btn" data-variant="ghost" data-size="sm" href="{{ url_for('puzzles_list') }}">← {{ _('Puzzles') }}</a>
       <h1 id="puzzle-title" class="game-title">{{ title }}</h1>
-      <div class="game-toolbar-status">
-        <span class="chip chip-turn chip-compact"><span id="goal-label-compact">{{ goal_label }}</span></span>
-        <span class="chip chip-compact" id="status-chip-compact"><span id="status-label-compact">{{ status_label }}</span></span>
-      </div>
     </div>
     <div class="meta-chips meta-chips-full" aria-label="{{ _('Puzzle status') }}">
       <span class="chip chip-turn"><span class="chip-label">{{ _('Goal') }}</span> <span id="goal-label">{{ goal_label }}</span></span>
@@ -43,8 +47,22 @@
     </div>
   </header>
 
+  <div class="move-ticker" id="move-ticker" aria-label="{{ _('Move history') }}" data-history="{{ (history or '')|e }}"></div>
+
   <section class="game-layout">
     <aside class="board-column">
+      <div class="player-rail player-rail-top">
+        <div class="player-avatar" aria-hidden="true">★</div>
+        <div class="player-meta">
+          <div class="player-name-row">
+            <span class="player-name" id="rail-opp-name">{{ _('Puzzle') }}</span>
+            <span class="player-rating" id="rail-opp-rating">★ {{ difficulty }}</span>
+          </div>
+          <div class="player-sub" id="goal-label-compact">{{ goal_label }}</div>
+        </div>
+        <div class="player-clock" id="rail-opp-clock">{{ opp_label }}</div>
+      </div>
+
       <div class="board-wrap">
         <div class="cg-wrap" id="board"></div>
         <div class="promo-picker" id="promo-picker" hidden>
@@ -54,6 +72,19 @@
           <button type="button" class="promo-btn" data-piece="n" aria-label="{{ _('Knight') }}">{{ _('Knight') }}</button>
         </div>
       </div>
+
+      <div class="player-rail player-rail-bottom">
+        <div class="player-avatar player-avatar-you" aria-hidden="true">{{ (current_user_initials or (current_user_name[:1] if current_user_name else '?'))|upper }}</div>
+        <div class="player-meta">
+          <div class="player-name-row">
+            <span class="player-name">{{ current_user_name or _('You') }}</span>
+            <span class="player-rating" id="progress-compact">{{ ply_index }}/{{ solution_length }}</span>
+          </div>
+          <div class="player-sub" id="status-label-compact">{{ status_label }}</div>
+        </div>
+        <div class="player-clock player-clock-active" id="rail-you-clock">{% if finished %}{{ status_label }}{% elif your_turn %}{{ _('Your turn') }}{% else %}{{ _('Waiting') }}{% endif %}</div>
+      </div>
+
       <div class="game-toast alerts" id="game-toast">
         <p class="message" id="message" {% if not message %}hidden{% endif %}>{{ message }}</p>
         <p class="error" id="error" {% if not error %}hidden{% endif %}>{{ error }}</p>
@@ -93,11 +124,11 @@
 
   <nav class="game-icon-bar" aria-label="{{ _('Puzzle controls') }}">
     <button type="button" class="game-icon-btn" data-sheet-open="move" title="{{ _('Move') }}">
-      <span class="game-icon-glyph" aria-hidden="true">✎</span>
+      <span class="game-icon-glyph" aria-hidden="true">☰</span>
       <span class="game-icon-label">{{ _('Move') }}</span>
     </button>
     <button type="button" class="game-icon-btn" data-sheet-open="history" title="{{ _('Move history') }}">
-      <span class="game-icon-glyph" aria-hidden="true">⏱</span>
+      <span class="game-icon-glyph" aria-hidden="true">›</span>
       <span class="game-icon-label">{{ _('History') }}</span>
     </button>
     <button type="button" class="game-icon-btn" data-icon-action="retry" id="icon-retry-btn" title="{{ _('Try again') }}" {% if not finished %}hidden{% endif %}>
@@ -125,6 +156,8 @@
     illegalMove: {{ _('Illegal move.')|tojson }},
     enterSan: {{ _('Enter a move in SAN, e.g. e4 or Nf6.')|tojson }},
     yourMove: {{ _('Your move')|tojson }},
+    yourTurn: {{ _('Your turn')|tojson }},
+    waiting: {{ _('Waiting')|tojson }},
     white: {{ _('White')|tojson }},
     black: {{ _('Black')|tojson }},
     sheetMove: {{ _('Move')|tojson }},

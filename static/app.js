@@ -372,6 +372,9 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
       lastMove: parseLastMove(state.last_move || gameEl.dataset.lastMove || ''),
       check: chess.isCheck() ? color : false,
       viewOnly: !interactive,
+      coordinates: true,
+      // Outer file labels use left:24px offset and drift on tight mobile layouts.
+      coordinatesOnSquares: true,
       draggable: {
         enabled: interactive,
       },

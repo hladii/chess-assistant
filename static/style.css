@@ -1060,6 +1060,39 @@ body.nav-open .nav-burger-lines::after {
   border-radius: calc(var(--radius) - 2px);
 }
 
+/* Keep file/rank labels aligned on mobile (outer coords offset drifts). */
+.board-wrap .cg-wrap coords.files {
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1.1em;
+  font-size: clamp(8px, 2.4vw, 11px);
+  line-height: 1;
+}
+
+.board-wrap .cg-wrap coords.ranks {
+  left: 0;
+  top: 0;
+  width: 1.1em;
+  height: 100%;
+  font-size: clamp(8px, 2.4vw, 11px);
+  line-height: 1;
+}
+
+.board-wrap .cg-wrap coords.ranks coord {
+  transform: none;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 0.15em 0.2em;
+}
+
+.board-wrap .cg-wrap coords.squares coord {
+  font-size: clamp(8px, 2.2vw, 11px);
+  opacity: 0.85;
+  padding: 4% 5%;
+}
+
 .promo-picker {
   position: absolute;
   inset: 0;

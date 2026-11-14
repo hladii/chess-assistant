@@ -103,6 +103,8 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
       fen: chess.fen(),
       lastMove: lastMoveArray(state.last_move),
       turnColor: color,
+      coordinates: true,
+      coordinatesOnSquares: true,
       movable: {
         color: movableColor,
         dests: movableColor ? destsFromChess() : new Map(),
@@ -235,6 +237,7 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
     turnColor: chess.turn() === 'w' ? 'white' : 'black',
     lastMove: lastMoveArray(root.dataset.lastMove),
     coordinates: true,
+    coordinatesOnSquares: true,
     movable: {
       free: false,
       color: finished ? undefined : chess.turn() === 'w' ? 'white' : 'black',

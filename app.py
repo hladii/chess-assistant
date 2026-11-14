@@ -525,13 +525,16 @@ def register():
                 elif get_user_by_email(email):
                     error = _('A user with this email already exists.')
                 else:
-                    user_id = create_user(email, password, name)
+                    user_id = create_user(
+                        email, password, name, locale=DEFAULT_LOCALE
+                    )
                     user = get_user_by_id(user_id)
                     login_user(user)
+                    set_session_locale(DEFAULT_LOCALE)
                     resp = make_response(redirect(url_for('index')))
                     resp.set_cookie(
                         LOCALE_COOKIE,
-                        session.get('locale') or DEFAULT_LOCALE,
+                        DEFAULT_LOCALE,
                         max_age=LOCALE_COOKIE_MAX_AGE,
                         samesite='Lax',
                     )
@@ -708,6 +711,18 @@ def annotate_duels(games, user_id):
         after = game.get('white_elo_after' if is_white else 'black_elo_after')
         game['your_elo_delta'] = (after - before) if before is not None and after is not None else None
         game['status_open'] = not bool(game.get('result'))
+        game['your_turn'] = False
+        if game['status_open']:
+            try:
+                board, _start = board_from_game(game)
+                user_color = chess.WHITE if is_white else chess.BLACK
+                game['your_turn'] = (
+                    board.turn == user_color and not board.is_game_over()
+                )
+            except Exception:
+                game['your_turn'] = False
+    # Your-turn games first; keep SQL updated_at order within groups.
+    games.sort(key=lambda g: 0 if g.get('your_turn') else 1)
     return games
 
 

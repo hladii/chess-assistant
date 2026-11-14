@@ -44,11 +44,17 @@
       </a>
       <div class="game-row-actions">
         <a class="btn" data-size="sm" href="{{ url_for('play_game', game_id=game.id) }}">{{ _('Continue') }}</a>
-        <form method="post" action="{{ url_for('remove_game', game_id=game.id) }}" onsubmit="return confirm({{ _('Delete “%(name)s”?', name=game.name)|tojson }});">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-          <input type="hidden" name="return_to" value="games">
-          <button type="submit" class="btn" data-variant="ghost" data-size="sm" aria-label="{{ _('Delete %(name)s', name=game.name) }}">{{ _('Delete') }}</button>
-        </form>
+        <button
+          type="button"
+          class="btn"
+          data-variant="ghost"
+          data-size="sm"
+          data-delete-game
+          data-action="{{ url_for('remove_game', game_id=game.id) }}"
+          data-return-to="games"
+          data-confirm="{{ _('Delete “%(name)s”?', name=game.name) }}"
+          aria-label="{{ _('Delete %(name)s', name=game.name) }}"
+        >{{ _('Delete') }}</button>
       </div>
     </li>
     {% endfor %}
@@ -102,6 +108,24 @@
     <footer class="create-dialog-foot">
       <button type="button" class="btn" data-variant="outline" data-close-dialog>{{ _('Cancel') }}</button>
       <button type="submit" class="btn">{{ _('Create and start') }}</button>
+    </footer>
+  </form>
+</dialog>
+
+<dialog class="create-dialog" id="delete-dialog" aria-labelledby="delete-dialog-title">
+  <form method="post" class="create-dialog-form" id="delete-form">
+    <header class="create-dialog-head">
+      <h2 id="delete-dialog-title">{{ _('Delete') }}</h2>
+      <button type="button" class="btn" data-variant="ghost" data-size="sm" data-close-delete aria-label="{{ _('Close') }}">✕</button>
+    </header>
+    <div class="create-dialog-body">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="return_to" id="delete-return-to" value="games">
+      <p id="delete-dialog-message" class="delete-dialog-message"></p>
+    </div>
+    <footer class="create-dialog-foot">
+      <button type="button" class="btn" data-variant="outline" data-close-delete>{{ _('Cancel') }}</button>
+      <button type="submit" class="btn" data-variant="destructive">{{ _('Delete') }}</button>
     </footer>
   </form>
 </dialog>

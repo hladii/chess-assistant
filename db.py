@@ -18,8 +18,9 @@ GAME_COLUMNS = (
     'id, user_id, name, history, user_color, start_fen, mode, trainer_elo, '
     'quality_scores, white_user_id, black_user_id, result, elo_applied, '
     'white_elo_before, black_elo_before, white_elo_after, black_elo_after, '
-    'created_at, updated_at'
+    'created_at, updated_at, deleted_at'
 )
+ACTIVE_GAME_SQL = 'deleted_at IS NULL'
 
 
 def database_url():
@@ -88,7 +89,8 @@ def init_db():
                 white_elo_after INT,
                 black_elo_after INT,
                 created_at TEXT NOT NULL,
-                updated_at TEXT NOT NULL
+                updated_at TEXT NOT NULL,
+                deleted_at TEXT
             )
             '''
         )
@@ -187,6 +189,12 @@ def init_db():
                 ) THEN
                     ALTER TABLE games ADD COLUMN black_elo_after INT;
                 END IF;
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_name = 'games' AND column_name = 'deleted_at'
+                ) THEN
+                    ALTER TABLE games ADD COLUMN deleted_at TEXT;
+                END IF;
             END $$;
             '''
         )
@@ -208,20 +216,23 @@ def seed_default_user():
     return user_id
 
 
-def create_user(email, password, display_name=''):
+def create_user(email, password, display_name='', locale='en'):
     now = _now()
     email = normalize_email(email)
     display_name = normalize_display_name(display_name)
+    locale = (locale or 'en').strip().lower()
+    if locale not in ('uk', 'en', 'it'):
+        locale = 'en'
     with get_connection() as conn:
         row = conn.execute(
             '''
             INSERT INTO users (
-                email, password_hash, display_name, elo_rating, created_at, updated_at
+                email, password_hash, display_name, locale, elo_rating, created_at, updated_at
             )
-            VALUES (%s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
             RETURNING id
             ''',
-            (email, hash_password(password), display_name, DEFAULT_ELO, now, now),
+            (email, hash_password(password), display_name, locale, DEFAULT_ELO, now, now),
         ).fetchone()
     return row['id']
 
@@ -447,6 +458,7 @@ def list_games(user_id, modes=None):
                 FROM games
                 WHERE user_id = %s
                   AND mode = ANY(%s)
+                  AND {ACTIVE_GAME_SQL}
                 ORDER BY updated_at DESC, id DESC
                 ''',
                 (user_id, list(mode_list)),
@@ -457,6 +469,7 @@ def list_games(user_id, modes=None):
                 SELECT {GAME_COLUMNS}
                 FROM games
                 WHERE user_id = %s
+                  AND {ACTIVE_GAME_SQL}
                 ORDER BY updated_at DESC, id DESC
                 ''',
                 (user_id,),
@@ -470,7 +483,7 @@ def get_game_for_user(game_id, user_id):
             f'''
             SELECT {GAME_COLUMNS}
             FROM games
-            WHERE id = %s AND user_id = %s
+            WHERE id = %s AND user_id = %s AND {ACTIVE_GAME_SQL}
             ''',
             (game_id, user_id),
         ).fetchone()
@@ -485,6 +498,7 @@ def get_accessible_game(game_id, user_id):
             SELECT {GAME_COLUMNS}
             FROM games
             WHERE id = %s
+              AND {ACTIVE_GAME_SQL}
               AND (
                 (
                   COALESCE(mode, 'assistant') = 'duel'
@@ -508,6 +522,7 @@ def list_duels_for_user(user_id):
             SELECT {GAME_COLUMNS}
             FROM games
             WHERE mode = 'duel'
+              AND {ACTIVE_GAME_SQL}
               AND (white_user_id = %s OR black_user_id = %s)
             ORDER BY updated_at DESC, id DESC
             ''',
@@ -584,17 +599,20 @@ def update_game_history(game_id, user_id, history):
 
 
 def delete_game(game_id, user_id):
+    """Soft-delete a game the user can access. Already-deleted rows are ignored."""
     with get_connection() as conn:
         cur = conn.execute(
-            '''
-            DELETE FROM games
+            f'''
+            UPDATE games
+            SET deleted_at = %s, updated_at = %s
             WHERE id = %s
+              AND {ACTIVE_GAME_SQL}
               AND (
                 user_id = %s
                 OR (mode = 'duel' AND (white_user_id = %s OR black_user_id = %s))
               )
             ''',
-            (game_id, user_id, user_id, user_id),
+            (_now(), _now(), game_id, user_id, user_id, user_id),
         )
         return cur.rowcount > 0
 

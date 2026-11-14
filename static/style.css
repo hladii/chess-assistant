@@ -982,6 +982,18 @@ body.nav-open .nav-burger-lines::after {
 .chip-turn {
   border-color: color-mix(in oklab, var(--primary) 40%, var(--border));
   background: color-mix(in oklab, var(--primary) 10%, var(--card));
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.game-row-needs-move {
+  box-shadow: inset 3px 0 0 var(--primary);
+}
+
+.delete-dialog-message {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.45;
 }
 
 .game-layout {

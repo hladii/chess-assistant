@@ -534,9 +534,16 @@ import { initGameSheet } from './game-sheet.js';
 
     if (userSideEl) userSideEl.textContent = state.user_side || '';
     if (sideToMoveEl) sideToMoveEl.textContent = state.side_to_move || '';
+    const sideCompact = document.getElementById('side-to-move-compact');
+    if (sideCompact) sideCompact.textContent = state.side_to_move || '';
     if (moveCountEl) moveCountEl.textContent = String(state.move_count || 0);
     if (accuracyValueEl) {
       accuracyValueEl.textContent =
+        state.accuracy == null ? '—' : String(state.accuracy) + '%';
+    }
+    const accuracyCompact = document.getElementById('accuracy-value-compact');
+    if (accuracyCompact) {
+      accuracyCompact.textContent =
         state.accuracy == null ? '—' : String(state.accuracy) + '%';
     }
     if (modeLabelEl && state.mode) {
@@ -555,6 +562,10 @@ import { initGameSheet } from './game-sheet.js';
         eloText += ' (' + (d > 0 ? '+' : '') + d + ')';
       }
       eloValueEl.textContent = eloText;
+    }
+    const eloCompact = document.getElementById('elo-value-compact');
+    if (eloCompact) {
+      eloCompact.textContent = state.your_elo != null ? String(state.your_elo) : '—';
     }
     setText(messageEl, state.message || '');
     setText(errorEl, state.error || '');

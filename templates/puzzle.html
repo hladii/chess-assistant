@@ -37,6 +37,10 @@
     <div class="game-toolbar-top">
       <a class="btn" data-variant="ghost" data-size="sm" href="{{ url_for('puzzles_list') }}">← {{ _('Puzzles') }}</a>
       <h1 id="puzzle-title" class="game-title">{{ title }}</h1>
+      <div class="game-toolbar-status">
+        <span class="chip chip-turn chip-compact"><span id="goal-label-compact-chip">{{ goal_label }}</span></span>
+        <span class="chip chip-compact"><span id="status-chip-compact-top">{{ status_label }}</span></span>
+      </div>
     </div>
     <div class="meta-chips meta-chips-full" aria-label="{{ _('Puzzle status') }}">
       <span class="chip chip-turn"><span class="chip-label">{{ _('Goal') }}</span> <span id="goal-label">{{ goal_label }}</span></span>

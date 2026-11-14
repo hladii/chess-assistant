@@ -63,6 +63,14 @@
       <a class="btn" data-variant="ghost" data-size="sm" href="{{ url_for('games_list') }}">← {{ _('Games') }}</a>
       {% endif %}
       <h1 id="game-name" class="game-title">{{ name }}</h1>
+      <div class="game-toolbar-status">
+        <span class="chip chip-turn chip-compact"><span id="side-to-move-compact">{{ side_to_move }}</span></span>
+        {% if mode == 'duel' %}
+        <span class="chip chip-elo chip-compact"><span id="elo-value-compact">{% if your_elo is not none %}{{ your_elo }}{% else %}—{% endif %}</span></span>
+        {% else %}
+        <span class="chip chip-accuracy chip-compact"><span id="accuracy-value-compact">{% if accuracy is none %}—{% else %}{{ accuracy }}%{% endif %}</span></span>
+        {% endif %}
+      </div>
     </div>
     <div class="meta-chips meta-chips-full" aria-label="{{ _('Game status') }}">
       <span class="chip"><span class="chip-label">{{ _('Mode') }}</span> <span id="mode-label">{% if mode == 'trainer' %}{{ _('Trainer') }} · {{ trainer_elo }}{% elif mode == 'duel' %}{{ _('Duel') }}{% else %}{{ _('Assistant') }}{% endif %}</span></span>

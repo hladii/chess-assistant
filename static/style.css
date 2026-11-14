@@ -1684,6 +1684,7 @@ body.is-loading {
 
 /* —— Mobile Chess.com-like game chrome —— */
 .game-mobile-top,
+.game-toolbar-status,
 .move-ticker,
 .player-rail,
 .game-sheet-head,
@@ -1708,71 +1709,60 @@ body.is-loading {
     background: var(--game-chrome);
   }
 
-  body.page-game .site-header,
-  body.page-game .guest-locale-bar {
-    display: none;
-  }
-
   body.page-game .page-game-main {
     max-width: none;
     width: 100%;
     margin: 0;
-    padding: 0 0 calc(3.6rem + env(safe-area-inset-bottom, 0px));
+    padding: 0.35rem 0 calc(3.6rem + env(safe-area-inset-bottom, 0px));
     background: var(--game-chrome);
     color: var(--game-text);
   }
 
   body.page-game .game-shell {
     gap: 0;
-    min-height: calc(100dvh - env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Keep normal site header; hide Chess.com-style replacement top */
+  body.page-game .game-mobile-top {
+    display: none !important;
   }
 
   body.page-game .game-toolbar-desktop {
+    display: grid;
+    gap: 0.35rem;
+    padding: 0.35rem 0.65rem 0.25rem;
+  }
+
+  body.page-game .game-toolbar-top {
+    flex-wrap: nowrap;
+    gap: 0.35rem;
+  }
+
+  body.page-game .game-toolbar-top > .btn {
+    flex-shrink: 0;
+    padding-inline: 0.45rem;
+  }
+
+  body.page-game .game-title {
+    font-size: 1rem;
+    flex: 1;
+    color: var(--game-text);
+  }
+
+  body.page-game .meta-chips-full {
     display: none;
   }
 
-  body.page-game .game-mobile-top {
-    display: grid;
-    grid-template-columns: 2.5rem 1fr 2.5rem;
-    align-items: center;
-    padding: calc(0.35rem + env(safe-area-inset-top, 0px)) 0.4rem 0.25rem;
-    background: var(--game-chrome);
-  }
-
-  body.page-game .game-back-btn {
+  body.page-game .game-toolbar-status {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    width: 2.4rem;
-    height: 2.4rem;
-    border-radius: 0.45rem;
-    color: var(--game-text);
-    text-decoration: none;
-    font-size: 1.75rem;
-    line-height: 1;
-    font-weight: 300;
+    gap: 0.3rem;
+    flex-shrink: 0;
   }
 
-  body.page-game .game-mobile-brand {
-    text-align: center;
-    font-family: "Libre Baskerville", Georgia, serif;
-    font-size: 1.05rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    color: #fff;
-  }
-
-  body.page-game .game-mobile-signal {
-    width: 0.7rem;
-    height: 0.7rem;
-    margin-inline: auto;
-    border-radius: 999px;
-    background: #6b7280;
-    box-shadow: 0 0 0 3px oklch(0.45 0 0 / 25%);
-  }
-
-  body.page-game .game-mobile-signal[data-your-turn="1"] {
-    background: #81b64c;
+  body.page-game .chip-compact {
+    padding: 0.18rem 0.4rem;
+    font-size: 0.72rem;
   }
 
   body.page-game .move-ticker {
@@ -1927,32 +1917,6 @@ body.is-loading {
 
   body.page-game .board-wrap cg-container {
     border-radius: 0;
-  }
-
-  /* Chess.com-like green board on mobile */
-  body.page-game .board-wrap cg-board {
-    background-color: #eeeed2;
-    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4IDgiIHNoYXBlLXJlbmRlcmluZz0iY3Jpc3BFZGdlcyI+PGcgZmlsbD0iIzczOTU1MiI+PHJlY3Qgd2lkdGg9IjEiIGhlaWdodD0iMSIgeD0iMSIvPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIHk9IjEiLz48cmVjdCB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4PSIzIi8+PHJlY3Qgd2lkdGg9IjEiIGhlaWdodD0iMSIgeD0iMiIgeT0iMSIvPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIHg9IjUiLz48cmVjdCB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4PSI0IiB5PSIxIi8+PHJlY3Qgd2lkdGg9IjEiIGhlaWdodD0iMSIgeD0iNyIvPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIHg9IjYiIHk9IjEiLz48cmVjdCB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB5PSIyIiB4PSIxIi8+PHJlY3Qgd2lkdGg9IjEiIGhlaWdodD0iMSIgeT0iMyIvPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIHg9IjMiIHk9IjIiLz48cmVjdCB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4PSIyIiB5PSIzIi8+PHJlY3Qgd2lkdGg9IjEiIGhlaWdodD0iMSIgeD0iNSIgeT0iMiIvPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIHg9IjQiIHk9IjMiLz48cmVjdCB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4PSI3IiB5PSIyIi8+PHJlY3Qgd2lkdGg9IjEiIGhlaWdodD0iMSIgeD0iNiIgeT0iMyIvPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIHk9IjQiIHg9IjEiLz48cmVjdCB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB5PSI1Ii8+PHJlY3Qgd2lkdGg9IjEiIGhlaWdodD0iMSIgeD0iMyIgeT0iNCIvPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIHg9IjIiIHk9IjUiLz48cmVjdCB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4PSI1IiB5PSI0Ii8+PHJlY3Qgd2lkdGg9IjEiIGhlaWdodD0iMSIgeD0iNCIgeT0iNSIvPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIHg9IjciIHk9IjQiLz48cmVjdCB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4PSI2IiB5PSI1Ii8+PHJlY3Qgd2lkdGg9IjEiIGhlaWdodD0iMSIgeT0iNiIgeD0iMSIvPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIHk9IjciLz48cmVjdCB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4PSIzIiB5PSI2Ii8+PHJlY3Qgd2lkdGg9IjEiIGhlaWdodD0iMSIgeD0iMiIgeT0iNyIvPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIHg9IjUiIHk9IjYiLz48cmVjdCB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4PSI0IiB5PSI3Ii8+PHJlY3Qgd2lkdGg9IjEiIGhlaWdodD0iMSIgeD0iNyIgeT0iNiIvPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIHg9IjYiIHk9IjciLz48L2c+PC9zdmc+");
-  }
-
-  body.page-game .board-wrap .cg-wrap coords.ranks coord:nth-child(odd),
-  body.page-game .board-wrap .cg-wrap coords.files coord:nth-child(odd) {
-    color: #739552;
-  }
-
-  body.page-game .board-wrap .cg-wrap coords.ranks coord:nth-child(even),
-  body.page-game .board-wrap .cg-wrap coords.files coord:nth-child(even) {
-    color: #eeeed2;
-  }
-
-  body.page-game .board-wrap .cg-wrap.orientation-black coords.ranks coord:nth-child(odd),
-  body.page-game .board-wrap .cg-wrap.orientation-black coords.files coord:nth-child(odd) {
-    color: #eeeed2;
-  }
-
-  body.page-game .board-wrap .cg-wrap.orientation-black coords.ranks coord:nth-child(even),
-  body.page-game .board-wrap .cg-wrap.orientation-black coords.files coord:nth-child(even) {
-    color: #739552;
   }
 
   body.page-game .game-toast {

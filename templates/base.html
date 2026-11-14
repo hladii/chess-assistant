@@ -33,12 +33,6 @@
 
       <nav class="site-nav site-nav-desktop" aria-label="{{ _('Main menu') }}">
         <a
-          href="{{ url_for('index') }}"
-          class="btn"
-          data-size="sm"
-          data-variant="{% if request.endpoint == 'index' %}secondary{% else %}ghost{% endif %}"
-        >{{ _('Home') }}</a>
-        <a
           href="{{ url_for('duels_list') }}"
           class="btn"
           data-size="sm"
@@ -97,11 +91,6 @@
 
     <div class="mobile-nav" id="mobile-nav" hidden>
       <nav class="mobile-nav-links" aria-label="{{ _('Mobile menu') }}">
-        <a
-          href="{{ url_for('index') }}"
-          class="btn mobile-nav-link"
-          data-variant="{% if request.endpoint == 'index' %}secondary{% else %}ghost{% endif %}"
-        >{{ _('Home') }}</a>
         <a
           href="{{ url_for('duels_list') }}"
           class="btn mobile-nav-link"

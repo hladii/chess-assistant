@@ -61,6 +61,7 @@ from db import (
     create_user,
     delete_game,
     get_accessible_game,
+    get_active_duel_for_user,
     get_user_by_email,
     get_user_by_id,
     init_db,
@@ -990,8 +991,40 @@ def remove_game(game_id):
         list_endpoint = 'games_list'
     if not validate_csrf():
         return redirect(url_for(list_endpoint, error=_('Invalid session token.')))
-    delete_game(game_id, current_user_id())
+    if not delete_game(game_id, current_user_id()):
+        if return_to == 'duels':
+            return redirect(
+                url_for(
+                    list_endpoint,
+                    error=_('Finish or resign the duel before deleting it.'),
+                )
+            )
+        return redirect(url_for(list_endpoint, error=_('Could not delete this game.')))
     return redirect(url_for(list_endpoint))
+
+
+@app.route('/games/<int:game_id>/resign', methods=['POST'])
+@login_required
+def resign_game_form(game_id):
+    """Resign an open duel from the list page; Elo updates automatically."""
+    if not validate_csrf():
+        return redirect(url_for('duels_list', error=_('Invalid session token.')))
+
+    user_id = current_user_id()
+    game = get_active_duel_for_user(game_id, user_id)
+    if not game:
+        return redirect(url_for('duels_list', error=_('Not found.')))
+    if game.get('result'):
+        return redirect(url_for('duels_list', error=_('This duel is already finished.')))
+
+    board, _start = board_from_game(game)
+    if board.is_game_over():
+        maybe_finalize_duel(game, board)
+        return redirect(url_for('duels_list'))
+
+    result = result_from_resign(viewer_color(game, user_id))
+    apply_elo_result(game_id, result)
+    return redirect(url_for('duels_list'))
 
 
 @app.route('/api/state', methods=['GET'])

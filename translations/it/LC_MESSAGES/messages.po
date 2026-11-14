@@ -913,3 +913,12 @@ msgstr "Qualcosa è andato storto. Riprova tra un momento."
 #~ msgid "Analysis ready."
 #~ msgstr "Analisi pronta."
 
+
+msgid "Finish or resign the duel before deleting it."
+msgstr "Termina o abbandona il duello prima di eliminarlo."
+
+msgid "Could not delete this game."
+msgstr "Impossibile eliminare questa partita."
+
+msgid "Elo will update automatically."
+msgstr "L’Elo si aggiorna automaticamente."

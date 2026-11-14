@@ -51,6 +51,18 @@
       </a>
       <div class="game-row-actions">
         <a class="btn" data-size="sm" href="{{ url_for('play_game', game_id=game.id) }}">{% if game.status_open %}{{ _('Play') }}{% else %}{{ _('Analyze') }}{% endif %}</a>
+        {% if game.status_open %}
+        <button
+          type="button"
+          class="btn"
+          data-variant="destructive"
+          data-size="sm"
+          data-resign-game
+          data-action="{{ url_for('resign_game_form', game_id=game.id) }}"
+          data-confirm="{{ _('Resign this duel?') }}"
+          aria-label="{{ _('Resign') }} · {{ game.name }}"
+        >{{ _('Resign') }}</button>
+        {% else %}
         <button
           type="button"
           class="btn"
@@ -62,6 +74,7 @@
           data-confirm="{{ _('Delete “%(name)s”?', name=game.name) }}"
           aria-label="{{ _('Delete %(name)s', name=game.name) }}"
         >{{ _('Delete') }}</button>
+        {% endif %}
       </div>
     </li>
     {% endfor %}
@@ -132,6 +145,24 @@
     <footer class="create-dialog-foot">
       <button type="button" class="btn" data-variant="outline" data-close-delete>{{ _('Cancel') }}</button>
       <button type="submit" class="btn" data-variant="destructive">{{ _('Delete') }}</button>
+    </footer>
+  </form>
+</dialog>
+
+<dialog class="create-dialog" id="resign-dialog" aria-labelledby="resign-dialog-title">
+  <form method="post" class="create-dialog-form" id="resign-form">
+    <header class="create-dialog-head">
+      <h2 id="resign-dialog-title">{{ _('Resign') }}</h2>
+      <button type="button" class="btn" data-variant="ghost" data-size="sm" data-close-resign aria-label="{{ _('Close') }}">✕</button>
+    </header>
+    <div class="create-dialog-body">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <p id="resign-dialog-message" class="delete-dialog-message"></p>
+      <p class="muted field-hint">{{ _('Elo will update automatically.') }}</p>
+    </div>
+    <footer class="create-dialog-foot">
+      <button type="button" class="btn" data-variant="outline" data-close-resign>{{ _('Cancel') }}</button>
+      <button type="submit" class="btn" data-variant="destructive">{{ _('Resign') }}</button>
     </footer>
   </form>
 </dialog>

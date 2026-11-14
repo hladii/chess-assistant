@@ -914,3 +914,12 @@ msgstr "Щось пішло не так на нашому боці. Спробу
 #~ msgid "Analysis ready."
 #~ msgstr "Аналіз готовий."
 
+
+msgid "Finish or resign the duel before deleting it."
+msgstr "Завершіть або здайтеся в дуелі перед видаленням."
+
+msgid "Could not delete this game."
+msgstr "Не вдалося видалити цю гру."
+
+msgid "Elo will update automatically."
+msgstr "Elo оновиться автоматично."

@@ -72,4 +72,44 @@
       if (event.target === deleteDialog) closeDelete();
     });
   }
+
+  const resignDialog = document.getElementById('resign-dialog');
+  const resignForm = document.getElementById('resign-form');
+  const resignMessage = document.getElementById('resign-dialog-message');
+
+  if (resignDialog && resignForm && typeof resignDialog.showModal === 'function') {
+    function closeResign() {
+      if (resignDialog.open) resignDialog.close();
+    }
+
+    function openResign(btn) {
+      const action = btn.getAttribute('data-action');
+      if (!action) return;
+      resignForm.setAttribute('action', action);
+      if (resignMessage) {
+        resignMessage.textContent = btn.getAttribute('data-confirm') || '';
+      }
+      resignDialog.showModal();
+      const confirmBtn = resignForm.querySelector('button[type="submit"]');
+      if (confirmBtn) {
+        window.setTimeout(function () {
+          confirmBtn.focus();
+        }, 0);
+      }
+    }
+
+    document.querySelectorAll('[data-resign-game]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        openResign(btn);
+      });
+    });
+
+    resignDialog.querySelectorAll('[data-close-resign]').forEach(function (btn) {
+      btn.addEventListener('click', closeResign);
+    });
+
+    resignDialog.addEventListener('click', function (event) {
+      if (event.target === resignDialog) closeResign();
+    });
+  }
 })();

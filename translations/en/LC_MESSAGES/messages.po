@@ -915,3 +915,12 @@ msgstr "Something went wrong on our side. Try again in a moment."
 #~ msgid "Analysis ready."
 #~ msgstr "Analysis ready."
 
+
+msgid "Finish or resign the duel before deleting it."
+msgstr "Finish or resign the duel before deleting it."
+
+msgid "Could not delete this game."
+msgstr "Could not delete this game."
+
+msgid "Elo will update automatically."
+msgstr "Elo will update automatically."

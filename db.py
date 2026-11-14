@@ -599,7 +599,11 @@ def update_game_history(game_id, user_id, history):
 
 
 def delete_game(game_id, user_id):
-    """Soft-delete a game the user can access. Already-deleted rows are ignored."""
+    """Soft-delete a game the user can access.
+
+    Open (unfinished) duels cannot be deleted — resign instead.
+    Already-deleted rows are ignored.
+    """
     with get_connection() as conn:
         cur = conn.execute(
             f'''
@@ -607,6 +611,10 @@ def delete_game(game_id, user_id):
             SET deleted_at = %s, updated_at = %s
             WHERE id = %s
               AND {ACTIVE_GAME_SQL}
+              AND NOT (
+                COALESCE(mode, 'assistant') = 'duel'
+                AND (result IS NULL OR result = '')
+              )
               AND (
                 user_id = %s
                 OR (mode = 'duel' AND (white_user_id = %s OR black_user_id = %s))
@@ -615,6 +623,23 @@ def delete_game(game_id, user_id):
             (_now(), _now(), game_id, user_id, user_id, user_id),
         )
         return cur.rowcount > 0
+
+
+def get_active_duel_for_user(game_id, user_id):
+    """Active (not soft-deleted) duel the user participates in, or None."""
+    with get_connection() as conn:
+        row = conn.execute(
+            f'''
+            SELECT {GAME_COLUMNS}
+            FROM games
+            WHERE id = %s
+              AND {ACTIVE_GAME_SQL}
+              AND COALESCE(mode, 'assistant') = 'duel'
+              AND (white_user_id = %s OR black_user_id = %s)
+            ''',
+            (game_id, user_id, user_id),
+        ).fetchone()
+    return dict(row) if row else None
 
 
 def apply_elo_result(game_id, result):

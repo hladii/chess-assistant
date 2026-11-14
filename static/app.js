@@ -373,8 +373,7 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
       check: chess.isCheck() ? color : false,
       viewOnly: !interactive,
       coordinates: true,
-      // Outer file labels use left:24px offset and drift on tight mobile layouts.
-      coordinatesOnSquares: true,
+      coordinatesOnSquares: false,
       draggable: {
         enabled: interactive,
       },

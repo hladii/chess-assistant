@@ -1585,7 +1585,9 @@ def api_puzzle_move():
         return jsonify({'ok': False, 'error': _('Not found.')}), 404
     if attempt.get('status') != 'in_progress':
         puzzle = get_active_puzzle(attempt['puzzle_id'])
-        board, _ = _board_after_puzzle_plies(puzzle, attempt.get('ply_index') or 0)
+        board, _played = _board_after_puzzle_plies(
+            puzzle, attempt.get('ply_index') or 0
+        )
         body = _puzzle_payload(
             puzzle, attempt, board, error=_('This attempt is already finished.')
         )

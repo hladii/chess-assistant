@@ -756,10 +756,40 @@ def list_endpoint_for_mode(mode):
     return 'games_list'
 
 
+def home_next_puzzle(user_id):
+    """Next unsolved puzzle, else first catalog puzzle."""
+    puzzles = annotate_puzzles_for_list(list_active_puzzles_for_user(user_id))
+    if not puzzles:
+        return None
+    for puzzle in puzzles:
+        if not puzzle.get('solved'):
+            return puzzle
+    return puzzles[0]
+
+
+def home_action_duel(user_id):
+    """Duel needing your move, else first open duel, else first duel."""
+    games = annotate_duels(list_duels_for_user(user_id), user_id)
+    if not games:
+        return None
+    for game in games:
+        if game.get('your_turn'):
+            return game
+    for game in games:
+        if game.get('status_open'):
+            return game
+    return games[0]
+
+
 @app.route('/')
 @login_required
 def index():
-    return render_template('home.html')
+    user_id = current_user_id()
+    return render_template(
+        'home.html',
+        next_puzzle=home_next_puzzle(user_id),
+        action_duel=home_action_duel(user_id),
+    )
 
 
 @app.route('/users', methods=['GET'])

@@ -374,6 +374,7 @@ import { Chessground } from './vendor/chessground/chessground.min.js';
       viewOnly: !interactive,
       coordinates: true,
       coordinatesOnSquares: false,
+      ranksPosition: 'left',
       draggable: {
         enabled: interactive,
       },

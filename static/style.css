@@ -1061,20 +1061,47 @@ body.nav-open .nav-burger-lines::after {
 }
 
 /*
-  Chessground default files coords use left:24px (for external ranks gutter).
-  Our board is flush, so that offset shifts the a–h row. Align to the board.
+  Chess.com-style coords: inside the outer squares only.
+  Ranks → top-left of the left file. Files → bottom-right of the bottom rank.
 */
+.board-wrap .cg-wrap coords {
+  opacity: 1;
+  font-weight: 700;
+  font-size: clamp(9px, 2.6vw, 12px);
+  line-height: 1;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.board-wrap .cg-wrap coords.ranks,
+.board-wrap .cg-wrap coords.ranks.left {
+  left: 0;
+  top: 0;
+  width: 12.5%;
+  height: 100%;
+  align-items: stretch;
+}
+
+.board-wrap .cg-wrap coords.ranks coord {
+  flex: 1 1 0;
+  transform: none;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 3px 4px 0;
+  box-sizing: border-box;
+}
+
 .board-wrap .cg-wrap coords.files {
   left: 0;
   right: 0;
   bottom: 0;
   width: 100%;
-  height: auto;
-  padding: 0 1px 2px;
+  height: 12.5%;
+  padding: 0;
   box-sizing: border-box;
-  font-size: clamp(8px, 2.4vw, 11px);
-  line-height: 1.1;
-  text-align: center;
+  text-transform: none;
+  text-align: right;
 }
 
 .board-wrap .cg-wrap coords.files coord {
@@ -1082,24 +1109,30 @@ body.nav-open .nav-burger-lines::after {
   min-width: 0;
   display: flex;
   align-items: flex-end;
-  justify-content: center;
+  justify-content: flex-end;
+  padding: 0 4px 3px;
+  box-sizing: border-box;
 }
 
-.board-wrap .cg-wrap coords.ranks {
-  left: 2px;
-  top: 0;
-  width: auto;
-  height: 100%;
-  font-size: clamp(8px, 2.4vw, 11px);
-  line-height: 1;
+/* Contrast on light/dark squares (a1 is dark). */
+.board-wrap .cg-wrap coords.ranks coord:nth-child(odd),
+.board-wrap .cg-wrap coords.files coord:nth-child(odd) {
+  color: #f0d9b5;
 }
 
-.board-wrap .cg-wrap coords.ranks coord {
-  transform: none;
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
-  padding-top: 2px;
+.board-wrap .cg-wrap coords.ranks coord:nth-child(even),
+.board-wrap .cg-wrap coords.files coord:nth-child(even) {
+  color: #b58863;
+}
+
+.board-wrap .cg-wrap.orientation-black coords.ranks coord:nth-child(odd),
+.board-wrap .cg-wrap.orientation-black coords.files coord:nth-child(odd) {
+  color: #b58863;
+}
+
+.board-wrap .cg-wrap.orientation-black coords.ranks coord:nth-child(even),
+.board-wrap .cg-wrap.orientation-black coords.files coord:nth-child(even) {
+  color: #f0d9b5;
 }
 
 .promo-picker {
